@@ -1,20 +1,39 @@
 package com.justreactors.client;
 
 import com.justreactors.menu.ReactorControllerMenu;
+import com.justreactors.registry.ModItems;
 
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 
+import java.util.List;
 import java.util.Locale;
 
+import static com.justreactors.client.ScreenWidgets.*;
+import static com.justreactors.client.Tips.*;
+
 public class ReactorControllerScreen extends AbstractContainerScreen<ReactorControllerMenu> {
-    private Button toggleButton;
+    private static final double HEAT_SCALE = 2000.0;
+
+    // gauge bay
+    private static final int GY = 48, GH = 76;
+    private static final int FUEL_X = 14, CORE_X = 44, CASING_X = 71;
+    private static final int WATER_X = 104, STEAM_X = 130, ENERGY_X = 106, ENERGY_W = 34;
+    // stats strip
+    private static final int SY = 134;
+
+    private final ItemStack fuelIcon = new ItemStack(ModItems.URANIUM_INGOT.get());
+    private final ItemStack wasteIcon = new ItemStack(ModItems.CYANITE_INGOT.get());
+    private final ItemStack waterIcon = new ItemStack(Items.WATER_BUCKET);
+    private final ItemStack steamIcon = new ItemStack(ModItems.STEAM_BUCKET.get());
+    private final ItemStack rodIcon = new ItemStack(ModItems.REACTOR_CONTROL_ROD.get());
 
     public ReactorControllerScreen(ReactorControllerMenu menu, Inventory playerInventory, Component title) {
-        super(menu, playerInventory, title, 236, 154);
+        super(menu, playerInventory, title, 244, 178);
     }
 
     @Override
@@ -24,32 +43,24 @@ public class ReactorControllerScreen extends AbstractContainerScreen<ReactorCont
         titleLabelY = 6;
         inventoryLabelY = 10000;
 
-        toggleButton = addRenderableWidget(Button.builder(
-                        Component.translatable("gui.justreactors.reactor.toggle"),
-                        btn -> sendButton(ReactorControllerMenu.BTN_TOGGLE_ACTIVE))
-                .bounds(leftPos + 10, topPos + 124, 76, 20)
-                .build());
-
-        addRenderableWidget(Button.builder(
-                        Component.translatable("gui.justreactors.reactor.eject_waste"),
-                        btn -> sendButton(ReactorControllerMenu.BTN_EJECT_WASTE))
-                .bounds(leftPos + 92, topPos + 124, 74, 20)
-                .build());
-
-        addRenderableWidget(Button.builder(
-                        Component.literal("-10%"),
-                        btn -> sendButton(ReactorControllerMenu.BTN_RODS_MINUS_10))
-                .bounds(leftPos + 172, topPos + 124, 26, 20)
-                .build());
-
-        addRenderableWidget(Button.builder(
-                        Component.literal("+10%"),
-                        btn -> sendButton(ReactorControllerMenu.BTN_RODS_PLUS_10))
-                .bounds(leftPos + 200, topPos + 124, 26, 20)
-                .build());
+        int rx = leftPos + 165;
+        addRenderableWidget(new JrButton(rx, topPos + 54, 35, 16, Component.translatable("gui.justreactors.button.on"),
+                b -> {
+                    if (!menu.isActive()) send(ReactorControllerMenu.BTN_TOGGLE_ACTIVE);
+                }, ON).lit(menu::isActive));
+        addRenderableWidget(new JrButton(rx + 37, topPos + 54, 35, 16, Component.translatable("gui.justreactors.button.off"),
+                b -> {
+                    if (menu.isActive()) send(ReactorControllerMenu.BTN_TOGGLE_ACTIVE);
+                }, OFF).lit(() -> !menu.isActive()));
+        addRenderableWidget(new JrButton(rx, topPos + 74, 72, 16, Component.translatable("gui.justreactors.reactor.eject_waste"),
+                b -> send(ReactorControllerMenu.BTN_EJECT_WASTE), WASTE));
+        addRenderableWidget(new JrButton(rx, topPos + 113, 35, 14, Component.literal("-10"),
+                b -> send(ReactorControllerMenu.BTN_RODS_MINUS_10), 0));
+        addRenderableWidget(new JrButton(rx + 37, topPos + 113, 35, 14, Component.literal("+10"),
+                b -> send(ReactorControllerMenu.BTN_RODS_PLUS_10), 0));
     }
 
-    private void sendButton(int id) {
+    private void send(int id) {
         if (minecraft != null && minecraft.gameMode != null) {
             minecraft.gameMode.handleInventoryButtonClick(menu.containerId, id);
         }
@@ -58,107 +69,138 @@ public class ReactorControllerScreen extends AbstractContainerScreen<ReactorCont
     @Override
     public void extractBackground(GuiGraphicsExtractor g, int mouseX, int mouseY, float partialTick) {
         super.extractBackground(g, mouseX, mouseY, partialTick);
+        int x = leftPos, y = topPos;
+        boolean steam = menu.isActiveCooled();
 
-        if (toggleButton != null) {
-            toggleButton.setMessage(Component.translatable(
-                    menu.isActive() ? "gui.justreactors.reactor.deactivate" : "gui.justreactors.reactor.activate"));
-        }
+        drawPanel(g, x, y, imageWidth, imageHeight, ACCENT_REACTOR);
 
-        ScreenWidgets.drawPanel(g, leftPos, topPos, imageWidth, imageHeight);
+        // gauge bay
+        inset(g, x + 8, y + 26, 150, 102);
+        double maxFuel = Math.max(1, menu.getMaxFuelMb());
+        icon(g, fuelIcon, x + FUEL_X, y + 29);
+        drawStackedGauge(g, x + FUEL_X, y + GY, 16, GH,
+                menu.getWasteMb() / maxFuel, WASTE, menu.getFuelMb() / maxFuel, FUEL);
+        vDivider(g, x + 37, y + 30, 94);
 
-        // Fuel + Waste stacked gauge
-        int maxFuel = menu.getMaxFuelMb();
-        int barX = leftPos + 166;
-        int barY = topPos + 24;
-        int barW = 16;
-        int barH = 86;
-        ScreenWidgets.drawGaugeFrame(g, barX, barY, barW, barH);
-        int wasteH = Math.min(barH, Math.max(0, (int) Math.round((double) menu.getWasteMb() / maxFuel * barH)));
-        int fuelH = Math.min(barH - wasteH, Math.max(0, (int) Math.round((double) menu.getFuelMb() / maxFuel * barH)));
-        if (wasteH > 0) {
-            g.fill(barX, barY + barH - wasteH, barX + barW, barY + barH, 0xFF3498DB);
-        }
-        if (fuelH > 0) {
-            g.fill(barX, barY + barH - wasteH - fuelH, barX + barW, barY + barH - wasteH, 0xFFF1C40F);
-        }
-        ScreenWidgets.drawGaugeTicks(g, barX, barY, barW, barH);
+        pixelIcon(g, PixelIcon.FLAME, x + CORE_X, y + 29);
+        drawHeatGauge(g, x + CORE_X, y + GY, 16, GH, menu.getFuelHeat() / HEAT_SCALE);
+        ruler(g, x + 63, y + GY, GH);
+        pixelIcon(g, PixelIcon.THERMOMETER, x + CASING_X, y + 29);
+        drawHeatGauge(g, x + CASING_X, y + GY, 16, GH, menu.getCasingHeat() / HEAT_SCALE);
+        vDivider(g, x + 94, y + 30, 94);
 
-        if (menu.isActiveCooled()) {
-            ScreenWidgets.drawVerticalGauge(g, leftPos + 188, topPos + 24, 16, 86,
-                    (double) menu.getCoolantMb() / menu.getMaxFluidMb(), 0xFF2980B9);
-            ScreenWidgets.drawVerticalGauge(g, leftPos + 210, topPos + 24, 16, 86,
-                    (double) menu.getSteamMb() / menu.getMaxFluidMb(), 0xFFDCE6EE);
+        if (steam) {
+            double maxFluid = Math.max(1, menu.getMaxFluidMb());
+            icon(g, waterIcon, x + WATER_X, y + 29);
+            drawVerticalGauge(g, x + WATER_X, y + GY, 16, GH, menu.getCoolantMb() / maxFluid, WATER);
+            ruler(g, x + 123, y + GY, GH);
+            icon(g, steamIcon, x + STEAM_X, y + 29);
+            drawVerticalGauge(g, x + STEAM_X, y + GY, 16, GH, menu.getSteamMb() / maxFluid, STEAM);
         } else {
-            ScreenWidgets.drawVerticalGauge(g, leftPos + 196, topPos + 24, 20, 86,
-                    (double) menu.getEnergy() / menu.getMaxEnergy(), 0xFF2ECC71);
+            pixelIcon(g, PixelIcon.BOLT, x + ENERGY_X + (ENERGY_W - 16) / 2, y + 29);
+            drawVerticalGauge(g, x + ENERGY_X, y + GY, ENERGY_W, GH,
+                    (double) menu.getEnergy() / Math.max(1, menu.getMaxEnergy()), ENERGY);
         }
 
-        ScreenWidgets.drawHorizontalBar(g, leftPos + 10, topPos + 78, 146, 8,
-                Math.min(1.0, menu.getFuelHeat() / 2000.0), 0xFFE67E22);
-        ScreenWidgets.drawHorizontalBar(g, leftPos + 10, topPos + 101, 146, 8,
-                Math.min(1.0, menu.getCasingHeat() / 2000.0), 0xFFE74C3C);
+        // control column
+        inset(g, x + 166, y + 27, 70, 20);
+        hDivider(g, x + 165, y + 94, 72);
+        drawHorizontalBar(g, x + 166, y + 106, 70, 4, menu.getAvgInsertion() / 100.0, 0xFF8FA3BF);
+
+        // stats strip
+        inset(g, x + 8, y + SY, 228, 36);
+        vDivider(g, x + 122, y + SY + 3, 30);
+        if (steam) {
+            icon(g, steamIcon, x + 11, y + SY + 1);
+        } else {
+            pixelIcon(g, PixelIcon.BOLT, x + 11, y + SY + 1);
+        }
+        icon(g, fuelIcon, x + 127, y + SY + 1);
+        pixelIcon(g, PixelIcon.FLAME, x + 11, y + SY + 19);
+        pixelIcon(g, PixelIcon.THERMOMETER, x + 127, y + SY + 19);
     }
 
     @Override
     protected void extractLabels(GuiGraphicsExtractor g, int mouseX, int mouseY) {
-        g.text(font, title, titleLabelX, titleLabelY, 0xFFE5E9F0, false);
+        boolean steam = menu.isActiveCooled();
+        boolean on = menu.isActive();
 
-        Component modeText = Component.translatable(
-                menu.isActiveCooled() ? "gui.justreactors.mode.active" : "gui.justreactors.mode.passive");
-        int modeColor = menu.isActiveCooled() ? 0xFF5EC8F5 : 0xFF64D99B;
-        int badgeX = imageWidth - 8 - font.width(modeText);
-        g.text(font, modeText, badgeX, 6, modeColor, false);
+        drawTitle(g, font, title, 0, 0, on ? ON : OFF, on);
+        badge(g, font, Component.translatable(steam ? "gui.justreactors.mode.active" : "gui.justreactors.mode.passive"),
+                imageWidth - 6, 5, steam ? ACCENT_TURBINE : ENERGY);
 
-        int statusColor = menu.isActive() ? 0xFF2ECC71 : 0xFFE74C3C;
-        g.text(font, Component.translatable(
-                menu.isActive() ? "gui.justreactors.status.online" : "gui.justreactors.status.offline"), 10, 23, statusColor, false);
+        // status display
+        Component status = Component.translatable(on ? "gui.justreactors.lcd.online" : "gui.justreactors.lcd.offline");
+        int sc = on ? ON : OFF;
+        int sx = 166 + (70 - font.width(status)) / 2;
+        g.text(font, status, sx, 33, sc, false);
 
-        if (menu.isActiveCooled()) {
-            g.text(font, Component.translatable("gui.justreactors.steam_output", formatNumber(menu.getLastSteamMb())), 10, 34, 0xFFDCE6EE, false);
-        } else {
-            g.text(font, Component.translatable("gui.justreactors.output", formatNumber(menu.getGeneratedFe())), 10, 34, 0xFF88C0D0, false);
-        }
-        g.text(font, Component.translatable("gui.justreactors.burn_rate", String.format(Locale.ROOT, "%.3f", menu.getBurnRateMb())), 10, 45, 0xFFD8DEE9, false);
-        g.text(font, Component.translatable("gui.justreactors.rods_avg", menu.getAvgInsertion()), 10, 56, 0xFFD8DEE9, false);
+        // control rods
+        g.text(font, Component.translatable("gui.justreactors.label.rods"), 166, 98, TEXT_DIM, false);
+        String rods = menu.getAvgInsertion() + "%";
+        g.text(font, rods, 236 - font.width(rods), 98, VALUE, false);
 
-        g.text(font, Component.translatable("gui.justreactors.core_temp", menu.getFuelHeat()), 10, 68, 0xFFEBCB8B, false);
-        g.text(font, Component.translatable("gui.justreactors.casing_temp", menu.getCasingHeat()), 10, 91, 0xFFD08770, false);
-
-        if (menu.isActiveCooled()) {
-            g.text(font, Component.literal("F   W   S"), 170, 113, 0xFF9AA5B1, false);
-        } else {
-            g.text(font, Component.literal("F     E"), 170, 113, 0xFF9AA5B1, false);
-        }
+        // stats
+        g.text(font, steam ? fmt(menu.getLastSteamMb()) + " mB/t" : fmt(menu.getGeneratedFe()) + " FE/t", 31, SY + 5, VALUE, true);
+        g.text(font, String.format(Locale.ROOT, "%.3f mB/t", menu.getBurnRateMb()), 147, SY + 5, VALUE, true);
+        g.text(font, fmt(menu.getFuelHeat()) + " °C", 31, SY + 23, VALUE, true);
+        g.text(font, fmt(menu.getCasingHeat()) + " °C", 147, SY + 23, VALUE, true);
     }
 
     @Override
-    protected void extractTooltip(GuiGraphicsExtractor g, int x, int y) {
-        super.extractTooltip(g, x, y);
-        Component modeText = Component.translatable(
-                menu.isActiveCooled() ? "gui.justreactors.mode.active" : "gui.justreactors.mode.passive");
-        int badgeW = font.width(modeText);
-        int badgeX = imageWidth - 8 - badgeW;
-        if (isHovering(badgeX - 2, 4, badgeW + 4, 12, x, y)) {
-            g.setTooltipForNextFrame(font, Component.translatable(
-                    menu.isActiveCooled() ? "gui.justreactors.mode.active_tooltip" : "gui.justreactors.mode.passive_tooltip"), x, y);
-        } else if (isHovering(166, 24, 16, 86, x, y)) {
-            g.setTooltipForNextFrame(font, Component.translatable("gui.justreactors.fuel_tooltip",
-                    formatNumber(menu.getFuelMb()), formatNumber(menu.getWasteMb()), formatNumber(menu.getMaxFuelMb())), x, y);
-        } else if (menu.isActiveCooled() && isHovering(188, 24, 16, 86, x, y)) {
-            g.setTooltipForNextFrame(font, Component.translatable("gui.justreactors.coolant_tooltip",
-                    formatNumber(menu.getCoolantMb()), formatNumber(menu.getMaxFluidMb())), x, y);
-        } else if (menu.isActiveCooled() && isHovering(210, 24, 16, 86, x, y)) {
-            g.setTooltipForNextFrame(font, Component.translatable("gui.justreactors.steam_tooltip",
-                    formatNumber(menu.getSteamMb()), formatNumber(menu.getMaxFluidMb())), x, y);
-        } else if (!menu.isActiveCooled() && isHovering(196, 24, 20, 86, x, y)) {
-            g.setTooltipForNextFrame(font, Component.translatable("gui.justreactors.energy_tooltip",
-                    formatNumber(menu.getEnergy()), formatNumber(menu.getMaxEnergy())), x, y);
-        } else if (isHovering(10, 78, 146, 8, x, y) || isHovering(10, 101, 146, 8, x, y)) {
-            g.setTooltipForNextFrame(font, Component.translatable("gui.justreactors.heat_tooltip"), x, y);
+    protected void extractTooltip(GuiGraphicsExtractor g, int mx, int my) {
+        super.extractTooltip(g, mx, my);
+        boolean steam = menu.isActiveCooled();
+        List<Component> tip = null;
+        if (isHovering(FUEL_X, 29, 16, GY - 29 + GH, mx, my)) {
+            double max = Math.max(1, menu.getMaxFuelMb());
+            tip = tip("gui.justreactors.tip.fuel.title");
+            tip.add(value("gui.justreactors.tip.fuel.full", pct((menu.getFuelMb() + menu.getWasteMb()) / max)));
+            tip.add(value("gui.justreactors.tip.fuel.depleted",
+                    pct(menu.getWasteMb() / Math.max(1.0, menu.getFuelMb() + menu.getWasteMb()))));
+            tip.add(Component.empty());
+            tip.add(line("gui.justreactors.tip.fuel.fuel", fmt(menu.getFuelMb())));
+            tip.add(line("gui.justreactors.tip.fuel.waste", fmt(menu.getWasteMb())));
+            tip.add(line("gui.justreactors.tip.capacity", fmt(menu.getMaxFuelMb())));
+        } else if (isHovering(CORE_X, 29, 16, GY - 29 + GH, mx, my)) {
+            tip = tip("gui.justreactors.tip.core.title");
+            tip.add(value("gui.justreactors.tip.temp", fmt(menu.getFuelHeat())));
+            tip.add(hint("gui.justreactors.tip.core.hint"));
+        } else if (isHovering(CASING_X, 29, 16, GY - 29 + GH, mx, my)) {
+            tip = tip("gui.justreactors.tip.casing.title");
+            tip.add(value("gui.justreactors.tip.temp", fmt(menu.getCasingHeat())));
+            tip.add(hint("gui.justreactors.tip.casing.hint"));
+        } else if (steam && isHovering(WATER_X, 29, 16, GY - 29 + GH, mx, my)) {
+            tip = fluidTip("gui.justreactors.tip.water.title", menu.getCoolantMb(), menu.getMaxFluidMb());
+        } else if (steam && isHovering(STEAM_X, 29, 16, GY - 29 + GH, mx, my)) {
+            tip = fluidTip("gui.justreactors.tip.steam.title", menu.getSteamMb(), menu.getMaxFluidMb());
+            tip.add(line("gui.justreactors.tip.steam.rate", fmt(menu.getLastSteamMb())));
+        } else if (!steam && isHovering(ENERGY_X, 29, ENERGY_W, GY - 29 + GH, mx, my)) {
+            tip = tip("gui.justreactors.tip.energy.title");
+            tip.add(value("gui.justreactors.tip.percent", pct((double) menu.getEnergy() / Math.max(1, menu.getMaxEnergy()))));
+            tip.add(line("gui.justreactors.tip.energy.stored", fmt(menu.getEnergy()), fmt(menu.getMaxEnergy())));
+            tip.add(line("gui.justreactors.tip.energy.output", fmt(menu.getGeneratedFe())));
+        } else if (isHovering(imageWidth - 6 - 90, 4, 90, 13, mx, my)) {
+            tip = tip(steam ? "gui.justreactors.mode.active" : "gui.justreactors.mode.passive");
+            tip.add(hint(steam ? "gui.justreactors.mode.active_tooltip" : "gui.justreactors.mode.passive_tooltip"));
         }
-    }
-
-    private static String formatNumber(int n) {
-        return String.format(Locale.ROOT, "%,d", n);
+        if (tip == null && isHovering(9, SY + 1, 112, 17, mx, my)) {
+            tip = tip(steam ? "gui.justreactors.label.steam" : "gui.justreactors.label.output");
+            tip.add(value(steam ? "gui.justreactors.tip.steam.rate" : "gui.justreactors.tip.energy.output",
+                    fmt(steam ? menu.getLastSteamMb() : menu.getGeneratedFe())));
+        } else if (tip == null && isHovering(124, SY + 1, 112, 17, mx, my)) {
+            tip = tip("gui.justreactors.label.burn");
+            tip.add(value("gui.justreactors.tip.burn", String.format(Locale.ROOT, "%.3f", menu.getBurnRateMb())));
+            tip.add(hint("gui.justreactors.tip.burn.hint"));
+        } else if (tip == null && isHovering(9, SY + 19, 112, 17, mx, my)) {
+            tip = tip("gui.justreactors.tip.core.title");
+            tip.add(value("gui.justreactors.tip.temp", fmt(menu.getFuelHeat())));
+        } else if (tip == null && isHovering(124, SY + 19, 112, 17, mx, my)) {
+            tip = tip("gui.justreactors.tip.casing.title");
+            tip.add(value("gui.justreactors.tip.temp", fmt(menu.getCasingHeat())));
+        }
+        if (tip != null) {
+            show(g, font, tip, mx, my);
+        }
     }
 }

@@ -2,6 +2,7 @@ package com.justreactors.client;
 
 import com.justreactors.JustReactors;
 import com.justreactors.demo.DemoSetup;
+import com.justreactors.registry.ModBlocks;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Screenshot;
 import net.minecraft.core.BlockPos;
@@ -33,6 +34,8 @@ import java.util.function.Consumer;
 public final class ShotDirector {
     private static final org.slf4j.Logger LOG = com.mojang.logging.LogUtils.getLogger();
     private static final boolean ON = Boolean.getBoolean("justreactors.shots");
+    /** {@code -PuiShots=true}: only the GUI screenshots, skipping the scenery and the GIF. */
+    private static final boolean UI_ONLY = Boolean.getBoolean("justreactors.shots.ui");
 
     private record Step(int delay, Runnable action) {
     }
@@ -120,6 +123,40 @@ public final class ShotDirector {
         if (p.level().getBlockEntity(pos) instanceof MenuProvider provider) p.openMenu(provider, pos);
     }
 
+    private static BlockPos find(ServerPlayer p, Block block) {
+        BlockPos o = new BlockPos(cx, g, cz);
+        for (BlockPos q : BlockPos.betweenClosed(o.offset(-2, 0, -2), o.offset(16, 10, 10))) {
+            if (p.level().getBlockState(q).is(block)) return q.immutable();
+        }
+        return null;
+    }
+
+    private static void openFound(ServerPlayer p, Block block) {
+        BlockPos q = find(p, block);
+        if (q != null) openMenu(p, q);
+        else LOG.warn("shots: no {} in the demo", block);
+    }
+
+    /** Loose machines next to the camera, for the screens the demo has no block for. */
+    private static BlockPos loose(int i) {
+        return new BlockPos(cx + 1 + i * 2, g + 1, cz - 3);
+    }
+
+    /** Moves the cursor to a point given in GUI coordinates relative to a centred w x h screen. */
+    private static void hover(Minecraft mc, int w, int h, int gx, int gy) {
+        var win = mc.getWindow();
+        double scale = win.getGuiScale();
+        int left = (win.getGuiScaledWidth() - w) / 2, top = (win.getGuiScaledHeight() - h) / 2;
+        mc.mouseHandler.onMove(win.handle(), (left + gx) * scale, (top + gy) * scale, 0, 0);
+    }
+
+    private static void ui(Minecraft mc, String name, Consumer<ServerPlayer> open) {
+        add(5, () -> mc.gui.setScreen(null));
+        add(5, () -> server(open));
+        add(20, () -> parkMouse(mc));
+        add(20, () -> shot(name));
+    }
+
     @SubscribeEvent
     static void tick(ClientTickEvent.Post event) {
         if (!ON) return;
@@ -156,21 +193,25 @@ public final class ShotDirector {
         add(20, () -> hideHud(mc, true));
         // Layout (relative to the platform): reactor x1..5 z2..6 y1..5, turbine x8..12 z2..6 y1..7.
         // The camera looks south (+Z), so +X (the turbine) is on the left of the picture.
-        // overview from the front, high, close enough to fill the frame
-        add(20, () -> server(p -> look(p, 1, 8.5, -6.5, 7, 2.5, 4)));
-        add(200, () -> shot("overview"));
-        // the reactor's west glass with the fuel rods
-        add(5, () -> server(p -> look(p, -3, 2.2, 4.5, 3.5, 3, 4.5)));
-        add(60, () -> shot("reactor_glass"));
-        // the reactor from the corner
-        add(5, () -> server(p -> look(p, -3.5, 5.5, -3.5, 3.5, 3, 4.5)));
-        add(60, () -> shot("reactor"));
-        // the turbine from the east corner
-        add(5, () -> server(p -> look(p, 17.5, 6, -3.5, 10.5, 3.5, 4.5)));
-        add(60, () -> shot("turbine"));
-        // the closed loop between them
-        add(5, () -> server(p -> look(p, 6.5, 5, -3.5, 6.5, 2.5, 4)));
-        add(60, () -> shot("loop"));
+        if (!UI_ONLY) {
+            // overview from the front, high, close enough to fill the frame
+            add(20, () -> server(p -> look(p, 1, 8.5, -6.5, 7, 2.5, 4)));
+            add(200, () -> shot("overview"));
+            // the reactor's west glass with the fuel rods
+            add(5, () -> server(p -> look(p, -3, 2.2, 4.5, 3.5, 3, 4.5)));
+            add(60, () -> shot("reactor_glass"));
+            // the reactor from the corner
+            add(5, () -> server(p -> look(p, -3.5, 5.5, -3.5, 3.5, 3, 4.5)));
+            add(60, () -> shot("reactor"));
+            // the turbine from the east corner
+            add(5, () -> server(p -> look(p, 17.5, 6, -3.5, 10.5, 3.5, 4.5)));
+            add(60, () -> shot("turbine"));
+            // the closed loop between them
+            add(5, () -> server(p -> look(p, 6.5, 5, -3.5, 6.5, 2.5, 4)));
+            add(60, () -> shot("loop"));
+        } else {
+            add(400, () -> LOG.info("shots: letting the reactor warm up"));
+        }
         // controller screens
         add(5, () -> hideHud(mc, false));
         add(5, () -> server(p -> {
@@ -187,19 +228,42 @@ public final class ShotDirector {
         add(20, () -> parkMouse(mc));
         add(20, () -> shot("turbine_controller"));
         add(5, () -> mc.gui.setScreen(null));
-        // GIF: the rotor spinning, straight through the turbine's front glass, one frame per tick
-        add(5, () -> {
-            hideHud(mc, true);
-            server(p -> look(p, 10.5, 2.0, -1.8, 10.5, 3.8, 4.5));
-        });
-        for (int i = 0; i < GIF_FRAMES; i++) {
-            final int frame = i;
-            add(i == 0 ? 60 : 1, () -> shot(String.format("gif_%02d", frame)));
+        // the other screens and two tooltips
+        add(5, () -> server(p -> {
+            look(p, 3.5, 1, -1, 3.5, 2.5, 2.5);
+            openMenu(p, demo.reactorControllerPos());
+        }));
+        add(20, () -> hover(mc, 244, 178, 22, 80));
+        add(20, () -> shot("ui_reactor_tooltip"));
+        add(5, () -> mc.gui.setScreen(null));
+        add(5, () -> server(p -> openMenu(p, demo.turbineControllerPos())));
+        add(20, () -> hover(mc, 244, 196, 132, 80));
+        add(20, () -> shot("ui_turbine_tooltip"));
+        ui(mc, "ui_control_rod", p -> openFound(p, ModBlocks.REACTOR_CONTROL_ROD.get()));
+        ui(mc, "ui_access_port", p -> openFound(p, ModBlocks.REACTOR_ACCESS_PORT.get()));
+        add(5, () -> server(p -> {
+            Block[] loose = {ModBlocks.REACTOR_REDSTONE_PORT.get(), ModBlocks.TURBINE_REDSTONE_PORT.get(), ModBlocks.CYANITE_REPROCESSOR.get()};
+            for (int i = 0; i < loose.length; i++) p.level().setBlock(loose(i), loose[i].defaultBlockState(), Block.UPDATE_ALL);
+        }));
+        ui(mc, "ui_reactor_redstone", p -> openMenu(p, loose(0)));
+        ui(mc, "ui_turbine_redstone", p -> openMenu(p, loose(1)));
+        ui(mc, "ui_reprocessor", p -> openMenu(p, loose(2)));
+        add(5, () -> mc.gui.setScreen(null));
+        if (!UI_ONLY) {
+            // GIF: the rotor spinning, straight through the turbine's front glass, one frame per tick
+            add(5, () -> {
+                hideHud(mc, true);
+                server(p -> look(p, 10.5, 2.0, -1.8, 10.5, 3.8, 4.5));
+            });
+            for (int i = 0; i < GIF_FRAMES; i++) {
+                final int frame = i;
+                add(i == 0 ? 60 : 1, () -> shot(String.format("gif_%02d", frame)));
+            }
+            // night, closer, so the glass glow reads
+            add(10, () -> server(p -> cmd(p, "time set 18000")));
+            add(10, () -> server(p -> look(p, 1, 8.5, -6.5, 7, 2.5, 4)));
+            add(80, () -> shot("overview_night"));
         }
-        // night, closer, so the glass glow reads
-        add(10, () -> server(p -> cmd(p, "time set 18000")));
-        add(10, () -> server(p -> look(p, 1, 8.5, -6.5, 7, 2.5, 4)));
-        add(80, () -> shot("overview_night"));
         add(20, () -> LOG.info("shots done"));
         add(20, () -> Minecraft.getInstance().stop());
     }
