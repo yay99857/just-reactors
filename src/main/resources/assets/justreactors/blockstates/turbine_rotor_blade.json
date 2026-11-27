@@ -1,0 +1,6 @@
+{
+  "variants": {
+    "spinning=false": { "model": "justreactors:block/turbine_rotor_blade" },
+    "spinning=true":  { "model": "justreactors:block/empty" }
+  }
+}

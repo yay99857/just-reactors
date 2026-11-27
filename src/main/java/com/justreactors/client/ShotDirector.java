@@ -1,0 +1,206 @@
+package com.justreactors.client;
+
+import com.justreactors.JustReactors;
+import com.justreactors.demo.DemoSetup;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.Screenshot;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.phys.AABB;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Consumer;
+
+/**
+ * DEV ONLY ({@code ./gradlew runShots}): builds the closed-loop demo on a flat plain and saves
+ * screenshots to {@code run/screenshots}, then closes the game.
+ */
+@EventBusSubscriber(modid = JustReactors.MOD_ID, value = Dist.CLIENT)
+public final class ShotDirector {
+    private static final org.slf4j.Logger LOG = com.mojang.logging.LogUtils.getLogger();
+    private static final boolean ON = Boolean.getBoolean("justreactors.shots");
+
+    private record Step(int delay, Runnable action) {
+    }
+
+    private static final List<Step> steps = new ArrayList<>();
+    private static int index = -1, timer;
+    private static int cx = 3000, cz = 3000, g;
+    private static DemoSetup.DemoResult demo;
+
+    private ShotDirector() {
+    }
+
+    private static void server(Consumer<ServerPlayer> action) {
+        Minecraft mc = Minecraft.getInstance();
+        MinecraftServer server = mc.getSingleplayerServer();
+        server.execute(() -> action.accept(server.getPlayerList().getPlayer(mc.player.getUUID())));
+    }
+
+    private static void cmd(ServerPlayer p, String c) {
+        p.level().getServer().getCommands().performPrefixedCommand(p.createCommandSourceStack()
+                .withPermission(net.minecraft.server.permissions.LevelBasedPermissionSet.OWNER).withSuppressedOutput(), c);
+    }
+
+    /** Puts the camera at (x, y, z) relative to the demo origin, looking at (tx, ty, tz). */
+    private static void look(ServerPlayer p, double x, double y, double z, double tx, double ty, double tz) {
+        x += cx; y += g; z += cz; tx += cx; ty += g; tz += cz;
+        double dx = tx - x, dy = ty - (y + p.getEyeHeight()), dz = tz - z;
+        float yaw = (float) Math.toDegrees(Math.atan2(-dx, dz));
+        float pitch = (float) -Math.toDegrees(Math.atan2(dy, Math.sqrt(dx * dx + dz * dz)));
+        p.getAbilities().flying = true;
+        p.onUpdateAbilities();
+        p.teleportTo(p.level(), x, y, z, Set.of(), yaw, pitch, true);
+        p.setDeltaMovement(0, 0, 0);
+    }
+
+    private static void shot(String name) {
+        Minecraft mc = Minecraft.getInstance();
+        Screenshot.grab(mc.gameDirectory, "justreactors_" + name + ".png", mc.gameRenderer.mainRenderTarget(), 1,
+                c -> LOG.info("shot {}", name));
+    }
+
+    private static void hideHud(Minecraft mc, boolean hidden) {
+        if (mc.gui.hud.isHidden() != hidden) mc.gui.hud.toggle();
+    }
+
+    private static void setup(ServerPlayer p) {
+        for (String c : List.of("gamerule doDaylightCycle false", "gamerule doWeatherCycle false",
+                "gamerule doMobSpawning false", "time set 6000", "weather clear", "gamemode creative"))
+            cmd(p, c);
+        var found = p.level().findClosestBiome3d(b -> b.is(net.minecraft.world.level.biome.Biomes.PLAINS),
+                new BlockPos(6000, 64, 6000), 6400, 32, 64);
+        if (found != null) {
+            cx = found.getFirst().getX();
+            cz = found.getFirst().getZ();
+        }
+        cmd(p, "forceload add " + (cx - 48) + " " + (cz - 48) + " " + (cx + 48) + " " + (cz + 48));
+        p.teleportTo(p.level(), cx, 200, cz, Set.of(), 0, 0, true);
+    }
+
+    private static void flattenAndBuild(ServerPlayer p) {
+        ServerLevel level = p.level();
+        g = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, cx, cz);
+        BlockPos.MutableBlockPos m = new BlockPos.MutableBlockPos();
+        for (int x = -40; x <= 56; x++) {
+            for (int z = -40; z <= 48; z++) {
+                for (int y = g - 8; y <= g + 30; y++) {
+                    m.set(cx + x, y, cz + z);
+                    Block b = y >= g ? Blocks.AIR : y == g - 1 ? Blocks.GRASS_BLOCK : y > g - 4 ? Blocks.DIRT : Blocks.STONE;
+                    level.setBlock(m, b.defaultBlockState(), 2);
+                }
+            }
+        }
+        for (Entity e : level.getEntities((Entity) null, new AABB(cx - 50, g - 10, cz - 50, cx + 60, g + 40, cz + 60),
+                e -> !(e instanceof Player))) e.discard();
+
+        // the demo platform sits one block into the ground, flush with the grass
+        BlockPos origin = new BlockPos(cx, g - 1, cz);
+        demo = DemoSetup.build(level, origin);
+        // the demo's guide signs are in Portuguese; the CurseForge page is in English
+        for (int dx : new int[]{3, 6, 10, 14}) level.setBlock(origin.offset(dx, 1, 1), Blocks.AIR.defaultBlockState(), 3);
+        g = g - 1; // coordinates below are relative to the platform
+    }
+
+    private static void openMenu(ServerPlayer p, BlockPos pos) {
+        if (p.level().getBlockEntity(pos) instanceof MenuProvider provider) p.openMenu(provider, pos);
+    }
+
+    @SubscribeEvent
+    static void tick(ClientTickEvent.Post event) {
+        if (!ON) return;
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player == null || mc.getSingleplayerServer() == null) return;
+        if (index < 0) {
+            mc.options.pauseOnLostFocus = false; // keep running while another window is in front
+            build(mc);
+            index = 0;
+            timer = 100;
+        }
+        if (index >= steps.size()) return;
+        if (--timer > 0) return;
+        steps.get(index).action().run();
+        index++;
+        if (index < steps.size()) timer = steps.get(index).delay();
+    }
+
+    private static void add(int wait, Runnable r) {
+        steps.add(new Step(wait, r));
+    }
+
+    /** Parks the cursor in a corner so no tooltip shows up over a screen. */
+    private static void parkMouse(Minecraft mc) {
+        long handle = mc.getWindow().handle();
+        mc.mouseHandler.onMove(handle, 2, 2, 0, 0);
+    }
+
+    private static final int GIF_FRAMES = 48;
+
+    private static void build(Minecraft mc) {
+        add(1, () -> server(ShotDirector::setup));
+        add(200, () -> server(ShotDirector::flattenAndBuild));
+        add(20, () -> hideHud(mc, true));
+        // Layout (relative to the platform): reactor x1..5 z2..6 y1..5, turbine x8..12 z2..6 y1..7.
+        // The camera looks south (+Z), so +X (the turbine) is on the left of the picture.
+        // overview from the front, high, close enough to fill the frame
+        add(20, () -> server(p -> look(p, 1, 8.5, -6.5, 7, 2.5, 4)));
+        add(200, () -> shot("overview"));
+        // the reactor's west glass with the fuel rods
+        add(5, () -> server(p -> look(p, -3, 2.2, 4.5, 3.5, 3, 4.5)));
+        add(60, () -> shot("reactor_glass"));
+        // the reactor from the corner
+        add(5, () -> server(p -> look(p, -3.5, 5.5, -3.5, 3.5, 3, 4.5)));
+        add(60, () -> shot("reactor"));
+        // the turbine from the east corner
+        add(5, () -> server(p -> look(p, 17.5, 6, -3.5, 10.5, 3.5, 4.5)));
+        add(60, () -> shot("turbine"));
+        // the closed loop between them
+        add(5, () -> server(p -> look(p, 6.5, 5, -3.5, 6.5, 2.5, 4)));
+        add(60, () -> shot("loop"));
+        // controller screens
+        add(5, () -> hideHud(mc, false));
+        add(5, () -> server(p -> {
+            look(p, 3.5, 1, -1, 3.5, 2.5, 2.5);
+            openMenu(p, demo.reactorControllerPos());
+        }));
+        add(20, () -> parkMouse(mc));
+        add(20, () -> shot("reactor_controller"));
+        add(5, () -> mc.gui.setScreen(null));
+        add(5, () -> server(p -> {
+            look(p, 10.5, 1, -1, 10.5, 2.5, 2.5);
+            openMenu(p, demo.turbineControllerPos());
+        }));
+        add(20, () -> parkMouse(mc));
+        add(20, () -> shot("turbine_controller"));
+        add(5, () -> mc.gui.setScreen(null));
+        // GIF: the rotor spinning, straight through the turbine's front glass, one frame per tick
+        add(5, () -> {
+            hideHud(mc, true);
+            server(p -> look(p, 10.5, 2.0, -1.8, 10.5, 3.8, 4.5));
+        });
+        for (int i = 0; i < GIF_FRAMES; i++) {
+            final int frame = i;
+            add(i == 0 ? 60 : 1, () -> shot(String.format("gif_%02d", frame)));
+        }
+        // night, closer, so the glass glow reads
+        add(10, () -> server(p -> cmd(p, "time set 18000")));
+        add(10, () -> server(p -> look(p, 1, 8.5, -6.5, 7, 2.5, 4)));
+        add(80, () -> shot("overview_night"));
+        add(20, () -> LOG.info("shots done"));
+        add(20, () -> Minecraft.getInstance().stop());
+    }
+}

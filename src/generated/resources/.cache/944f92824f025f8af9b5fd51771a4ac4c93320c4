@@ -1,0 +1,16 @@
+// 26.3	2026-11-26T18:22:36.7754724	justreactors-global/Tags for minecraft:item mod id justreactors
+6aeea450ec46e2f8183635d088ec593dd60a8111 data/c/tags/item/ingots.json
+3576e8157e760ed9ca91dfdee08b1eb662e09331 data/c/tags/item/ingots/blutonium.json
+7aea71daae808d944e4921d079213dd0c14fab35 data/c/tags/item/ingots/cyanite.json
+3b8e512b7f35324b82bac1724de8293014bb6dd9 data/c/tags/item/ingots/graphite.json
+68ffd1ecfed41ade932c575a37013944ad94287c data/c/tags/item/ingots/uranium.json
+be0257860fc6bca18f73b2fbf028a24adc5f054b data/c/tags/item/ores.json
+48419ea9da7eeae59aa80162f19d99992488597a data/c/tags/item/ores/uranium.json
+b6fbd3f6a651f90923703c0278eb3b8698758be0 data/c/tags/item/raw_materials.json
+a085ae300e0f04a70fa595bab8f3508560bd2c2e data/c/tags/item/raw_materials/uranium.json
+ad0f6761574053c2ce9d9231adebbd9ffedb5322 data/c/tags/item/storage_blocks.json
+04d2394e3dbe44219f5bb271e7ecd867c3e61efb data/c/tags/item/storage_blocks/blutonium.json
+df2236f56ff77546f82cbe5beebcca53c5b6938b data/c/tags/item/storage_blocks/cyanite.json
+14f6c4f473ead2ebe63610adc10ca6a953dd5a1f data/c/tags/item/storage_blocks/graphite.json
+0b8bb9e94d63ac145eab1214fff4e4ca781218a9 data/c/tags/item/storage_blocks/uranium.json
+c163e36e6f375f4aa701fc638e0bc720e38f91a4 data/justreactors/tags/item/reactor_fuel.json

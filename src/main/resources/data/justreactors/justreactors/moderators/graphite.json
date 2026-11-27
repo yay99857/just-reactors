@@ -1,0 +1,7 @@
+{
+  "block": "justreactors:graphite_block",
+  "absorption": 0.1,
+  "heat_efficiency": 0.5,
+  "moderation": 2.0,
+  "heat_conductivity": 2.0
+}

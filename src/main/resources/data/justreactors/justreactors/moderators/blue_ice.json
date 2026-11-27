@@ -1,0 +1,7 @@
+{
+  "block": "minecraft:blue_ice",
+  "absorption": 0.66,
+  "heat_efficiency": 0.95,
+  "moderation": 2.2,
+  "heat_conductivity": 3.5
+}

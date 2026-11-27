@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "B": "minecraft:bucket",
+    "C": "#c:ingots/cyanite",
+    "F": "minecraft:furnace",
+    "I": "#c:ingots/iron",
+    "R": "#c:dusts/redstone"
+  },
+  "pattern": [
+    "ICI",
+    "BFB",
+    "IRI"
+  ],
+  "result": {
+    "id": "justreactors:cyanite_reprocessor"
+  }
+}

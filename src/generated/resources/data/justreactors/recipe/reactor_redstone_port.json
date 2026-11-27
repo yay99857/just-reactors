@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "C": "justreactors:reactor_casing",
+    "G": "#c:ingots/gold",
+    "R": "#c:dusts/redstone"
+  },
+  "pattern": [
+    "CRC",
+    "RGR",
+    "CRC"
+  ],
+  "result": {
+    "id": "justreactors:reactor_redstone_port"
+  }
+}

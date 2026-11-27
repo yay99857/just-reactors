@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "outlet=false": {
+      "model": "justreactors:block/reactor_access_port_inlet"
+    },
+    "outlet=true": {
+      "model": "justreactors:block/reactor_access_port_outlet"
+    }
+  }
+}

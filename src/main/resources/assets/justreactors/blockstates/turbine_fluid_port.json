@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "outlet=false": {
+      "model": "justreactors:block/turbine_fluid_port_inlet"
+    },
+    "outlet=true": {
+      "model": "justreactors:block/turbine_fluid_port_outlet"
+    }
+  }
+}

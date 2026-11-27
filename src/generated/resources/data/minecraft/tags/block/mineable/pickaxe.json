@@ -1,0 +1,29 @@
+{
+  "values": [
+    "justreactors:uranium_ore",
+    "justreactors:deepslate_uranium_ore",
+    "justreactors:uranium_block",
+    "justreactors:graphite_block",
+    "justreactors:cyanite_block",
+    "justreactors:blutonium_block",
+    "justreactors:cyanite_reprocessor",
+    "justreactors:reactor_casing",
+    "justreactors:reactor_glass",
+    "justreactors:reactor_controller",
+    "justreactors:reactor_fuel_rod",
+    "justreactors:reactor_control_rod",
+    "justreactors:reactor_power_tap",
+    "justreactors:reactor_access_port",
+    "justreactors:reactor_redstone_port",
+    "justreactors:reactor_coolant_port",
+    "justreactors:turbine_casing",
+    "justreactors:turbine_glass",
+    "justreactors:turbine_controller",
+    "justreactors:turbine_rotor_bearing",
+    "justreactors:turbine_rotor_shaft",
+    "justreactors:turbine_rotor_blade",
+    "justreactors:turbine_fluid_port",
+    "justreactors:turbine_power_tap",
+    "justreactors:turbine_redstone_port"
+  ]
+}

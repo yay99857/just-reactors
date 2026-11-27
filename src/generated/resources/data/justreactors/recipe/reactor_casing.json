@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "G": "#c:ingots/graphite",
+    "I": "#c:ingots/iron"
+  },
+  "pattern": [
+    "IGI",
+    "G G",
+    "IGI"
+  ],
+  "result": {
+    "count": 4,
+    "id": "justreactors:reactor_casing"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "C": "justreactors:reactor_casing",
+    "D": "#c:gems/diamond",
+    "R": "#c:dusts/redstone",
+    "U": "#c:ingots/uranium"
+  },
+  "pattern": [
+    "CUC",
+    "RDR",
+    "CUC"
+  ],
+  "result": {
+    "id": "justreactors:reactor_controller"
+  }
+}

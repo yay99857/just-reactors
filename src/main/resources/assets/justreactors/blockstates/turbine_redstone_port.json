@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "powered=false": {
+      "model": "justreactors:block/turbine_redstone_port_off"
+    },
+    "powered=true": {
+      "model": "justreactors:block/turbine_redstone_port_on"
+    }
+  }
+}

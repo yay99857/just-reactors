@@ -1,0 +1,7 @@
+{
+  "block": "minecraft:redstone_block",
+  "absorption": 0.75,
+  "heat_efficiency": 0.55,
+  "moderation": 1.6,
+  "heat_conductivity": 0.9
+}

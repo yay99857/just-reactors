@@ -1,0 +1,7 @@
+{
+  "block": "minecraft:gold_block",
+  "absorption": 0.52,
+  "heat_efficiency": 0.8,
+  "moderation": 1.45,
+  "heat_conductivity": 2.0
+}

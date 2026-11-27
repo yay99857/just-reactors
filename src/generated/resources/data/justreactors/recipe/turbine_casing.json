@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "C": "#c:ingots/cyanite",
+    "G": "#c:ingots/graphite",
+    "I": "#c:ingots/iron"
+  },
+  "pattern": [
+    "IGI",
+    "C C",
+    "IGI"
+  ],
+  "result": {
+    "count": 4,
+    "id": "justreactors:turbine_casing"
+  }
+}

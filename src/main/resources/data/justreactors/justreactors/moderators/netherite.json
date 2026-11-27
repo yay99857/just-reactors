@@ -1,0 +1,7 @@
+{
+  "block": "minecraft:netherite_block",
+  "absorption": 0.85,
+  "heat_efficiency": 0.95,
+  "moderation": 2.5,
+  "heat_conductivity": 4.5
+}

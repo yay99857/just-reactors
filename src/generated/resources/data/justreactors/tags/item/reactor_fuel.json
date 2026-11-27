@@ -1,0 +1,10 @@
+{
+  "values": [
+    "#c:ingots/uranium",
+    "#c:ingots/blutonium",
+    {
+      "id": "#c:ingots/yellorium",
+      "required": false
+    }
+  ]
+}

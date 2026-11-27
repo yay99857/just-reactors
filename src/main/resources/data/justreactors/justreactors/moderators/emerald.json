@@ -1,0 +1,7 @@
+{
+  "block": "minecraft:emerald_block",
+  "absorption": 0.55,
+  "heat_efficiency": 0.8,
+  "moderation": 1.5,
+  "heat_conductivity": 2.5
+}

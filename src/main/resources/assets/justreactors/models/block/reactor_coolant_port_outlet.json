@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "justreactors:block/reactor_coolant_port_outlet"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "justreactors:block/graphite_block"
+    }
+  }
+}

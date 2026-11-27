@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "justreactors:block/reactor_power_tap"
+    }
+  }
+}

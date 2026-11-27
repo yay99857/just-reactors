@@ -1,0 +1,7 @@
+{
+  "block": "minecraft:iron_block",
+  "absorption": 0.5,
+  "heat_efficiency": 0.75,
+  "moderation": 1.4,
+  "heat_conductivity": 0.6
+}

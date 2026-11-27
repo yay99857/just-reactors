@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "justreactors:block/turbine_fluid_port_inlet"
+  }
+}

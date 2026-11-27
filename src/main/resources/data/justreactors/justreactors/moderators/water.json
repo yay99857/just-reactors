@@ -1,0 +1,7 @@
+{
+  "block": "minecraft:water",
+  "absorption": 0.33,
+  "heat_efficiency": 0.5,
+  "moderation": 1.33,
+  "heat_conductivity": 0.1
+}

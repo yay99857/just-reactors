@@ -1,0 +1,8 @@
+// 26.3	2026-11-26T23:12:37.2550851	justreactors-global/Tags for minecraft:block mod id justreactors
+48419ea9da7eeae59aa80162f19d99992488597a data/c/tags/block/ores/uranium.json
+04d2394e3dbe44219f5bb271e7ecd867c3e61efb data/c/tags/block/storage_blocks/blutonium.json
+df2236f56ff77546f82cbe5beebcca53c5b6938b data/c/tags/block/storage_blocks/cyanite.json
+14f6c4f473ead2ebe63610adc10ca6a953dd5a1f data/c/tags/block/storage_blocks/graphite.json
+0b8bb9e94d63ac145eab1214fff4e4ca781218a9 data/c/tags/block/storage_blocks/uranium.json
+e003b266e3bdfff5f147439af29f873f333a983a data/minecraft/tags/block/mineable/pickaxe.json
+b00c2f90eec6345ae2c0f45cc9eb22a3d52fe0b5 data/minecraft/tags/block/needs_iron_tool.json

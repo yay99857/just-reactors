@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "top": "justreactors:block/reactor_control_rod",
+    "bottom": "justreactors:block/reactor_casing",
+    "side": "justreactors:block/reactor_casing"
+  }
+}

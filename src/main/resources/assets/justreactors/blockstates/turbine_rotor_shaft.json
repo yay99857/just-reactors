@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "axis=y,spinning=false": { "model": "justreactors:block/turbine_rotor_shaft" },
+    "axis=z,spinning=false": { "model": "justreactors:block/turbine_rotor_shaft", "x": 90 },
+    "axis=x,spinning=false": { "model": "justreactors:block/turbine_rotor_shaft", "x": 90, "y": 90 },
+    "axis=y,spinning=true":  { "model": "justreactors:block/empty" },
+    "axis=z,spinning=true":  { "model": "justreactors:block/empty" },
+    "axis=x,spinning=true":  { "model": "justreactors:block/empty" }
+  }
+}
