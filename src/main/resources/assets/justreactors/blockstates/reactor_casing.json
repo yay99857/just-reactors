@@ -1,7 +1,22 @@
 {
   "variants": {
-    "": {
+    "part=none": {
       "model": "justreactors:block/reactor_casing"
+    },
+    "part=base": {
+      "model": "justreactors:block/reactor_casing_base"
+    },
+    "part=pillar": {
+      "model": "justreactors:block/reactor_casing_pillar"
+    },
+    "part=top_edge": {
+      "model": "justreactors:block/reactor_casing_top_edge"
+    },
+    "part=corner": {
+      "model": "justreactors:block/reactor_casing_corner"
+    },
+    "part=panel": {
+      "model": "justreactors:block/reactor_casing_panel"
     }
   }
 }

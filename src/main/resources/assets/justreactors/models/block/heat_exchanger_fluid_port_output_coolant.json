@@ -1,6 +1,8 @@
 {
-  "parent": "minecraft:block/cube_all",
+  "parent": "justreactors:block/reactor_port_base",
   "textures": {
-    "all": "justreactors:block/heat_exchanger_fluid_port_output_coolant"
+    "particle": "justreactors:block/heat_exchanger_casing",
+    "casing": "justreactors:block/heat_exchanger_casing",
+    "port": "justreactors:block/heat_exchanger_fluid_port_output_coolant"
   }
 }

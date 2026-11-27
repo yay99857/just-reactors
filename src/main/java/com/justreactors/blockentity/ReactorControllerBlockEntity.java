@@ -2,7 +2,9 @@ package com.justreactors.blockentity;
 
 import com.justreactors.JustReactorsConfig;
 import com.justreactors.multiblock.AssembledMultiblocks;
+import com.justreactors.multiblock.MultiblockTrim;
 import com.justreactors.block.ReactorControllerBlock;
+import com.justreactors.block.ReactorFuelRodBlock;
 import com.justreactors.client.ClientMachineSounds;
 import com.justreactors.menu.ReactorControllerMenu;
 import com.justreactors.reactor.ReactorMode;
@@ -10,17 +12,20 @@ import com.justreactors.reactor.ReactorSimulation;
 import com.justreactors.reactor.ReactorStructure;
 import com.justreactors.reactor.ReactorValidator;
 import com.justreactors.registry.ModBlockEntities;
+import com.justreactors.registry.ModBlocks;
 import com.justreactors.registry.ModFluids;
 import com.justreactors.transfer.ReactorEnergyStorage;
 import com.justreactors.transfer.ReactorFluidTank;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -64,6 +69,10 @@ public class ReactorControllerBlockEntity extends BlockEntity implements MenuPro
     private boolean lastSyncedActive = false;
     private float lastSyncedFuelRatio = -1.0F;
     private float lastSyncedWasteRatio = -1.0F;
+    private float lastSyncedHeat = -1.0F;
+    private float lastSyncedActivity = -1.0F;
+    private boolean visualsApplied = false;
+    private boolean lastAppliedActive = false;
 
     // Client render & sound state
     private boolean clientAssembled = false;
@@ -74,7 +83,10 @@ public class ReactorControllerBlockEntity extends BlockEntity implements MenuPro
     private BlockPos clientMax;
     private float clientFuelRatio = 0.0F;
     private float clientWasteRatio = 0.0F;
+    private float clientFuelHeat = (float) ReactorSimulation.AMBIENT_TEMP;
+    private float clientActivity = 0.0F;
     private int[] clientFuelRodOffsets = new int[0];
+    private int[] clientControlRodOffsets = new int[0];
 
     public ReactorControllerBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.REACTOR_CONTROLLER.get(), pos, state);
@@ -93,6 +105,29 @@ public class ReactorControllerBlockEntity extends BlockEntity implements MenuPro
 
     public static void clientTick(Level level, BlockPos pos, BlockState state, ReactorControllerBlockEntity be) {
         ClientMachineSounds.tickReactorSound(be);
+        if (!be.clientAssembled || !be.clientActive) {
+            return;
+        }
+        RandomSource rand = level.getRandom();
+        if (be.clientFuelHeat >= 100.0F && be.clientControlRodOffsets.length >= 3) {
+            float heatFrac = Math.min(1.0F, (be.clientFuelHeat - 100.0F) / 1400.0F);
+            float smokeChance = 0.055F + 0.045F * heatFrac;
+            if (rand.nextFloat() < smokeChance) {
+                int idx = rand.nextInt(be.clientControlRodOffsets.length / 3) * 3;
+                double px = pos.getX() + be.clientControlRodOffsets[idx] + 0.5 + (rand.nextDouble() - 0.5) * 0.22;
+                double py = pos.getY() + be.clientControlRodOffsets[idx + 1] + 1.12;
+                double pz = pos.getZ() + be.clientControlRodOffsets[idx + 2] + 0.5 + (rand.nextDouble() - 0.5) * 0.22;
+                level.addParticle(ParticleTypes.CAMPFIRE_COSY_SMOKE, px, py, pz,
+                        (rand.nextDouble() - 0.5) * 0.006, 0.045, (rand.nextDouble() - 0.5) * 0.006);
+            }
+        }
+        if (be.clientFuelHeat >= 220.0F && be.clientFuelRodOffsets.length >= 3 && rand.nextInt(20) == 0) {
+            int idx = rand.nextInt(be.clientFuelRodOffsets.length / 3) * 3;
+            double px = pos.getX() + be.clientFuelRodOffsets[idx] + 0.25 + rand.nextDouble() * 0.5;
+            double py = pos.getY() + be.clientFuelRodOffsets[idx + 1] + 0.25 + rand.nextDouble() * 0.5;
+            double pz = pos.getZ() + be.clientFuelRodOffsets[idx + 2] + 0.25 + rand.nextDouble() * 0.5;
+            level.addParticle(ParticleTypes.GLOW, px, py, pz, 0.0, 0.01, 0.0);
+        }
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, ReactorControllerBlockEntity controller) {
@@ -191,6 +226,9 @@ public class ReactorControllerBlockEntity extends BlockEntity implements MenuPro
         }
 
         boolean visuallyActive = controller.simulation.isActive() && controller.simulation.getFuelMb() > 0.0001;
+        if (!controller.visualsApplied || visuallyActive != controller.lastAppliedActive) {
+            controller.applyStructureVisuals(level, s, visuallyActive);
+        }
         controller.updateBlockState(level, pos, state, true, visuallyActive);
         controller.syncClientRenderData(level, pos, level.getBlockState(pos));
 
@@ -205,17 +243,25 @@ public class ReactorControllerBlockEntity extends BlockEntity implements MenuPro
         int maxFuel = Math.max(1, getTotalFuelCapacityMb());
         float fuelRatio = assembled ? (float) Math.max(0.0, Math.min(1.0, this.simulation.getFuelMb() / maxFuel)) : 0.0F;
         float wasteRatio = assembled ? (float) Math.max(0.0, Math.min(1.0, this.simulation.getWasteMb() / maxFuel)) : 0.0F;
+        float fuelHeat = assembled ? (float) this.simulation.getFuelHeat() : (float) ReactorSimulation.AMBIENT_TEMP;
+        float activity = active && this.structure != null
+                ? (float) Math.max(0.0, 1.0 - getAverageControlRodInsertion(level, this.structure) / 100.0)
+                : 0.0F;
 
         boolean stateChanged = assembled != lastSyncedAssembled || active != lastSyncedActive;
         boolean fillChanged = (tickCounter % 10 == 0)
                 && (Math.abs(fuelRatio - lastSyncedFuelRatio) >= 0.01F
-                || Math.abs(wasteRatio - lastSyncedWasteRatio) >= 0.01F);
+                || Math.abs(wasteRatio - lastSyncedWasteRatio) >= 0.01F
+                || Math.abs(fuelHeat - lastSyncedHeat) >= 25.0F
+                || Math.abs(activity - lastSyncedActivity) >= 0.05F);
 
         if (stateChanged || fillChanged) {
             lastSyncedAssembled = assembled;
             lastSyncedActive = active;
             lastSyncedFuelRatio = fuelRatio;
             lastSyncedWasteRatio = wasteRatio;
+            lastSyncedHeat = fuelHeat;
+            lastSyncedActivity = activity;
             level.sendBlockUpdated(pos, state, state, Block.UPDATE_CLIENTS);
         }
     }
@@ -232,11 +278,16 @@ public class ReactorControllerBlockEntity extends BlockEntity implements MenuPro
             this.coolantTank.setCapacity(tankCap);
             this.steamTank.setCapacity(tankCap);
             linkParts(s);
+            boolean visuallyActive = this.simulation.isActive() && this.simulation.getFuelMb() > 0.0001;
+            applyStructureVisuals(level, s, visuallyActive);
             AssembledMultiblocks.put(level, worldPosition, s.min(), s.max());
             syncClientRenderData(level, worldPosition, getBlockState());
             return true;
         } else if (result instanceof ReactorValidator.Result.Invalid invalid) {
             unlinkParts();
+            if (this.structure != null) {
+                resetStructureVisuals(level, this.structure);
+            }
             this.structure = null;
             AssembledMultiblocks.remove(level, worldPosition);
             this.lastValidationError = invalid.reason();
@@ -244,6 +295,35 @@ public class ReactorControllerBlockEntity extends BlockEntity implements MenuPro
             return false;
         }
         return false;
+    }
+
+    private void applyStructureVisuals(Level level, ReactorStructure s, boolean active) {
+        MultiblockTrim.apply(level, s.min(), s.max(), ModBlocks.REACTOR_CASING.get());
+        for (BlockPos rp : s.fuelRodPositions()) {
+            BlockState st = level.getBlockState(rp);
+            if (st.getBlock() instanceof ReactorFuelRodBlock && st.getValue(ReactorFuelRodBlock.ACTIVE) != active) {
+                level.setBlock(rp, st.setValue(ReactorFuelRodBlock.ACTIVE, active), Block.UPDATE_CLIENTS);
+            }
+        }
+        for (BlockPos crPos : s.controlRods()) {
+            if (level.getBlockEntity(crPos) instanceof ReactorControlRodBlockEntity rod) {
+                rod.syncBlockLevel();
+            }
+        }
+        this.visualsApplied = true;
+        this.lastAppliedActive = active;
+    }
+
+    private void resetStructureVisuals(Level level, ReactorStructure s) {
+        MultiblockTrim.reset(level, s.min(), s.max(), ModBlocks.REACTOR_CASING.get());
+        for (BlockPos rp : s.fuelRodPositions()) {
+            BlockState st = level.getBlockState(rp);
+            if (st.getBlock() instanceof ReactorFuelRodBlock && st.getValue(ReactorFuelRodBlock.ACTIVE)) {
+                level.setBlock(rp, st.setValue(ReactorFuelRodBlock.ACTIVE, false), Block.UPDATE_CLIENTS);
+            }
+        }
+        this.visualsApplied = false;
+        this.lastAppliedActive = false;
     }
 
     private void linkParts(ReactorStructure s) {
@@ -470,6 +550,25 @@ public class ReactorControllerBlockEntity extends BlockEntity implements MenuPro
         return clientFuelRodOffsets;
     }
 
+    public float getClientFuelHeat() {
+        return clientFuelHeat;
+    }
+
+    public float getClientActivity() {
+        return clientActivity;
+    }
+
+    public int[] getClientControlRodOffsets() {
+        return clientControlRodOffsets;
+    }
+
+    /** Called from the block's onRemove (1.21.1 has no BlockEntity#preRemoveSideEffects). */
+    public void onControllerRemoved() {
+        if (level != null && !level.isClientSide() && structure != null) {
+            resetStructureVisuals(level, structure);
+        }
+    }
+
     @Override
     public void setRemoved() {
         if (level != null) AssembledMultiblocks.remove(level, worldPosition);
@@ -515,24 +614,34 @@ public class ReactorControllerBlockEntity extends BlockEntity implements MenuPro
         output.putDouble("Fertility", simulation.getFuelFertility());
 
         boolean assembled = structure != null;
+        boolean active = assembled && simulation.isActive() && simulation.getFuelMb() > 0.0001;
         output.putBoolean("SyncAssembled", assembled);
-        output.putBoolean("SyncActive", assembled && simulation.isActive() && simulation.getFuelMb() > 0.0001);
+        output.putBoolean("SyncActive", active);
         int maxFuel = Math.max(1, getTotalFuelCapacityMb());
         output.putDouble("SyncFuelRatio", assembled ? Math.max(0.0, Math.min(1.0, simulation.getFuelMb() / maxFuel)) : 0.0);
         output.putDouble("SyncWasteRatio", assembled ? Math.max(0.0, Math.min(1.0, simulation.getWasteMb() / maxFuel)) : 0.0);
+        output.putDouble("SyncFuelHeat", assembled ? simulation.getFuelHeat() : ReactorSimulation.AMBIENT_TEMP);
+        double syncActivity = (active && level != null && structure != null)
+                ? Math.max(0.0, 1.0 - getAverageControlRodInsertion(level, structure) / 100.0)
+                : 0.0;
+        output.putDouble("SyncActivity", syncActivity);
         if (structure != null) {
             output.putLong("SyncMin", structure.min().asLong());
             output.putLong("SyncMax", structure.max().asLong());
-            List<BlockPos> rods = structure.fuelRodPositions();
-            int[] offsets = new int[rods.size() * 3];
-            for (int i = 0; i < rods.size(); i++) {
-                BlockPos rp = rods.get(i);
-                offsets[i * 3] = rp.getX() - worldPosition.getX();
-                offsets[i * 3 + 1] = rp.getY() - worldPosition.getY();
-                offsets[i * 3 + 2] = rp.getZ() - worldPosition.getZ();
-            }
-            output.putIntArray("SyncFuelRods", offsets);
+            output.putIntArray("SyncFuelRods", encodeRelativeOffsets(structure.fuelRodPositions()));
+            output.putIntArray("SyncControlRods", encodeRelativeOffsets(structure.controlRods()));
         }
+    }
+
+    private int[] encodeRelativeOffsets(List<BlockPos> positions) {
+        int[] offsets = new int[positions.size() * 3];
+        for (int i = 0; i < positions.size(); i++) {
+            BlockPos rp = positions.get(i);
+            offsets[i * 3] = rp.getX() - worldPosition.getX();
+            offsets[i * 3 + 1] = rp.getY() - worldPosition.getY();
+            offsets[i * 3 + 2] = rp.getZ() - worldPosition.getZ();
+        }
+        return offsets;
     }
 
     @Override
@@ -560,6 +669,9 @@ public class ReactorControllerBlockEntity extends BlockEntity implements MenuPro
         this.clientMax = input.getLong("SyncMax").map(BlockPos::of).orElse(null);
         this.clientFuelRatio = (float) input.getDoubleOr("SyncFuelRatio", 0.0);
         this.clientWasteRatio = (float) input.getDoubleOr("SyncWasteRatio", 0.0);
+        this.clientFuelHeat = (float) input.getDoubleOr("SyncFuelHeat", ReactorSimulation.AMBIENT_TEMP);
+        this.clientActivity = (float) input.getDoubleOr("SyncActivity", 0.0);
         this.clientFuelRodOffsets = input.getIntArray("SyncFuelRods").orElse(new int[0]);
+        this.clientControlRodOffsets = input.getIntArray("SyncControlRods").orElse(new int[0]);
     }
 }

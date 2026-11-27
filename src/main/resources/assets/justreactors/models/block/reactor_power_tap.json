@@ -1,6 +1,6 @@
 {
-  "parent": "minecraft:block/cube_all",
+  "parent": "justreactors:block/reactor_port_base",
   "textures": {
-    "all": "justreactors:block/reactor_power_tap"
+    "port": "justreactors:block/reactor_power_tap"
   }
 }

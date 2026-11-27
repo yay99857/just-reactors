@@ -1,8 +1,8 @@
 package com.justreactors.turbine.block;
 
-import net.minecraft.world.level.block.TransparentBlock;
+import com.justreactors.multiblock.ConnectedGlassBlock;
 
-public class TurbineGlassBlock extends TransparentBlock {
+public class TurbineGlassBlock extends ConnectedGlassBlock {
     public TurbineGlassBlock(Properties properties) {
         super(properties);
     }

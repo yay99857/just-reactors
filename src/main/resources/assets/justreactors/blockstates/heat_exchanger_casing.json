@@ -1,7 +1,22 @@
 {
   "variants": {
-    "": {
+    "part=none": {
       "model": "justreactors:block/heat_exchanger_casing"
+    },
+    "part=base": {
+      "model": "justreactors:block/heat_exchanger_casing_base"
+    },
+    "part=pillar": {
+      "model": "justreactors:block/heat_exchanger_casing_pillar"
+    },
+    "part=top_edge": {
+      "model": "justreactors:block/heat_exchanger_casing_top_edge"
+    },
+    "part=corner": {
+      "model": "justreactors:block/heat_exchanger_casing_corner"
+    },
+    "part=panel": {
+      "model": "justreactors:block/heat_exchanger_casing_panel"
     }
   }
 }

@@ -1,6 +1,6 @@
 {
-  "parent": "minecraft:block/cube_all",
+  "parent": "justreactors:block/reactor_port_base_lit",
   "textures": {
-    "all": "justreactors:block/reactor_redstone_port_on"
+    "port": "justreactors:block/reactor_redstone_port_on"
   }
 }

@@ -321,6 +321,7 @@
   "jei.justreactors.info.battery_redstone_sensor": "Coloque na parede da bateria. Emite sinal quando a carga está acima ou abaixo de um limite, cheia ou vazia. Ligue numa Porta de Redstone do reator ou da turbina para gerar só quando a bateria precisar.",
   "jade.justreactors.battery.charge": "Carga: %s / %s FE (%s%%)",
   "jade.justreactors.battery.flow": "Entrada %s / Saída %s FE/t",
+  "config.jade.plugin_justreactors.reactor_info": "Just Reactors",
   "message.justreactors.carryon.assembled": "Máquinas montadas não podem ser carregadas. Desmonte a estrutura primeiro.",
 
   "gui.justreactors.mode.active_coolant": "ATIVO (Refrigerante)",

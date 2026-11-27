@@ -3,13 +3,16 @@ package com.justreactors.registry;
 import com.justreactors.JustReactors;
 import com.justreactors.block.CyaniteReprocessorBlock;
 import com.justreactors.block.ReactorAccessPortBlock;
+import com.justreactors.block.ReactorCasingBlock;
 import com.justreactors.block.ReactorControlRodBlock;
 import com.justreactors.block.ReactorControllerBlock;
 import com.justreactors.block.ReactorCoolantPortBlock;
+import com.justreactors.block.ReactorFuelRodBlock;
 import com.justreactors.block.ReactorGlassBlock;
 import com.justreactors.block.ReactorPartBlock;
 import com.justreactors.block.ReactorPowerTapBlock;
 import com.justreactors.block.ReactorRedstonePortBlock;
+import com.justreactors.turbine.block.TurbineCasingBlock;
 import com.justreactors.turbine.block.TurbineControllerBlock;
 import com.justreactors.turbine.block.TurbineFluidPortBlock;
 import com.justreactors.turbine.block.TurbineGlassBlock;
@@ -24,9 +27,10 @@ import com.justreactors.battery.BatteryPowerPortBlock;
 import com.justreactors.battery.BatteryRedstoneSensorBlock;
 import com.justreactors.exchanger.HeatExchangerFluidPortBlock;
 import com.justreactors.multiblock.BoxControllerBlock;
+import com.justreactors.multiblock.ConnectedGlassBlock;
+import com.justreactors.multiblock.MultiblockCasingBlock;
 
 import net.minecraft.util.valueproviders.UniformInt;
-import net.minecraft.world.level.block.TransparentBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.DropExperienceBlock;
 import net.minecraft.world.level.block.SoundType;
@@ -84,8 +88,8 @@ public final class ModBlocks {
                     .lightLevel(state -> state.getValue(CyaniteReprocessorBlock.LIT) ? 9 : 0));
 
     // Reactor multiblock parts
-    public static final DeferredBlock<ReactorPartBlock> REACTOR_CASING = BLOCKS.registerBlock("reactor_casing",
-            ReactorPartBlock::new,
+    public static final DeferredBlock<ReactorCasingBlock> REACTOR_CASING = BLOCKS.registerBlock("reactor_casing",
+            ReactorCasingBlock::new,
             JustReactors.reactorBlockProperties(4.0F, 8.0F));
 
     public static final DeferredBlock<ReactorGlassBlock> REACTOR_GLASS = BLOCKS.registerBlock("reactor_glass",
@@ -104,11 +108,11 @@ public final class ModBlocks {
             JustReactors.reactorBlockProperties(4.0F, 8.0F)
                     .lightLevel(state -> state.getValue(ReactorControllerBlock.ACTIVE) ? 10 : 0));
 
-    public static final DeferredBlock<ReactorPartBlock> REACTOR_FUEL_ROD = BLOCKS.registerBlock("reactor_fuel_rod",
-            ReactorPartBlock::new,
+    public static final DeferredBlock<ReactorFuelRodBlock> REACTOR_FUEL_ROD = BLOCKS.registerBlock("reactor_fuel_rod",
+            ReactorFuelRodBlock::new,
             JustReactors.reactorBlockProperties(3.5F, 6.0F)
                     .noOcclusion()
-                    .lightLevel(state -> 4));
+                    .lightLevel(state -> state.getValue(ReactorFuelRodBlock.ACTIVE) ? 14 : 3));
 
     public static final DeferredBlock<ReactorControlRodBlock> REACTOR_CONTROL_ROD = BLOCKS.registerBlock("reactor_control_rod",
             ReactorControlRodBlock::new,
@@ -131,8 +135,8 @@ public final class ModBlocks {
             JustReactors.reactorBlockProperties(4.0F, 8.0F));
 
     // Steam Turbine multiblock parts
-    public static final DeferredBlock<TurbinePartBlock> TURBINE_CASING = BLOCKS.registerBlock("turbine_casing",
-            TurbinePartBlock::new,
+    public static final DeferredBlock<TurbineCasingBlock> TURBINE_CASING = BLOCKS.registerBlock("turbine_casing",
+            TurbineCasingBlock::new,
             JustReactors.reactorBlockProperties(4.0F, 8.0F));
 
     public static final DeferredBlock<TurbineGlassBlock> TURBINE_GLASS = BLOCKS.registerBlock("turbine_glass",
@@ -157,11 +161,15 @@ public final class ModBlocks {
 
     public static final DeferredBlock<TurbineRotorShaftBlock> TURBINE_ROTOR_SHAFT = BLOCKS.registerBlock("turbine_rotor_shaft",
             TurbineRotorShaftBlock::new,
-            JustReactors.reactorBlockProperties(3.5F, 6.0F).noOcclusion());
+            JustReactors.reactorBlockProperties(3.5F, 6.0F)
+                    .noOcclusion()
+                    .lightLevel(state -> state.getValue(TurbineRotorShaftBlock.SPINNING) ? 14 : 0));
 
     public static final DeferredBlock<TurbineRotorBladeBlock> TURBINE_ROTOR_BLADE = BLOCKS.registerBlock("turbine_rotor_blade",
             TurbineRotorBladeBlock::new,
-            JustReactors.reactorBlockProperties(3.0F, 6.0F).noOcclusion());
+            JustReactors.reactorBlockProperties(3.0F, 6.0F)
+                    .noOcclusion()
+                    .lightLevel(state -> state.getValue(TurbineRotorBladeBlock.SPINNING) ? 12 : 0));
 
     public static final DeferredBlock<TurbineFluidPortBlock> TURBINE_FLUID_PORT = BLOCKS.registerBlock("turbine_fluid_port",
             TurbineFluidPortBlock::new,
@@ -176,12 +184,12 @@ public final class ModBlocks {
             JustReactors.reactorBlockProperties(4.0F, 8.0F));
 
     // Heat Exchanger multiblock parts
-    public static final DeferredBlock<Block> HEAT_EXCHANGER_CASING = BLOCKS.registerBlock("heat_exchanger_casing",
-            Block::new,
+    public static final DeferredBlock<MultiblockCasingBlock> HEAT_EXCHANGER_CASING = BLOCKS.registerBlock("heat_exchanger_casing",
+            MultiblockCasingBlock::new,
             JustReactors.reactorBlockProperties(4.0F, 8.0F));
 
-    public static final DeferredBlock<TransparentBlock> HEAT_EXCHANGER_GLASS = BLOCKS.registerBlock("heat_exchanger_glass",
-            TransparentBlock::new,
+    public static final DeferredBlock<ConnectedGlassBlock> HEAT_EXCHANGER_GLASS = BLOCKS.registerBlock("heat_exchanger_glass",
+            ConnectedGlassBlock::new,
             GLASS.get());
 
     public static final DeferredBlock<BoxControllerBlock> HEAT_EXCHANGER_CONTROLLER = BLOCKS.registerBlock("heat_exchanger_controller",
@@ -198,12 +206,12 @@ public final class ModBlocks {
             JustReactors.reactorBlockProperties(3.5F, 6.0F));
 
     // Battery multiblock parts
-    public static final DeferredBlock<Block> BATTERY_CASING = BLOCKS.registerBlock("battery_casing",
-            Block::new,
+    public static final DeferredBlock<MultiblockCasingBlock> BATTERY_CASING = BLOCKS.registerBlock("battery_casing",
+            MultiblockCasingBlock::new,
             JustReactors.reactorBlockProperties(4.0F, 8.0F));
 
-    public static final DeferredBlock<TransparentBlock> BATTERY_GLASS = BLOCKS.registerBlock("battery_glass",
-            TransparentBlock::new,
+    public static final DeferredBlock<ConnectedGlassBlock> BATTERY_GLASS = BLOCKS.registerBlock("battery_glass",
+            ConnectedGlassBlock::new,
             GLASS.get());
 
     public static final DeferredBlock<BoxControllerBlock> BATTERY_CONTROLLER = BLOCKS.registerBlock("battery_controller",

@@ -1,7 +1,22 @@
 {
   "variants": {
-    "": {
+    "part=none": {
       "model": "justreactors:block/turbine_casing"
+    },
+    "part=base": {
+      "model": "justreactors:block/turbine_casing_base"
+    },
+    "part=pillar": {
+      "model": "justreactors:block/turbine_casing_pillar"
+    },
+    "part=top_edge": {
+      "model": "justreactors:block/turbine_casing_top_edge"
+    },
+    "part=corner": {
+      "model": "justreactors:block/turbine_casing_corner"
+    },
+    "part=panel": {
+      "model": "justreactors:block/turbine_casing_panel"
     }
   }
 }
