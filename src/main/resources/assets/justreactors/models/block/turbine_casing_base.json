@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "top": "justreactors:block/turbine_casing",
+    "bottom": "justreactors:block/turbine_casing",
+    "side": "justreactors:block/turbine_casing_base"
+  }
+}

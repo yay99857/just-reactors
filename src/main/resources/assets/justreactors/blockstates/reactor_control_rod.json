@@ -1,7 +1,8 @@
 {
   "variants": {
-    "": {
-      "model": "justreactors:block/reactor_control_rod"
-    }
+    "level=0": { "model": "justreactors:block/reactor_control_rod_0" },
+    "level=1": { "model": "justreactors:block/reactor_control_rod_1" },
+    "level=2": { "model": "justreactors:block/reactor_control_rod_2" },
+    "level=3": { "model": "justreactors:block/reactor_control_rod_3" }
   }
 }

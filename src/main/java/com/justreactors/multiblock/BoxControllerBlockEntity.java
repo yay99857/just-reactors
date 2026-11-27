@@ -23,6 +23,7 @@ public abstract class BoxControllerBlockEntity extends BlockEntity implements Me
     @Nullable
     private Component lastValidationError;
     protected int tickCounter;
+    private boolean trimApplied = false;
 
     protected BoxControllerBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -54,10 +55,18 @@ public abstract class BoxControllerBlockEntity extends BlockEntity implements Me
         BoxValidator.Result result = BoxValidator.validate(level, worldPosition, spec());
         if (result instanceof BoxValidator.Result.Valid valid) {
             boolean first = scan == null;
-            if (!first && !scan.equals(valid.scan())) unlinkParts();
+            boolean changed = !first && !scan.equals(valid.scan());
+            if (changed) {
+                unlinkParts();
+                MultiblockTrim.reset(level, scan.min(), scan.max(), spec().casing().get());
+            }
             scan = valid.scan();
             lastValidationError = null;
             linkParts(scan);
+            if (first || changed || !trimApplied) {
+                MultiblockTrim.apply(level, scan.min(), scan.max(), spec().casing().get());
+                trimApplied = true;
+            }
             AssembledMultiblocks.put(level, worldPosition, scan.min(), scan.max());
             onAssembled(scan, first);
             return true;
@@ -65,12 +74,23 @@ public abstract class BoxControllerBlockEntity extends BlockEntity implements Me
         Component reason = ((BoxValidator.Result.Invalid) result).reason();
         if (scan != null) {
             unlinkParts();
+            MultiblockTrim.reset(level, scan.min(), scan.max(), spec().casing().get());
+            trimApplied = false;
             scan = null;
             onDisassembled();
         }
         AssembledMultiblocks.remove(level, worldPosition);
         lastValidationError = reason;
         return false;
+    }
+
+    @Override
+    public void preRemoveSideEffects(BlockPos pos, BlockState state) {
+        if (level != null && !level.isClientSide() && scan != null) {
+            MultiblockTrim.reset(level, scan.min(), scan.max(), spec().casing().get());
+            trimApplied = false;
+        }
+        super.preRemoveSideEffects(pos, state);
     }
 
     private void linkParts(BoxValidator.Scan s) {

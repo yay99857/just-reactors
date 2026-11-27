@@ -4,18 +4,19 @@ Standalone multiblock nuclear fission reactor & steam turbine mod inspired by **
 
 ![A 5x5x5 active reactor feeding a 5x7x5 steam turbine](docs/screenshots/overview.png)
 
-| ![The turbine rotor spinning behind the glass](docs/screenshots/turbine.gif) | ![Fuel rods behind the reactor glass](docs/screenshots/reactor_glass.png) |
+| ![Active fuel rods pulsing behind the reactor glass](docs/screenshots/reactor.gif) | ![The turbine rotor spinning behind the glass](docs/screenshots/turbine.gif) |
 |:---:|:---:|
+| ![Heat Exchanger and Battery](docs/screenshots/exchanger_battery.png) | ![Active Reactor and Turbine at night](docs/screenshots/overview_night.png) |
 | ![Reactor Controller](docs/screenshots/reactor_controller.png) | ![Turbine Controller](docs/screenshots/turbine_controller.png) |
 
 ## Features
 - **Free-form Multiblock Reactors (`3×3×3` to `32×32×32`, configurable):**
   - **Passive Mode (FE):** Generates Forge Energy directly via `Reactor Power Tap`.
   - **Active-Cooled Mode (Steam):** Add `Reactor Coolant Port`s (Water Inlet / Steam Outlet) to boil Water into **Steam** for Steam Turbines, complete with a controller mode indicator.
-  - **Live Fuel Rod Rendering:** Each `Fuel Rod` visually displays stacked **Uranium** and **Cyanite** fill levels inside the reactor glass.
+  - **Live 3D Core & Multiblock Visuals:** Copper-collared 3D `Fuel Rod` cages render live **Uranium** / **Cyanite** fill levels with an animated top-to-bottom fission light pulse, dynamic 4-stage `Control Rod` pistons with rising steam wisps, recessed 3D ports/consoles, seamless connected optical glass, and context-aware casing trim.
 - **Animated Steam Turbine Multiblock (`5×4×5`+):**
-  - Build custom turbines with `Turbine Casing`, `Turbine Glass`, `Turbine Rotor Bearing`, `Turbine Rotor Shaft`, `Turbine Rotor Blade`, `Turbine Fluid Port` (Steam Inlet / condensed Water Outlet), `Turbine Power Tap`, `Turbine Redstone Port`, and electromagnetic coils.
-  - Includes a spinning 3D rotor renderer, classic ER2 dual-peak RPM efficiency curve (`900` / `1,800 RPM`), flow rate, coil engagement & condensed water Vent controls (`Overflow`, `All`, `Disabled`), and continuous RPM-scaled looping audio.
+  - Build custom turbines with `Turbine Casing`, connected `Turbine Glass`, `Turbine Rotor Bearing`, `Turbine Rotor Shaft`, `Turbine Rotor Blade`, `Turbine Fluid Port` (Steam Inlet / condensed Water Outlet), `Turbine Power Tap`, `Turbine Redstone Port`, and electromagnetic coils.
+  - Includes a spinning 3D rotor renderer with glowing electromagnetic induction halos, illuminated night rotor, electric sparks, classic ER2 dual-peak RPM efficiency curve (`900` / `1,800 RPM`), flow rate, coil engagement & condensed water Vent controls (`Overflow`, `All`, `Disabled`), and continuous RPM-scaled looping audio.
 - **Closed Coolant Loop & Heat Exchanger (`3×3×3`+):**
   - Fill a reactor's `Reactor Coolant Port` with **Coolant** instead of Water: each mB carries 4× the heat and leaves as **Hot Coolant**.
   - The `Heat Exchanger` multiblock (`Casing`, `Glass`, `Controller`, `Fluid Port`s, `Heat Exchanger Tube`s inside) cools Hot Coolant back into Coolant and boils Water into Steam — 5 mB of Steam per mB, 25% more than boiling water in the reactor directly.

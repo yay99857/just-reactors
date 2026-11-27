@@ -148,7 +148,7 @@ public final class ShotDirector {
                 }
             }
         }
-        level.setBlock(o.offset(size / 2, size / 2, 0), controller.defaultBlockState(), Block.UPDATE_ALL);
+        level.setBlock(o.offset(size / 2, 1, 0), controller.defaultBlockState(), Block.UPDATE_ALL);
     }
 
     private static BlockPos exchangerOrigin() {
@@ -183,14 +183,14 @@ public final class ShotDirector {
 
     private static void fillNewMachines(ServerPlayer p) {
         ServerLevel level = p.level();
-        if (level.getBlockEntity(exchangerOrigin().offset(2, 2, 0)) instanceof com.justreactors.exchanger.HeatExchangerControllerBlockEntity ex
+        if (level.getBlockEntity(exchangerOrigin().offset(2, 1, 0)) instanceof com.justreactors.exchanger.HeatExchangerControllerBlockEntity ex
                 && ex.tryAssemble()) {
             ex.getHotTank().fillInternal(new net.neoforged.neoforge.fluids.FluidStack(com.justreactors.registry.ModFluids.HOT_COOLANT_SOURCE.get(), 40_000));
             ex.getWaterTank().fillInternal(new net.neoforged.neoforge.fluids.FluidStack(net.minecraft.world.level.material.Fluids.WATER, 70_000));
         } else {
             LOG.warn("shots: heat exchanger did not assemble");
         }
-        if (level.getBlockEntity(batteryOrigin().offset(2, 2, 0)) instanceof com.justreactors.battery.BatteryControllerBlockEntity bat
+        if (level.getBlockEntity(batteryOrigin().offset(2, 1, 0)) instanceof com.justreactors.battery.BatteryControllerBlockEntity bat
                 && bat.tryAssemble()) {
             bat.getEnergyStorage().generateEnergy((int) (bat.getEnergyStorage().getMaxEnergyStored() * 0.62));
         } else {
@@ -255,6 +255,7 @@ public final class ShotDirector {
     }
 
     private static final int GIF_FRAMES = 48;
+    private static final int REACTOR_GIF_FRAMES = 36;
 
     private static void build(Minecraft mc) {
         add(1, () -> server(ShotDirector::setup));
@@ -271,6 +272,10 @@ public final class ShotDirector {
             // the reactor's west glass with the fuel rods
             add(5, () -> server(p -> look(p, -3, 2.2, 4.5, 3.5, 3, 4.5)));
             add(60, () -> shot("reactor_glass"));
+            for (int i = 0; i < REACTOR_GIF_FRAMES; i++) {
+                final int frame = i;
+                add(1, () -> shot(String.format("reactor_gif_%02d", frame)));
+            }
             // the reactor from the corner
             add(5, () -> server(p -> look(p, -3.5, 5.5, -3.5, 3.5, 3, 4.5)));
             add(60, () -> shot("reactor"));
@@ -328,14 +333,14 @@ public final class ShotDirector {
         add(60, () -> shot("exchanger_battery"));
         add(5, () -> hideHud(mc, false));
         ui(mc, "ui_heat_exchanger", p -> {
-            look(p, 18.5, 1, -1.5, 18.5, 3, 2);
-            openMenu(p, exchangerOrigin().offset(2, 2, 0));
+            look(p, 18.5, 1, -1.5, 18.5, 2, 2);
+            openMenu(p, exchangerOrigin().offset(2, 1, 0));
         });
         add(10, () -> hover(mc, 244, 176, 200, 36));
         add(20, () -> shot("ui_heat_exchanger_status"));
         ui(mc, "ui_battery", p -> {
-            look(p, 25.5, 1, -1.5, 25.5, 3, 2);
-            openMenu(p, batteryOrigin().offset(2, 2, 0));
+            look(p, 25.5, 1, -1.5, 25.5, 2, 2);
+            openMenu(p, batteryOrigin().offset(2, 1, 0));
         });
         ui(mc, "ui_battery_sensor", p -> {
             look(p, 29.5, 2, 4.5, 27, 4, 4.5);
@@ -364,21 +369,41 @@ public final class ShotDirector {
         ui(mc, "ui_reactor_redstone", p -> openMenu(p, loose(0)));
         ui(mc, "ui_turbine_redstone", p -> openMenu(p, loose(1)));
         ui(mc, "ui_reprocessor", p -> openMenu(p, loose(2)));
-        add(5, () -> mc.gui.setScreen(null));
+        add(5, () -> {
+            mc.gui.setScreen(null);
+            server(p -> {
+                for (int i = 0; i < 3; i++) p.level().setBlock(loose(i), Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
+            });
+        });
         if (!UI_ONLY) {
             // GIF: the rotor spinning, straight through the turbine's front glass, one frame per tick
             add(5, () -> {
                 hideHud(mc, true);
-                server(p -> look(p, 10.5, 2.0, -1.8, 10.5, 3.8, 4.5));
+                server(p -> {
+                    look(p, 10.5, 2.0, -1.8, 10.5, 3.8, 4.5);
+                    if (p.level().getBlockEntity(demo.turbineControllerPos()) instanceof com.justreactors.turbine.blockentity.TurbineControllerBlockEntity turbine) {
+                        turbine.setMaxSteamFlowMb(400);
+                        turbine.getSteamTank().setFluid(new net.neoforged.neoforge.fluids.FluidStack(com.justreactors.registry.ModFluids.STEAM_SOURCE.get(), 32_000));
+                        turbine.getSimulation().setRotorEnergy(180_000.0);
+                        turbine.setActive(true);
+                    }
+                });
             });
             for (int i = 0; i < GIF_FRAMES; i++) {
                 final int frame = i;
-                add(i == 0 ? 60 : 1, () -> shot(String.format("gif_%02d", frame)));
+                add(i == 0 ? 15 : 1, () -> shot(String.format("gif_%02d", frame)));
             }
             // night, closer, so the glass glow reads
-            add(10, () -> server(p -> cmd(p, "time set 18000")));
+            add(10, () -> server(p -> {
+                cmd(p, "time set 18000");
+                if (p.level().getBlockEntity(demo.turbineControllerPos()) instanceof com.justreactors.turbine.blockentity.TurbineControllerBlockEntity turbine) {
+                    turbine.getSteamTank().setFluid(new net.neoforged.neoforge.fluids.FluidStack(com.justreactors.registry.ModFluids.STEAM_SOURCE.get(), 32_000));
+                    turbine.getSimulation().setRotorEnergy(180_000.0);
+                    turbine.setActive(true);
+                }
+            }));
             add(10, () -> server(p -> look(p, 1, 8.5, -6.5, 7, 2.5, 4)));
-            add(80, () -> shot("overview_night"));
+            add(30, () -> shot("overview_night"));
         }
         add(20, () -> LOG.info("shots done"));
         add(20, () -> Minecraft.getInstance().stop());

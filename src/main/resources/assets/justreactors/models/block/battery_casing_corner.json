@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "top": "justreactors:block/battery_casing",
+    "bottom": "justreactors:block/battery_casing",
+    "side": "justreactors:block/battery_casing_corner"
+  }
+}

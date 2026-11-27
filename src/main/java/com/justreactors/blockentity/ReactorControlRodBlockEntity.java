@@ -1,5 +1,6 @@
 package com.justreactors.blockentity;
 
+import com.justreactors.block.ReactorControlRodBlock;
 import com.justreactors.menu.ReactorControlRodMenu;
 import com.justreactors.registry.ModBlockEntities;
 
@@ -9,6 +10,7 @@ import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
@@ -21,6 +23,13 @@ public class ReactorControlRodBlockEntity extends ReactorPartBlockEntity impleme
         super(ModBlockEntities.REACTOR_CONTROL_ROD.get(), pos, state);
     }
 
+    public static int levelForInsertion(int insertion) {
+        if (insertion >= 75) return 3;
+        if (insertion >= 50) return 2;
+        if (insertion >= 25) return 1;
+        return 0;
+    }
+
     public int getInsertion() {
         return insertion;
     }
@@ -30,7 +39,23 @@ public class ReactorControlRodBlockEntity extends ReactorPartBlockEntity impleme
         if (this.insertion != clamped) {
             this.insertion = clamped;
             setChanged();
+            syncBlockLevel();
         }
+    }
+
+    public void syncBlockLevel() {
+        if (level == null || level.isClientSide()) return;
+        BlockState st = getBlockState();
+        int target = levelForInsertion(insertion);
+        if (st.hasProperty(ReactorControlRodBlock.LEVEL) && st.getValue(ReactorControlRodBlock.LEVEL) != target) {
+            level.setBlock(worldPosition, st.setValue(ReactorControlRodBlock.LEVEL, target), Block.UPDATE_CLIENTS);
+        }
+    }
+
+    @Override
+    public void onLoad() {
+        super.onLoad();
+        syncBlockLevel();
     }
 
     public void applyToAllRods() {
