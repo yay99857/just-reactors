@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "C": {
+      "item": "justreactors:heat_exchanger_casing"
+    },
+    "G": {
+      "tag": "forge:glass"
+    }
+  },
+  "pattern": [
+    "GCG"
+  ],
+  "result": {
+    "item": "justreactors:heat_exchanger_glass",
+    "count": 2
+  }
+}

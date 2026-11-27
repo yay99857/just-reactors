@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "charge=0": {
+      "model": "justreactors:block/battery_cell_0"
+    },
+    "charge=1": {
+      "model": "justreactors:block/battery_cell_1"
+    },
+    "charge=2": {
+      "model": "justreactors:block/battery_cell_2"
+    },
+    "charge=3": {
+      "model": "justreactors:block/battery_cell_3"
+    },
+    "charge=4": {
+      "model": "justreactors:block/battery_cell_4"
+    }
+  }
+}

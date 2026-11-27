@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "powered=false": {
+      "model": "justreactors:block/battery_redstone_sensor_off"
+    },
+    "powered=true": {
+      "model": "justreactors:block/battery_redstone_sensor_on"
+    }
+  }
+}

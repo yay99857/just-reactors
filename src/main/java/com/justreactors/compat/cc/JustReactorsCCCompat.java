@@ -20,6 +20,10 @@ public final class JustReactorsCCCompat {
             BlockEntity be = level.getBlockEntity(pos);
             if (be instanceof ReactorControllerBlockEntity reactor) return LazyOptional.of(() -> new ReactorPeripheral(reactor));
             if (be instanceof TurbineControllerBlockEntity turbine) return LazyOptional.of(() -> new TurbinePeripheral(turbine));
+            if (be instanceof com.justreactors.exchanger.HeatExchangerControllerBlockEntity ex)
+                return LazyOptional.of(() -> new HeatExchangerPeripheral(ex));
+            if (be instanceof com.justreactors.battery.BatteryControllerBlockEntity bat)
+                return LazyOptional.of(() -> new BatteryPeripheral(bat));
             return LazyOptional.empty();
         });
     }

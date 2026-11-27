@@ -2,6 +2,7 @@ package com.justreactors.blockentity;
 
 import net.minecraft.world.phys.AABB;
 import com.justreactors.JustReactorsConfig;
+import com.justreactors.multiblock.AssembledMultiblocks;
 import com.justreactors.block.ReactorControllerBlock;
 import com.justreactors.client.ClientMachineSounds;
 import com.justreactors.menu.ReactorControllerMenu;
@@ -55,6 +56,9 @@ public class ReactorControllerBlockEntity extends BlockEntity implements MenuPro
     @Nullable
     private Component lastValidationError;
     private int tickCounter = 0;
+    /** Heat (in mB of steam) not yet turned into a whole mB of Hot Coolant. */
+    private int coolantRemainder = 0;
+    private int lastHotCoolantMb = 0;
 
     // Server sync tracking
     private boolean lastSyncedAssembled = false;
@@ -81,8 +85,11 @@ public class ReactorControllerBlockEntity extends BlockEntity implements MenuPro
                 this::setChanged
         );
         int defaultTank = Math.max(10_000, JustReactorsConfig.get(JustReactorsConfig.COOLANT_TANK_PER_ROD_MB));
-        this.coolantTank = new ReactorFluidTank(defaultTank, stack -> stack.getFluid().isSame(Fluids.WATER), this::setChanged);
-        this.steamTank = new ReactorFluidTank(defaultTank, stack -> stack.getFluid().isSame(ModFluids.STEAM_SOURCE.get()), this::setChanged);
+        // Coolant side holds Water (boiled to Steam) or reusable Coolant (heated to Hot Coolant).
+        this.coolantTank = new ReactorFluidTank(defaultTank,
+                stack -> stack.getFluid().isSame(Fluids.WATER) || ModFluids.isCoolant(stack.getFluid()), this::setChanged);
+        this.steamTank = new ReactorFluidTank(defaultTank,
+                stack -> stack.getFluid().isSame(ModFluids.STEAM_SOURCE.get()) || ModFluids.isHotCoolant(stack.getFluid()), this::setChanged);
     }
 
     public static void clientTick(Level level, BlockPos pos, BlockState state, ReactorControllerBlockEntity be) {
@@ -112,13 +119,20 @@ public class ReactorControllerBlockEntity extends BlockEntity implements MenuPro
         // 2. Average control rod insertion
         double avgInsertion = controller.getAverageControlRodInsertion(level, s);
 
-        // 3. Run ER2-style fission simulation
+        // 3. Run ER2-style fission simulation. With Coolant, each mB carries `ratio` mB of steam worth of heat.
+        boolean usingCoolant = controller.isUsingCoolant();
+        int ratio = usingCoolant ? JustReactorsConfig.get(JustReactorsConfig.COOLANT_HEAT_RATIO) : 1;
+        FluidStack hotOut = controller.steamTank.getFluid();
+        boolean outputMatches = hotOut.isEmpty() || (usingCoolant
+                ? ModFluids.isHotCoolant(hotOut.getFluid()) : hotOut.getFluid().isSame(ModFluids.STEAM_SOURCE.get()));
+        int outputSpace = outputMatches ? controller.steamTank.getSpace() : 0;
         ReactorSimulation.TickOutput output = controller.simulation.tick(
                 s,
                 avgInsertion,
                 controller.energyStorage.getSpace(),
-                controller.coolantTank.getFluidAmount(),
-                controller.steamTank.getSpace(),
+                (int) Math.min(Integer.MAX_VALUE, (long) controller.coolantTank.getFluidAmount() * ratio),
+                (int) Math.max(0, Math.min(Integer.MAX_VALUE,
+                        (long) outputSpace * ratio - (usingCoolant ? controller.coolantRemainder : 0))),
                 JustReactorsConfig.get(JustReactorsConfig.POWER_PRODUCTION_MULTIPLIER),
                 JustReactorsConfig.get(JustReactorsConfig.STEAM_PRODUCTION_MULTIPLIER),
                 JustReactorsConfig.get(JustReactorsConfig.FUEL_USAGE_MULTIPLIER)
@@ -126,9 +140,22 @@ public class ReactorControllerBlockEntity extends BlockEntity implements MenuPro
         if (output.generatedFe() > 0) {
             controller.energyStorage.generateEnergy(output.generatedFe());
         }
+        controller.lastHotCoolantMb = 0;
         if (output.steamProducedMb() > 0) {
-            controller.coolantTank.drainInternal(output.steamProducedMb());
-            controller.steamTank.fillInternal(new FluidStack(ModFluids.STEAM_SOURCE.get(), output.steamProducedMb()));
+            if (usingCoolant) {
+                // Heat is carried away in whole mB of Hot Coolant; the fraction is kept for the next tick.
+                int heated = output.steamProducedMb() + controller.coolantRemainder;
+                int mb = heated / ratio;
+                controller.coolantRemainder = heated % ratio;
+                controller.lastHotCoolantMb = mb;
+                if (mb > 0) {
+                    controller.coolantTank.drainInternal(mb);
+                    controller.steamTank.fillInternal(new FluidStack(ModFluids.HOT_COOLANT_SOURCE.get(), mb));
+                }
+            } else {
+                controller.coolantTank.drainInternal(output.steamProducedMb());
+                controller.steamTank.fillInternal(new FluidStack(ModFluids.STEAM_SOURCE.get(), output.steamProducedMb()));
+            }
         }
 
         // 4. Push FE out through all linked Power Taps (Passive mode)
@@ -206,11 +233,13 @@ public class ReactorControllerBlockEntity extends BlockEntity implements MenuPro
             this.coolantTank.setCapacity(tankCap);
             this.steamTank.setCapacity(tankCap);
             linkParts(s);
+            AssembledMultiblocks.put(level, worldPosition, s.min(), s.max());
             syncClientRenderData(level, worldPosition, getBlockState());
             return true;
         } else if (result instanceof ReactorValidator.Result.Invalid invalid) {
             unlinkParts();
             this.structure = null;
+            AssembledMultiblocks.remove(level, worldPosition);
             this.lastValidationError = invalid.reason();
             syncClientRenderData(level, worldPosition, getBlockState());
             return false;
@@ -375,6 +404,25 @@ public class ReactorControllerBlockEntity extends BlockEntity implements MenuPro
         return energyStorage;
     }
 
+    public int getLastHotCoolantMb() {
+        return lastHotCoolantMb;
+    }
+
+    /** True while the reactor runs on the reusable Coolant loop (either tank holds coolant). */
+    public boolean isCoolantLoop() {
+        return isUsingCoolant() || isOutputHotCoolant();
+    }
+
+    /** True when the coolant tank holds reusable Coolant instead of Water. */
+    public boolean isUsingCoolant() {
+        return !coolantTank.isEmpty() && ModFluids.isCoolant(coolantTank.getFluid().getFluid());
+    }
+
+    /** True when the output tank holds Hot Coolant instead of Steam. */
+    public boolean isOutputHotCoolant() {
+        return !steamTank.isEmpty() && ModFluids.isHotCoolant(steamTank.getFluid().getFluid());
+    }
+
     public ReactorFluidTank getCoolantTank() {
         return coolantTank;
     }
@@ -424,6 +472,12 @@ public class ReactorControllerBlockEntity extends BlockEntity implements MenuPro
     }
 
     @Override
+    public void setRemoved() {
+        if (level != null) AssembledMultiblocks.remove(level, worldPosition);
+        super.setRemoved();
+    }
+
+    @Override
     public Component getDisplayName() {
         return Component.translatable("block.justreactors.reactor_controller");
     }
@@ -450,7 +504,9 @@ public class ReactorControllerBlockEntity extends BlockEntity implements MenuPro
         super.saveAdditional(tag);
         ValueOutput output = new ValueOutput(tag);
         energyStorage.serialize(output);
+        output.putInt("TankCapacity", coolantTank.getCapacity());
         coolantTank.save(output, "CoolantTank");
+        output.putInt("CoolantRemainder", coolantRemainder);
         steamTank.save(output, "SteamTank");
         output.putBoolean("Active", simulation.isActive());
         output.putDouble("FuelMb", simulation.getFuelMb());
@@ -485,7 +541,12 @@ public class ReactorControllerBlockEntity extends BlockEntity implements MenuPro
         super.load(tag);
         ValueInput input = new ValueInput(tag);
         energyStorage.deserialize(input);
+        // Restore the structure-sized capacity before the amounts, or large tanks would be clamped on reload.
+        int savedCap = input.getIntOr("TankCapacity", coolantTank.getCapacity());
+        coolantTank.setCapacity(savedCap);
+        steamTank.setCapacity(savedCap);
         coolantTank.load(input, "CoolantTank");
+        coolantRemainder = Math.max(0, input.getIntOr("CoolantRemainder", 0));
         steamTank.load(input, "SteamTank");
         simulation.setActive(input.getBooleanOr("Active", false));
         simulation.setFuelMb(input.getDoubleOr("FuelMb", 0.0));

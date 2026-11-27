@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "I": {
+      "tag": "forge:ingots/iron"
+    },
+    "R": {
+      "tag": "forge:dusts/redstone"
+    }
+  },
+  "pattern": [
+    "IRI",
+    "R R",
+    "IRI"
+  ],
+  "result": {
+    "item": "justreactors:battery_casing",
+    "count": 4
+  }
+}

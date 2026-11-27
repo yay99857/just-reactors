@@ -1,0 +1,26 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "C": {
+      "item": "justreactors:battery_casing"
+    },
+    "G": {
+      "tag": "forge:ingots/gold"
+    },
+    "R": {
+      "tag": "forge:dusts/redstone"
+    },
+    "X": {
+      "item": "minecraft:comparator"
+    }
+  },
+  "pattern": [
+    "CGC",
+    "RXR",
+    "CGC"
+  ],
+  "result": {
+    "item": "justreactors:battery_controller"
+  }
+}

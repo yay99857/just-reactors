@@ -40,6 +40,21 @@ public final class ModCreativeTabs {
                         output.accept(ModBlocks.TURBINE_POWER_TAP.get());
                         output.accept(ModBlocks.TURBINE_REDSTONE_PORT.get());
 
+                        // Heat Exchanger parts
+                        output.accept(ModBlocks.HEAT_EXCHANGER_CONTROLLER.get());
+                        output.accept(ModBlocks.HEAT_EXCHANGER_CASING.get());
+                        output.accept(ModBlocks.HEAT_EXCHANGER_GLASS.get());
+                        output.accept(ModBlocks.HEAT_EXCHANGER_TUBE.get());
+                        output.accept(ModBlocks.HEAT_EXCHANGER_FLUID_PORT.get());
+
+                        // Battery parts
+                        output.accept(ModBlocks.BATTERY_CONTROLLER.get());
+                        output.accept(ModBlocks.BATTERY_CASING.get());
+                        output.accept(ModBlocks.BATTERY_GLASS.get());
+                        output.accept(ModBlocks.BATTERY_CELL.get());
+                        output.accept(ModBlocks.BATTERY_POWER_PORT.get());
+                        output.accept(ModBlocks.BATTERY_REDSTONE_SENSOR.get());
+
                         // Reprocessing & materials
                         output.accept(ModBlocks.CYANITE_REPROCESSOR.get());
                         output.accept(ModItems.RAW_URANIUM.get());
@@ -48,6 +63,8 @@ public final class ModCreativeTabs {
                         output.accept(ModItems.CYANITE_INGOT.get());
                         output.accept(ModItems.BLUTONIUM_INGOT.get());
                         output.accept(ModItems.STEAM_BUCKET.get());
+                        output.accept(ModItems.COOLANT_BUCKET.get());
+                        output.accept(ModItems.HOT_COOLANT_BUCKET.get());
 
                         output.accept(ModBlocks.URANIUM_ORE.get());
                         output.accept(ModBlocks.DEEPSLATE_URANIUM_ORE.get());

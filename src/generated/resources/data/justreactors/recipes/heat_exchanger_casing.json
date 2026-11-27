@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "I": {
+      "tag": "forge:ingots/iron"
+    },
+    "K": {
+      "tag": "forge:ingots/copper"
+    }
+  },
+  "pattern": [
+    "IKI",
+    "K K",
+    "IKI"
+  ],
+  "result": {
+    "item": "justreactors:heat_exchanger_casing",
+    "count": 4
+  }
+}

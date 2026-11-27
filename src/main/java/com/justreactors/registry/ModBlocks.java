@@ -1,5 +1,6 @@
 package com.justreactors.registry;
 
+import net.minecraft.world.level.block.GlassBlock;
 import com.justreactors.JustReactors;
 import com.justreactors.block.CyaniteReprocessorBlock;
 import com.justreactors.block.ReactorAccessPortBlock;
@@ -19,6 +20,12 @@ import com.justreactors.turbine.block.TurbineRedstonePortBlock;
 import com.justreactors.turbine.block.TurbineRotorBladeBlock;
 import com.justreactors.turbine.block.TurbineRotorShaftBlock;
 
+import com.justreactors.battery.BatteryCellBlock;
+import com.justreactors.battery.BatteryPowerPortBlock;
+import com.justreactors.battery.BatteryRedstoneSensorBlock;
+import com.justreactors.exchanger.HeatExchangerFluidPortBlock;
+import com.justreactors.multiblock.BoxControllerBlock;
+
 import net.minecraft.core.registries.Registries;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.level.block.Block;
@@ -37,6 +44,15 @@ public final class ModBlocks {
                                                                      BlockBehaviour.Properties properties) {
         return BLOCKS.register(name, () -> factory.apply(properties));
     }
+
+    private static final java.util.function.Supplier<BlockBehaviour.Properties> GLASS = () -> BlockBehaviour.Properties.of()
+                    .strength(3.0F, 6.0F)
+                    .sound(SoundType.GLASS)
+                    .noOcclusion()
+                    .isValidSpawn((s, l, p, e) -> false)
+                    .isRedstoneConductor((s, l, p) -> false)
+                    .isSuffocating((s, l, p) -> false)
+                    .requiresCorrectToolForDrops();
 
     // Ores & storage blocks
     public static final RegistryObject<Block> URANIUM_ORE = registerBlock("uranium_ore",
@@ -166,6 +182,55 @@ public final class ModBlocks {
     public static final RegistryObject<TurbineRedstonePortBlock> TURBINE_REDSTONE_PORT = registerBlock("turbine_redstone_port",
             TurbineRedstonePortBlock::new,
             JustReactors.reactorBlockProperties(4.0F, 8.0F));
+
+    // Heat Exchanger multiblock parts
+    public static final RegistryObject<Block> HEAT_EXCHANGER_CASING = registerBlock("heat_exchanger_casing",
+            Block::new,
+            JustReactors.reactorBlockProperties(4.0F, 8.0F));
+
+    public static final RegistryObject<GlassBlock> HEAT_EXCHANGER_GLASS = registerBlock("heat_exchanger_glass",
+            GlassBlock::new,
+            GLASS.get());
+
+    public static final RegistryObject<BoxControllerBlock> HEAT_EXCHANGER_CONTROLLER = registerBlock("heat_exchanger_controller",
+            p -> new BoxControllerBlock(p, ModBlockEntities.HEAT_EXCHANGER_CONTROLLER),
+            JustReactors.reactorBlockProperties(4.0F, 8.0F)
+                    .lightLevel(state -> state.getValue(BoxControllerBlock.ACTIVE) ? 10 : 0));
+
+    public static final RegistryObject<HeatExchangerFluidPortBlock> HEAT_EXCHANGER_FLUID_PORT = registerBlock("heat_exchanger_fluid_port",
+            HeatExchangerFluidPortBlock::new,
+            JustReactors.reactorBlockProperties(4.0F, 8.0F));
+
+    public static final RegistryObject<Block> HEAT_EXCHANGER_TUBE = registerBlock("heat_exchanger_tube",
+            Block::new,
+            JustReactors.reactorBlockProperties(3.5F, 6.0F));
+
+    // Battery multiblock parts
+    public static final RegistryObject<Block> BATTERY_CASING = registerBlock("battery_casing",
+            Block::new,
+            JustReactors.reactorBlockProperties(4.0F, 8.0F));
+
+    public static final RegistryObject<GlassBlock> BATTERY_GLASS = registerBlock("battery_glass",
+            GlassBlock::new,
+            GLASS.get());
+
+    public static final RegistryObject<BoxControllerBlock> BATTERY_CONTROLLER = registerBlock("battery_controller",
+            p -> new BoxControllerBlock(p, ModBlockEntities.BATTERY_CONTROLLER),
+            JustReactors.reactorBlockProperties(4.0F, 8.0F)
+                    .lightLevel(state -> state.getValue(BoxControllerBlock.ACTIVE) ? 8 : 0));
+
+    public static final RegistryObject<BatteryPowerPortBlock> BATTERY_POWER_PORT = registerBlock("battery_power_port",
+            BatteryPowerPortBlock::new,
+            JustReactors.reactorBlockProperties(4.0F, 8.0F));
+
+    public static final RegistryObject<BatteryRedstoneSensorBlock> BATTERY_REDSTONE_SENSOR = registerBlock("battery_redstone_sensor",
+            BatteryRedstoneSensorBlock::new,
+            JustReactors.reactorBlockProperties(4.0F, 8.0F));
+
+    public static final RegistryObject<BatteryCellBlock> BATTERY_CELL = registerBlock("battery_cell",
+            BatteryCellBlock::new,
+            JustReactors.reactorBlockProperties(3.5F, 6.0F)
+                    .lightLevel(state -> state.getValue(BatteryCellBlock.CHARGE) * 2));
 
     private ModBlocks() {
     }

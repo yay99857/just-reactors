@@ -9,6 +9,10 @@ import com.justreactors.menu.ReactorRedstonePortMenu;
 import com.justreactors.turbine.menu.TurbineControllerMenu;
 import com.justreactors.turbine.menu.TurbineRedstonePortMenu;
 
+import com.justreactors.battery.BatteryMenu;
+import com.justreactors.battery.BatterySensorMenu;
+import com.justreactors.exchanger.HeatExchangerMenu;
+
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraftforge.common.extensions.IForgeMenuType;
@@ -39,6 +43,15 @@ public final class ModMenus {
 
     public static final RegistryObject<MenuType<TurbineRedstonePortMenu>> TURBINE_REDSTONE_PORT =
             MENUS.register("turbine_redstone_port", () -> IForgeMenuType.create(TurbineRedstonePortMenu::new));
+
+    public static final RegistryObject<MenuType<HeatExchangerMenu>> HEAT_EXCHANGER =
+            MENUS.register("heat_exchanger", () -> IForgeMenuType.create(HeatExchangerMenu::new));
+
+    public static final RegistryObject<MenuType<BatteryMenu>> BATTERY =
+            MENUS.register("battery", () -> IForgeMenuType.create(BatteryMenu::new));
+
+    public static final RegistryObject<MenuType<BatterySensorMenu>> BATTERY_SENSOR =
+            MENUS.register("battery_sensor", () -> IForgeMenuType.create(BatterySensorMenu::new));
 
     private ModMenus() {
     }

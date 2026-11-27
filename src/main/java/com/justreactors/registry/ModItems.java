@@ -33,6 +33,11 @@ public final class ModItems {
     public static final RegistryObject<BucketItem> STEAM_BUCKET = ITEMS.register("steam_bucket",
             () -> new BucketItem(ModFluids.STEAM_SOURCE, new Item.Properties().craftRemainder(Items.BUCKET).stacksTo(1)));
 
+    public static final RegistryObject<BucketItem> COOLANT_BUCKET = ITEMS.register("coolant_bucket",
+            () -> new BucketItem(ModFluids.COOLANT_SOURCE, new Item.Properties().craftRemainder(Items.BUCKET).stacksTo(1)));
+    public static final RegistryObject<BucketItem> HOT_COOLANT_BUCKET = ITEMS.register("hot_coolant_bucket",
+            () -> new BucketItem(ModFluids.HOT_COOLANT_SOURCE, new Item.Properties().craftRemainder(Items.BUCKET).stacksTo(1)));
+
     // Block items
     public static final RegistryObject<BlockItem> URANIUM_ORE = blockItem(ModBlocks.URANIUM_ORE);
     public static final RegistryObject<BlockItem> DEEPSLATE_URANIUM_ORE = blockItem(ModBlocks.DEEPSLATE_URANIUM_ORE);
@@ -68,6 +73,26 @@ public final class ModItems {
     public static final RegistryObject<BlockItem> TURBINE_POWER_TAP = blockItem(ModBlocks.TURBINE_POWER_TAP);
     public static final RegistryObject<BlockItem> TURBINE_REDSTONE_PORT = tooltipBlockItem(
             ModBlocks.TURBINE_REDSTONE_PORT, "tooltip.justreactors.turbine_redstone_port");
+
+    public static final RegistryObject<BlockItem> HEAT_EXCHANGER_CASING = blockItem(ModBlocks.HEAT_EXCHANGER_CASING);
+    public static final RegistryObject<BlockItem> HEAT_EXCHANGER_GLASS = blockItem(ModBlocks.HEAT_EXCHANGER_GLASS);
+    public static final RegistryObject<BlockItem> HEAT_EXCHANGER_CONTROLLER = tooltipBlockItem(
+            ModBlocks.HEAT_EXCHANGER_CONTROLLER, "tooltip.justreactors.heat_exchanger_controller");
+    public static final RegistryObject<BlockItem> HEAT_EXCHANGER_FLUID_PORT = tooltipBlockItem(
+            ModBlocks.HEAT_EXCHANGER_FLUID_PORT, "tooltip.justreactors.heat_exchanger_fluid_port");
+    public static final RegistryObject<BlockItem> HEAT_EXCHANGER_TUBE = tooltipBlockItem(
+            ModBlocks.HEAT_EXCHANGER_TUBE, "tooltip.justreactors.heat_exchanger_tube");
+
+    public static final RegistryObject<BlockItem> BATTERY_CASING = blockItem(ModBlocks.BATTERY_CASING);
+    public static final RegistryObject<BlockItem> BATTERY_GLASS = blockItem(ModBlocks.BATTERY_GLASS);
+    public static final RegistryObject<BlockItem> BATTERY_CONTROLLER = tooltipBlockItem(
+            ModBlocks.BATTERY_CONTROLLER, "tooltip.justreactors.battery_controller");
+    public static final RegistryObject<BlockItem> BATTERY_POWER_PORT = tooltipBlockItem(
+            ModBlocks.BATTERY_POWER_PORT, "tooltip.justreactors.battery_power_port");
+    public static final RegistryObject<BlockItem> BATTERY_REDSTONE_SENSOR = tooltipBlockItem(
+            ModBlocks.BATTERY_REDSTONE_SENSOR, "tooltip.justreactors.battery_redstone_sensor");
+    public static final RegistryObject<BlockItem> BATTERY_CELL = tooltipBlockItem(
+            ModBlocks.BATTERY_CELL, "tooltip.justreactors.battery_cell");
 
     private ModItems() {
     }

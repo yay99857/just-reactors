@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "justreactors:block/heat_exchanger_tube"
+    }
+  }
+}

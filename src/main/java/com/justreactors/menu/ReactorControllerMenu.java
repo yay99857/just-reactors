@@ -34,6 +34,8 @@ public class ReactorControllerMenu extends AbstractContainerMenu {
     private final SyncedInt steamMb;
     private final SyncedInt maxFluidMb;
     private final SyncedInt lastSteamMb;
+    private final SyncedInt coolantLoop;
+    private final SyncedInt lastHotMb;
     private final SyncedInt fuelMb;
     private final SyncedInt wasteMb;
     private final SyncedInt maxFuelMb;
@@ -60,6 +62,8 @@ public class ReactorControllerMenu extends AbstractContainerMenu {
         this.steamMb = syncInt(() -> controller.getSteamTank().getFluidAmount());
         this.maxFluidMb = syncInt(() -> controller.getCoolantTank().getCapacity());
         this.lastSteamMb = syncInt(() -> controller.getSimulation().getLastSteamProducedMb());
+        this.coolantLoop = syncInt(() -> controller.isCoolantLoop() ? 1 : 0);
+        this.lastHotMb = syncInt(controller::getLastHotCoolantMb);
         this.fuelMb = syncInt(() -> (int) Math.round(controller.getSimulation().getFuelMb()));
         this.wasteMb = syncInt(() -> (int) Math.round(controller.getSimulation().getWasteMb()));
         this.maxFuelMb = syncInt(controller::getTotalFuelCapacityMb);
@@ -120,6 +124,16 @@ public class ReactorControllerMenu extends AbstractContainerMenu {
 
     public int getMaxFluidMb() {
         return Math.max(1, maxFluidMb.get());
+    }
+
+    /** True when the reactor is cooled by the reusable Coolant loop instead of Water. */
+    public boolean isCoolantLoop() {
+        return coolantLoop.get() != 0;
+    }
+
+    /** Fluid leaving the reactor per tick: Hot Coolant in the coolant loop, otherwise Steam. */
+    public int getLastOutputMb() {
+        return isCoolantLoop() ? lastHotMb.get() : lastSteamMb.get();
     }
 
     public int getLastSteamMb() {

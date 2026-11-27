@@ -49,6 +49,11 @@ public class JustReactors {
         modEventBus.addListener(JustReactors::commonSetup);
         DemoSetup.register(MinecraftForge.EVENT_BUS);
         ReactorDataReloadListeners.register(MinecraftForge.EVENT_BUS);
+        MinecraftForge.EVENT_BUS.addListener((net.minecraftforge.event.server.ServerStoppedEvent e) ->
+                com.justreactors.multiblock.AssembledMultiblocks.clear());
+        if (net.minecraftforge.fml.ModList.get().isLoaded("carryon")) {
+            com.justreactors.compat.carryon.CarryOnCompat.register();
+        }
 
         if (ForgeGameTestHooks.isGametestEnabled()) {
             ReactorGameTests.register(modEventBus);

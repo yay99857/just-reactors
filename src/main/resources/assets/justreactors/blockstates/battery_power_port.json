@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "outlet=false": {
+      "model": "justreactors:block/battery_power_port_input"
+    },
+    "outlet=true": {
+      "model": "justreactors:block/battery_power_port_output"
+    }
+  }
+}

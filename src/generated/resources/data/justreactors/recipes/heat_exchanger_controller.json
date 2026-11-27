@@ -1,0 +1,26 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "B": {
+      "item": "minecraft:bucket"
+    },
+    "C": {
+      "item": "justreactors:heat_exchanger_casing"
+    },
+    "R": {
+      "tag": "forge:dusts/redstone"
+    },
+    "X": {
+      "item": "minecraft:comparator"
+    }
+  },
+  "pattern": [
+    "CBC",
+    "RXR",
+    "CBC"
+  ],
+  "result": {
+    "item": "justreactors:heat_exchanger_controller"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "B": {
+      "item": "minecraft:bucket"
+    },
+    "C": {
+      "item": "justreactors:heat_exchanger_casing"
+    },
+    "I": {
+      "tag": "forge:ingots/iron"
+    },
+    "P": {
+      "item": "minecraft:piston"
+    }
+  },
+  "pattern": [
+    "CBC",
+    "IPI",
+    "CBC"
+  ],
+  "result": {
+    "item": "justreactors:heat_exchanger_fluid_port"
+  }
+}

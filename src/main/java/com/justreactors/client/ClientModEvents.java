@@ -30,6 +30,9 @@ public final class ClientModEvents {
             MenuScreens.register(ModMenus.TURBINE_CONTROLLER.get(), TurbineControllerScreen::new);
             MenuScreens.register(ModMenus.TURBINE_REDSTONE_PORT.get(), TurbineRedstonePortScreen::new);
             MenuScreens.register(ModMenus.CYANITE_REPROCESSOR.get(), CyaniteReprocessorScreen::new);
+            MenuScreens.register(ModMenus.HEAT_EXCHANGER.get(), com.justreactors.exchanger.client.HeatExchangerScreen::new);
+            MenuScreens.register(ModMenus.BATTERY.get(), com.justreactors.battery.client.BatteryScreen::new);
+            MenuScreens.register(ModMenus.BATTERY_SENSOR.get(), com.justreactors.battery.client.BatterySensorScreen::new);
         });
     }
 

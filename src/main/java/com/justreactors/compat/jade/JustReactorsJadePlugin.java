@@ -22,6 +22,15 @@ import com.justreactors.turbine.blockentity.TurbineControllerBlockEntity;
 import com.justreactors.turbine.blockentity.TurbineFluidPortBlockEntity;
 import com.justreactors.turbine.blockentity.TurbineRedstonePortBlockEntity;
 
+import com.justreactors.battery.BatteryControllerBlockEntity;
+import com.justreactors.battery.BatteryPowerPortBlock;
+import com.justreactors.battery.BatteryRedstoneSensorBlock;
+import com.justreactors.battery.BatteryRedstoneSensorBlockEntity;
+import com.justreactors.battery.BatterySensorMode;
+import com.justreactors.exchanger.HeatExchangerControllerBlockEntity;
+import com.justreactors.exchanger.HeatExchangerFluidPortBlock;
+import com.justreactors.multiblock.BoxControllerBlock;
+
 import net.minecraft.ChatFormatting;
 import com.justreactors.compat.nbt.ValueInput;
 import net.minecraft.nbt.CompoundTag;
@@ -55,6 +64,9 @@ public class JustReactorsJadePlugin implements IWailaPlugin {
         registration.registerBlockDataProvider(ServerData.INSTANCE, TurbineFluidPortBlockEntity.class);
         registration.registerBlockDataProvider(ServerData.INSTANCE, TurbineRedstonePortBlockEntity.class);
         registration.registerBlockDataProvider(ServerData.INSTANCE, CyaniteReprocessorBlockEntity.class);
+        registration.registerBlockDataProvider(ServerData.INSTANCE, HeatExchangerControllerBlockEntity.class);
+        registration.registerBlockDataProvider(ServerData.INSTANCE, BatteryControllerBlockEntity.class);
+        registration.registerBlockDataProvider(ServerData.INSTANCE, BatteryRedstoneSensorBlockEntity.class);
     }
 
     @Override
@@ -67,6 +79,10 @@ public class JustReactorsJadePlugin implements IWailaPlugin {
         registration.registerBlockComponent(ClientInfo.INSTANCE, TurbineFluidPortBlock.class);
         registration.registerBlockComponent(ClientInfo.INSTANCE, TurbineRedstonePortBlock.class);
         registration.registerBlockComponent(ClientInfo.INSTANCE, CyaniteReprocessorBlock.class);
+        registration.registerBlockComponent(ClientInfo.INSTANCE, BoxControllerBlock.class);
+        registration.registerBlockComponent(ClientInfo.INSTANCE, HeatExchangerFluidPortBlock.class);
+        registration.registerBlockComponent(ClientInfo.INSTANCE, BatteryPowerPortBlock.class);
+        registration.registerBlockComponent(ClientInfo.INSTANCE, BatteryRedstoneSensorBlock.class);
     }
 
     enum ServerData implements IServerDataProvider<BlockAccessor> {
@@ -125,6 +141,33 @@ public class JustReactorsJadePlugin implements IWailaPlugin {
                 data.putInt("Mode", port.getMode().ordinal());
                 data.putInt("Threshold", port.getThresholdPercent());
                 data.putInt("Signal", port.getCurrentDisplaySignal());
+            } else if (be instanceof HeatExchangerControllerBlockEntity ex) {
+                data.putString("Kind", "Exchanger");
+                data.putBoolean("Assembled", ex.isAssembled());
+                if (ex.isAssembled()) {
+                    data.putBoolean("Active", ex.isActive());
+                    data.putInt("Cooled", ex.getLastCooledMb());
+                    data.putInt("MaxCooling", ex.getMaxCoolingMb());
+                    data.putInt("Steam", ex.getLastSteamMb());
+                } else if (ex.getLastValidationError() != null) {
+                    data.putString("Error", Component.Serializer.toJson(ex.getLastValidationError()));
+                }
+            } else if (be instanceof BatteryControllerBlockEntity bat) {
+                data.putString("Kind", "Battery");
+                data.putBoolean("Assembled", bat.isAssembled());
+                if (bat.isAssembled()) {
+                    data.putInt("Energy", bat.getEnergyStorage().getEnergyStored());
+                    data.putInt("Capacity", bat.getEnergyStorage().getMaxEnergyStored());
+                    data.putInt("In", bat.getLastInput());
+                    data.putInt("Out", bat.getLastOutput());
+                } else if (bat.getLastValidationError() != null) {
+                    data.putString("Error", Component.Serializer.toJson(bat.getLastValidationError()));
+                }
+            } else if (be instanceof BatteryRedstoneSensorBlockEntity sensor) {
+                data.putString("Kind", "BatterySensor");
+                data.putInt("Mode", sensor.getMode().ordinal());
+                data.putInt("Threshold", sensor.getThresholdPercent());
+                data.putInt("Signal", sensor.getSignal());
             } else if (be instanceof CyaniteReprocessorBlockEntity rep) {
                 data.putString("Kind", "Reprocessor");
                 data.putInt("Progress", rep.getProgress());
@@ -222,6 +265,44 @@ public class JustReactorsJadePlugin implements IWailaPlugin {
                         }
                     }
                 }
+                case "Exchanger" -> {
+                    if (!in.getBooleanOr("Assembled", false)) {
+                        tooltip.add(Component.translatable("jade.justreactors.not_assembled").withStyle(ChatFormatting.RED));
+                        addErrorTooltip(tooltip, data);
+                        return;
+                    }
+                    boolean active = in.getBooleanOr("Active", false);
+                    tooltip.add(Component.translatable(active ? "gui.justreactors.status.online" : "gui.justreactors.status.offline")
+                            .withStyle(active ? ChatFormatting.GREEN : ChatFormatting.RED));
+                    tooltip.add(Component.translatable("gui.justreactors.heat_exchanger.cooling",
+                            String.format(Locale.ROOT, "%,d", in.getIntOr("Cooled", 0)),
+                            String.format(Locale.ROOT, "%,d", in.getIntOr("MaxCooling", 0))).withStyle(ChatFormatting.AQUA));
+                    tooltip.add(Component.translatable("jade.justreactors.steam_output",
+                            String.format(Locale.ROOT, "%,d", in.getIntOr("Steam", 0))).withStyle(ChatFormatting.WHITE));
+                }
+                case "Battery" -> {
+                    if (!in.getBooleanOr("Assembled", false)) {
+                        tooltip.add(Component.translatable("jade.justreactors.not_assembled").withStyle(ChatFormatting.RED));
+                        addErrorTooltip(tooltip, data);
+                        return;
+                    }
+                    int energy = in.getIntOr("Energy", 0);
+                    int cap = Math.max(1, in.getIntOr("Capacity", 1));
+                    tooltip.add(Component.translatable("jade.justreactors.battery.charge",
+                            String.format(Locale.ROOT, "%,d", energy), String.format(Locale.ROOT, "%,d", cap),
+                            String.format(Locale.ROOT, "%.1f", energy * 100.0 / cap)).withStyle(ChatFormatting.GREEN));
+                    tooltip.add(Component.translatable("jade.justreactors.battery.flow",
+                            String.format(Locale.ROOT, "%,d", in.getIntOr("In", 0)),
+                            String.format(Locale.ROOT, "%,d", in.getIntOr("Out", 0))).withStyle(ChatFormatting.GOLD));
+                }
+                case "BatterySensor" -> {
+                    BatterySensorMode mode = BatterySensorMode.byOrdinal(in.getIntOr("Mode", 0));
+                    tooltip.add(Component.translatable(mode.translationKey()).withStyle(ChatFormatting.RED));
+                    if (mode.usesThreshold()) {
+                        tooltip.add(Component.translatable("jade.justreactors.redstone.threshold_signal",
+                                in.getIntOr("Threshold", 90), in.getIntOr("Signal", 0)).withStyle(ChatFormatting.GOLD));
+                    }
+                }
                 case "Reprocessor" -> {
                     int max = Math.max(1, in.getIntOr("MaxProgress", 100));
                     int pct = in.getIntOr("Progress", 0) * 100 / max;
@@ -229,8 +310,20 @@ public class JustReactorsJadePlugin implements IWailaPlugin {
                         tooltip.add(Component.translatable("jade.justreactors.progress", pct).withStyle(ChatFormatting.AQUA));
                     }
                 }
-                default -> {
-                }
+                default -> appendStateTooltip(tooltip, accessor);
+            }
+        }
+
+        /** Port modes come straight from the block state, no server data needed. */
+        private static void appendStateTooltip(ITooltip tooltip, BlockAccessor accessor) {
+            var state = accessor.getBlockState();
+            if (state.getBlock() instanceof HeatExchangerFluidPortBlock) {
+                tooltip.add(Component.translatable(state.getValue(HeatExchangerFluidPortBlock.MODE).translationKey())
+                        .withStyle(ChatFormatting.AQUA));
+            } else if (state.getBlock() instanceof BatteryPowerPortBlock) {
+                boolean out = state.getValue(BatteryPowerPortBlock.OUTLET);
+                tooltip.add(Component.translatable(out ? "message.justreactors.battery_port.output"
+                        : "message.justreactors.battery_port.input").withStyle(out ? ChatFormatting.GOLD : ChatFormatting.GREEN));
             }
         }
 

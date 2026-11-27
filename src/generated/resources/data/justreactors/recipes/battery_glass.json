@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "C": {
+      "item": "justreactors:battery_casing"
+    },
+    "G": {
+      "tag": "forge:glass"
+    }
+  },
+  "pattern": [
+    "GCG"
+  ],
+  "result": {
+    "item": "justreactors:battery_glass",
+    "count": 2
+  }
+}

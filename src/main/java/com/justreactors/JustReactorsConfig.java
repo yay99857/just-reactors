@@ -24,6 +24,16 @@ public final class JustReactorsConfig {
     public static final ForgeConfigSpec.DoubleValue TURBINE_POWER_MULTIPLIER;
     public static final ForgeConfigSpec.IntValue TURBINE_MAX_STEAM_FLOW;
 
+    public static final ForgeConfigSpec.IntValue COOLANT_HEAT_RATIO;
+
+    public static final ForgeConfigSpec.IntValue MAX_EXCHANGER_SIZE;
+    public static final ForgeConfigSpec.IntValue EXCHANGER_HOT_COOLANT_PER_TUBE;
+    public static final ForgeConfigSpec.IntValue EXCHANGER_STEAM_PER_HOT_COOLANT;
+
+    public static final ForgeConfigSpec.IntValue MAX_BATTERY_SIZE;
+    public static final ForgeConfigSpec.IntValue BATTERY_CELL_CAPACITY;
+    public static final ForgeConfigSpec.IntValue BATTERY_CELL_TRANSFER;
+
     public static final ForgeConfigSpec.IntValue REPROCESSOR_ENERGY_COST;
     public static final ForgeConfigSpec.IntValue REPROCESSOR_WATER_COST;
     public static final ForgeConfigSpec.IntValue REPROCESSOR_TICKS;
@@ -50,6 +60,8 @@ public final class JustReactorsConfig {
                 .defineInRange("steamProductionMultiplier", 1.0, 0.05, 100.0);
         COOLANT_TANK_PER_ROD_MB = b.comment("Coolant & steam tank capacity per Reactor Fuel Rod in mB.")
                 .defineInRange("coolantTankPerRodMb", 5_000, 1_000, 100_000);
+        COOLANT_HEAT_RATIO = b.comment("How many mB of steam worth of heat 1 mB of Coolant carries out of an active reactor as Hot Coolant.")
+                .defineInRange("coolantHeatRatio", 4, 1, 64);
         b.pop();
 
         b.push("turbine");
@@ -63,6 +75,25 @@ public final class JustReactorsConfig {
                 .defineInRange("powerMultiplier", 1.0, 0.05, 100.0);
         TURBINE_MAX_STEAM_FLOW = b.comment("Maximum steam intake rate in mB/t for a Steam Turbine.")
                 .defineInRange("maxSteamFlow", 2_000, 100, 50_000);
+        b.pop();
+
+        b.push("heatExchanger");
+        MAX_EXCHANGER_SIZE = b.comment("Maximum outer dimension of a Heat Exchanger multiblock (minimum is 3).")
+                .defineInRange("maxSize", 16, 3, 32);
+        EXCHANGER_HOT_COOLANT_PER_TUBE = b.comment("Hot Coolant in mB/t each Heat Exchanger Tube can cool down.")
+                .defineInRange("hotCoolantPerTube", 25, 1, 10_000);
+        EXCHANGER_STEAM_PER_HOT_COOLANT = b.comment("Steam in mB produced per mB of Hot Coolant cooled (water is consumed 1:1 with steam).",
+                        "Higher than reactor.coolantHeatRatio, so a closed coolant loop gives more steam than boiling water directly.")
+                .defineInRange("steamPerHotCoolant", 5, 1, 64);
+        b.pop();
+
+        b.push("battery");
+        MAX_BATTERY_SIZE = b.comment("Maximum outer dimension of a Battery multiblock (minimum is 3).")
+                .defineInRange("maxSize", 16, 3, 32);
+        BATTERY_CELL_CAPACITY = b.comment("FE stored per Battery Cell. The total is capped at 2,147,483,647 FE.")
+                .defineInRange("cellCapacity", 10_000_000, 10_000, Integer.MAX_VALUE);
+        BATTERY_CELL_TRANSFER = b.comment("FE/t of input and of output each Battery Cell adds to the battery.")
+                .defineInRange("cellTransfer", 10_000, 100, Integer.MAX_VALUE);
         b.pop();
 
         b.push("reprocessor");
