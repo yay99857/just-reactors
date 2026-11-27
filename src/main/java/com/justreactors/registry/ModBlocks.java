@@ -4,13 +4,16 @@ import net.minecraft.world.level.block.GlassBlock;
 import com.justreactors.JustReactors;
 import com.justreactors.block.CyaniteReprocessorBlock;
 import com.justreactors.block.ReactorAccessPortBlock;
+import com.justreactors.block.ReactorCasingBlock;
 import com.justreactors.block.ReactorControlRodBlock;
 import com.justreactors.block.ReactorControllerBlock;
 import com.justreactors.block.ReactorCoolantPortBlock;
+import com.justreactors.block.ReactorFuelRodBlock;
 import com.justreactors.block.ReactorGlassBlock;
 import com.justreactors.block.ReactorPartBlock;
 import com.justreactors.block.ReactorPowerTapBlock;
 import com.justreactors.block.ReactorRedstonePortBlock;
+import com.justreactors.turbine.block.TurbineCasingBlock;
 import com.justreactors.turbine.block.TurbineControllerBlock;
 import com.justreactors.turbine.block.TurbineFluidPortBlock;
 import com.justreactors.turbine.block.TurbineGlassBlock;
@@ -25,6 +28,8 @@ import com.justreactors.battery.BatteryPowerPortBlock;
 import com.justreactors.battery.BatteryRedstoneSensorBlock;
 import com.justreactors.exchanger.HeatExchangerFluidPortBlock;
 import com.justreactors.multiblock.BoxControllerBlock;
+import com.justreactors.multiblock.ConnectedGlassBlock;
+import com.justreactors.multiblock.MultiblockCasingBlock;
 
 import net.minecraft.core.registries.Registries;
 import net.minecraft.util.valueproviders.UniformInt;
@@ -92,8 +97,8 @@ public final class ModBlocks {
                     .lightLevel(state -> state.getValue(CyaniteReprocessorBlock.LIT) ? 9 : 0));
 
     // Reactor multiblock parts
-    public static final RegistryObject<ReactorPartBlock> REACTOR_CASING = registerBlock("reactor_casing",
-            ReactorPartBlock::new,
+    public static final RegistryObject<ReactorCasingBlock> REACTOR_CASING = registerBlock("reactor_casing",
+            ReactorCasingBlock::new,
             JustReactors.reactorBlockProperties(4.0F, 8.0F));
 
     public static final RegistryObject<ReactorGlassBlock> REACTOR_GLASS = registerBlock("reactor_glass",
@@ -112,11 +117,11 @@ public final class ModBlocks {
             JustReactors.reactorBlockProperties(4.0F, 8.0F)
                     .lightLevel(state -> state.getValue(ReactorControllerBlock.ACTIVE) ? 10 : 0));
 
-    public static final RegistryObject<ReactorPartBlock> REACTOR_FUEL_ROD = registerBlock("reactor_fuel_rod",
-            ReactorPartBlock::new,
+    public static final RegistryObject<ReactorFuelRodBlock> REACTOR_FUEL_ROD = registerBlock("reactor_fuel_rod",
+            ReactorFuelRodBlock::new,
             JustReactors.reactorBlockProperties(3.5F, 6.0F)
                     .noOcclusion()
-                    .lightLevel(state -> 4));
+                    .lightLevel(state -> state.getValue(ReactorFuelRodBlock.ACTIVE) ? 14 : 3));
 
     public static final RegistryObject<ReactorControlRodBlock> REACTOR_CONTROL_ROD = registerBlock("reactor_control_rod",
             ReactorControlRodBlock::new,
@@ -139,8 +144,8 @@ public final class ModBlocks {
             JustReactors.reactorBlockProperties(4.0F, 8.0F));
 
     // Steam Turbine multiblock parts
-    public static final RegistryObject<TurbinePartBlock> TURBINE_CASING = registerBlock("turbine_casing",
-            TurbinePartBlock::new,
+    public static final RegistryObject<TurbineCasingBlock> TURBINE_CASING = registerBlock("turbine_casing",
+            TurbineCasingBlock::new,
             JustReactors.reactorBlockProperties(4.0F, 8.0F));
 
     public static final RegistryObject<TurbineGlassBlock> TURBINE_GLASS = registerBlock("turbine_glass",
@@ -165,11 +170,15 @@ public final class ModBlocks {
 
     public static final RegistryObject<TurbineRotorShaftBlock> TURBINE_ROTOR_SHAFT = registerBlock("turbine_rotor_shaft",
             TurbineRotorShaftBlock::new,
-            JustReactors.reactorBlockProperties(3.5F, 6.0F).noOcclusion());
+            JustReactors.reactorBlockProperties(3.5F, 6.0F)
+                    .noOcclusion()
+                    .lightLevel(state -> state.getValue(TurbineRotorShaftBlock.SPINNING) ? 14 : 0));
 
     public static final RegistryObject<TurbineRotorBladeBlock> TURBINE_ROTOR_BLADE = registerBlock("turbine_rotor_blade",
             TurbineRotorBladeBlock::new,
-            JustReactors.reactorBlockProperties(3.0F, 6.0F).noOcclusion());
+            JustReactors.reactorBlockProperties(3.0F, 6.0F)
+                    .noOcclusion()
+                    .lightLevel(state -> state.getValue(TurbineRotorBladeBlock.SPINNING) ? 12 : 0));
 
     public static final RegistryObject<TurbineFluidPortBlock> TURBINE_FLUID_PORT = registerBlock("turbine_fluid_port",
             TurbineFluidPortBlock::new,
@@ -184,12 +193,12 @@ public final class ModBlocks {
             JustReactors.reactorBlockProperties(4.0F, 8.0F));
 
     // Heat Exchanger multiblock parts
-    public static final RegistryObject<Block> HEAT_EXCHANGER_CASING = registerBlock("heat_exchanger_casing",
-            Block::new,
+    public static final RegistryObject<MultiblockCasingBlock> HEAT_EXCHANGER_CASING = registerBlock("heat_exchanger_casing",
+            MultiblockCasingBlock::new,
             JustReactors.reactorBlockProperties(4.0F, 8.0F));
 
-    public static final RegistryObject<GlassBlock> HEAT_EXCHANGER_GLASS = registerBlock("heat_exchanger_glass",
-            GlassBlock::new,
+    public static final RegistryObject<ConnectedGlassBlock> HEAT_EXCHANGER_GLASS = registerBlock("heat_exchanger_glass",
+            ConnectedGlassBlock::new,
             GLASS.get());
 
     public static final RegistryObject<BoxControllerBlock> HEAT_EXCHANGER_CONTROLLER = registerBlock("heat_exchanger_controller",
@@ -206,12 +215,12 @@ public final class ModBlocks {
             JustReactors.reactorBlockProperties(3.5F, 6.0F));
 
     // Battery multiblock parts
-    public static final RegistryObject<Block> BATTERY_CASING = registerBlock("battery_casing",
-            Block::new,
+    public static final RegistryObject<MultiblockCasingBlock> BATTERY_CASING = registerBlock("battery_casing",
+            MultiblockCasingBlock::new,
             JustReactors.reactorBlockProperties(4.0F, 8.0F));
 
-    public static final RegistryObject<GlassBlock> BATTERY_GLASS = registerBlock("battery_glass",
-            GlassBlock::new,
+    public static final RegistryObject<ConnectedGlassBlock> BATTERY_GLASS = registerBlock("battery_glass",
+            ConnectedGlassBlock::new,
             GLASS.get());
 
     public static final RegistryObject<BoxControllerBlock> BATTERY_CONTROLLER = registerBlock("battery_controller",

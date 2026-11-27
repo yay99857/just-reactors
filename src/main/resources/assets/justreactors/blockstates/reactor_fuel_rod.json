@@ -1,6 +1,9 @@
 {
   "variants": {
-    "": {
+    "active=false": {
+      "model": "justreactors:block/reactor_fuel_rod"
+    },
+    "active=true": {
       "model": "justreactors:block/reactor_fuel_rod"
     }
   }

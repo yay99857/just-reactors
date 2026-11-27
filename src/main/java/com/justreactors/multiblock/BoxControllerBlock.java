@@ -93,6 +93,7 @@ public class BoxControllerBlock extends Block implements EntityBlock {
     @Override
     public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
         if (!state.is(newState.getBlock()) && level.getBlockEntity(pos) instanceof BoxControllerBlockEntity be) {
+            be.onControllerRemoved();
             be.dropContents();
         }
         super.onRemove(state, level, pos, newState, movedByPiston);

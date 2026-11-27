@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "top": "justreactors:block/heat_exchanger_casing",
+    "bottom": "justreactors:block/heat_exchanger_casing",
+    "side": "justreactors:block/heat_exchanger_casing_top_edge"
+  }
+}

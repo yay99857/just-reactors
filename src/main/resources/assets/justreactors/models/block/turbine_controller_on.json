@@ -1,7 +1,6 @@
 {
-  "parent": "minecraft:block/orientable",
+  "parent": "justreactors:block/controller_bezel_base_lit",
   "textures": {
-    "top": "justreactors:block/turbine_casing",
     "side": "justreactors:block/turbine_casing",
     "front": "justreactors:block/turbine_controller_on"
   }

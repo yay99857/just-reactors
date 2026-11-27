@@ -321,6 +321,7 @@
   "jei.justreactors.info.battery_redstone_sensor": "Place it in the battery wall. Emits a signal when the charge is above or below a threshold, full or empty. Wire it to a reactor or turbine Redstone Port to run generators only when the battery needs power.",
   "jade.justreactors.battery.charge": "Charge: %s / %s FE (%s%%)",
   "jade.justreactors.battery.flow": "In %s / Out %s FE/t",
+  "config.jade.plugin_justreactors.reactor_info": "Just Reactors",
   "message.justreactors.carryon.assembled": "Assembled machines can't be carried. Break the structure first.",
 
   "gui.justreactors.mode.active_coolant": "ACTIVE (Coolant)",

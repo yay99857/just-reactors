@@ -3,6 +3,7 @@ package com.justreactors.turbine.blockentity;
 import net.minecraft.world.phys.AABB;
 import com.justreactors.JustReactorsConfig;
 import com.justreactors.client.ClientMachineSounds;
+import com.justreactors.multiblock.MultiblockTrim;
 import com.justreactors.registry.ModBlockEntities;
 import com.justreactors.registry.ModBlocks;
 import com.justreactors.registry.ModFluids;
@@ -64,6 +65,7 @@ public class TurbineControllerBlockEntity extends BlockEntity implements MenuPro
 
     // Server sync tracking
     private boolean rotorMarkedSpinning = false;
+    private boolean trimApplied = false;
     private boolean lastSyncedAssembled = false;
     private boolean lastSyncedSpinning = false;
     private boolean lastSyncedActive = false;
@@ -128,6 +130,15 @@ public class TurbineControllerBlockEntity extends BlockEntity implements MenuPro
                 double vy = be.clientInwardDir.getStepY() * 0.035 + (rand.nextDouble() - 0.5) * 0.015;
                 double vz = be.clientInwardDir.getStepZ() * 0.035 + (rand.nextDouble() - 0.5) * 0.015;
                 level.addParticle(ParticleTypes.CLOUD, px, py, pz, vx, vy, vz);
+            }
+            if (be.clientRpm >= 300.0 && rand.nextInt(10) == 0) {
+                int spanX = Math.max(1, be.clientMax.getX() - be.clientMin.getX() - 1);
+                int spanY = Math.max(1, be.clientMax.getY() - be.clientMin.getY() - 1);
+                int spanZ = Math.max(1, be.clientMax.getZ() - be.clientMin.getZ() - 1);
+                double px = be.clientMin.getX() + 1.2 + rand.nextDouble() * Math.max(0.1, spanX - 0.4);
+                double py = be.clientMin.getY() + 1.0 + spanY * (0.5 + 0.45 * rand.nextDouble());
+                double pz = be.clientMin.getZ() + 1.2 + rand.nextDouble() * Math.max(0.1, spanZ - 0.4);
+                level.addParticle(ParticleTypes.ELECTRIC_SPARK, px, py, pz, 0.0, 0.015, 0.0);
             }
         }
     }
@@ -262,6 +273,11 @@ public class TurbineControllerBlockEntity extends BlockEntity implements MenuPro
             this.structure = valid.structure();
             this.lastValidationError = null;
             linkParts(valid.structure());
+            if (wasUnassembled || !trimApplied) {
+                MultiblockTrim.apply(level, valid.structure().min(), valid.structure().max(),
+                        ModBlocks.TURBINE_CASING.get());
+                trimApplied = true;
+            }
             com.justreactors.multiblock.AssembledMultiblocks.put(level, worldPosition, valid.structure().min(), valid.structure().max());
             boolean shouldSpin = this.simulation.getRpm() > SPINNING_RPM_THRESHOLD;
             if (wasUnassembled || shouldSpin != this.rotorMarkedSpinning) {
@@ -274,6 +290,11 @@ public class TurbineControllerBlockEntity extends BlockEntity implements MenuPro
             return true;
         } else if (result instanceof TurbineValidator.Result.Invalid invalid) {
             unlinkParts();
+            if (this.structure != null) {
+                MultiblockTrim.reset(level, this.structure.min(), this.structure.max(),
+                        ModBlocks.TURBINE_CASING.get());
+                trimApplied = false;
+            }
             this.structure = null;
             com.justreactors.multiblock.AssembledMultiblocks.remove(level, worldPosition);
             this.lastValidationError = invalid.reason();
@@ -313,12 +334,20 @@ public class TurbineControllerBlockEntity extends BlockEntity implements MenuPro
         }
     }
 
+    /** Called from the block's onRemove (1.21.1 has no BlockEntity#preRemoveSideEffects). */
+    public void onControllerRemoved() {
+        if (level != null && !level.isClientSide() && structure != null) {
+            MultiblockTrim.reset(level, structure.min(), structure.max(), ModBlocks.TURBINE_CASING.get());
+            trimApplied = false;
+            if (rotorMarkedSpinning) {
+                setRotorBlocksSpinning(level, structure, false);
+                rotorMarkedSpinning = false;
+            }
+        }
+    }
+
     @Override
     public void setRemoved() {
-        if (level != null && !level.isClientSide() && rotorMarkedSpinning && structure != null) {
-            setRotorBlocksSpinning(level, structure, false);
-            rotorMarkedSpinning = false;
-        }
         if (level != null) com.justreactors.multiblock.AssembledMultiblocks.remove(level, worldPosition);
         super.setRemoved();
     }
@@ -420,6 +449,10 @@ public class TurbineControllerBlockEntity extends BlockEntity implements MenuPro
 
     public boolean isClientSpinning() {
         return clientSpinning;
+    }
+
+    public boolean isClientActive() {
+        return clientActive;
     }
 
     public double getClientRpm() {

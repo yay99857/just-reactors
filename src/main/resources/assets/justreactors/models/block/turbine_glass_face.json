@@ -1,0 +1,32 @@
+{
+  "render_type": "minecraft:translucent",
+  "textures": {
+    "particle": "justreactors:block/turbine_casing",
+    "pane": "justreactors:block/turbine_glass_pane"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0.45
+      ],
+      "to": [
+        16,
+        16,
+        0.7
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#pane"
+        }
+      }
+    }
+  ]
+}

@@ -9,15 +9,27 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
 
 public class ReactorControlRodBlock extends ReactorPartBlock implements EntityBlock {
+    /** Visual piston height stage (0 = 0-24% retracted, 3 = 75-100% inserted). */
+    public static final IntegerProperty LEVEL = IntegerProperty.create("level", 0, 3);
+
     public ReactorControlRodBlock(Properties properties) {
         super(properties);
+        registerDefaultState(stateDefinition.any().setValue(LEVEL, 0));
+    }
+
+    @Override
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+        builder.add(LEVEL);
     }
 
     @Nullable

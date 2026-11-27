@@ -87,4 +87,12 @@ public class TurbineControllerBlock extends TurbinePartBlock implements EntityBl
         }
         return InteractionResult.CONSUME;
     }
+
+    @Override
+    public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
+        if (!state.is(newState.getBlock()) && level.getBlockEntity(pos) instanceof TurbineControllerBlockEntity be) {
+            be.onControllerRemoved();
+        }
+        super.onRemove(state, level, pos, newState, movedByPiston);
+    }
 }

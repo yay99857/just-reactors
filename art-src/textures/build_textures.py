@@ -1010,7 +1010,7 @@ if __name__ == "__main__":
         craft_in_pontilha(name, rows, legend, out_path, size=16)
         exported.append((name, out_path))
 
-    craft_in_pontilha("justreactors_logo", LOGO_ROWS, LOGO_LEGEND, LOGO_PATH, size=32)
+    # The mod logo is now an isometric render of the reactor: art-src/logo/render_logo.py
 
     for cname in [
         "voltaic_cable.png",

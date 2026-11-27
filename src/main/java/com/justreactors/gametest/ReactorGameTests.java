@@ -2,7 +2,13 @@ package com.justreactors.gametest;
 
 import com.justreactors.transfer.Caps;
 import com.justreactors.JustReactors;
+import com.justreactors.block.ReactorControlRodBlock;
 import com.justreactors.block.ReactorCoolantPortBlock;
+import com.justreactors.block.ReactorFuelRodBlock;
+import com.justreactors.block.ReactorGlassBlock;
+import com.justreactors.multiblock.CasingPart;
+import com.justreactors.multiblock.ConnectedGlassBlock;
+import com.justreactors.multiblock.MultiblockTrim;
 import com.justreactors.demo.DemoSetup;
 import com.justreactors.blockentity.CyaniteReprocessorBlockEntity;
 import com.justreactors.blockentity.ReactorAccessPortBlockEntity;
@@ -84,7 +90,9 @@ public final class ReactorGameTests {
             new NamedTest("heat_exchanger_stops_without_water", MultiblockGameTests::heatExchangerStopsWithoutWater, 60),
             new NamedTest("battery_stores_and_releases_energy", MultiblockGameTests::batteryStoresAndReleasesEnergy, 40),
             new NamedTest("battery_sensor_follows_charge", MultiblockGameTests::batterySensorFollowsCharge, 60),
-            new NamedTest("battery_keeps_energy_across_reassembly", MultiblockGameTests::batteryKeepsEnergyAcrossReassembly, 40)
+            new NamedTest("battery_keeps_energy_across_reassembly", MultiblockGameTests::batteryKeepsEnergyAcrossReassembly, 40),
+            new NamedTest("reactor_visual_states_update_on_assembly", ReactorGameTests::reactorVisualStatesUpdateOnAssembly, 60),
+            new NamedTest("all_multiblocks_trim_and_connected_glass", ReactorGameTests::allMultiblocksTrimAndConnectedGlass, 80)
     );
 
     private ReactorGameTests() {
@@ -877,5 +885,237 @@ public final class ReactorGameTests {
             return;
         }
         helper.succeed();
+    }
+
+    private static void reactorVisualStatesUpdateOnAssembly(GameTestHelper helper) {
+        BlockPos ctrlPos = new BlockPos(3, 2, 5);
+        for (int dx = 1; dx <= 5; dx++) {
+            for (int dy = 1; dy <= 5; dy++) {
+                for (int dz = 1; dz <= 5; dz++) {
+                    BlockPos p = new BlockPos(dx, dy, dz);
+                    boolean onX = dx == 1 || dx == 5;
+                    boolean onY = dy == 1 || dy == 5;
+                    boolean onZ = dz == 1 || dz == 5;
+                    int axes = (onX ? 1 : 0) + (onY ? 1 : 0) + (onZ ? 1 : 0);
+                    boolean rodCol = (dx == 2 || dx == 4) && dz == 3;
+                    if (axes >= 2) {
+                        helper.setBlock(p, ModBlocks.REACTOR_CASING.get());
+                    } else if (axes == 1) {
+                        if (p.equals(ctrlPos)) {
+                            helper.setBlock(p, ModBlocks.REACTOR_CONTROLLER.get());
+                        } else if (dy == 5 && rodCol) {
+                            helper.setBlock(p, ModBlocks.REACTOR_CONTROL_ROD.get());
+                        } else if (dz == 1) {
+                            helper.setBlock(p, ModBlocks.REACTOR_GLASS.get());
+                        } else {
+                            helper.setBlock(p, ModBlocks.REACTOR_CASING.get());
+                        }
+                    } else {
+                        helper.setBlock(p, rodCol ? ModBlocks.REACTOR_FUEL_ROD.get() : ModBlocks.GRAPHITE_BLOCK.get());
+                    }
+                }
+            }
+        }
+
+        ReactorControllerBlockEntity ctrl = ((ReactorControllerBlockEntity) helper.getBlockEntity(ctrlPos));
+        if (!ctrl.tryAssemble()) {
+            helper.fail("Expected 5x5x5 reactor to assemble, error=" + ctrl.getLastValidationError());
+            return;
+        }
+        ctrl.getSimulation().setFuelMb(8_000.0);
+        ctrl.setActive(true);
+        ReactorControllerBlockEntity.serverTick(helper.getLevel(), helper.absolutePos(ctrlPos),
+                helper.getBlockState(ctrlPos), ctrl);
+
+        if (helper.getBlockState(new BlockPos(3, 1, 1)).getValue(MultiblockTrim.PART) != CasingPart.BASE) {
+            helper.fail("Expected bottom edge casing to have PART=BASE");
+            return;
+        }
+        if (helper.getBlockState(new BlockPos(1, 3, 1)).getValue(MultiblockTrim.PART) != CasingPart.PILLAR) {
+            helper.fail("Expected corner casing to have PART=PILLAR");
+            return;
+        }
+        if (helper.getBlockState(new BlockPos(3, 5, 1)).getValue(MultiblockTrim.PART) != CasingPart.TOP_EDGE) {
+            helper.fail("Expected top edge casing to have PART=TOP_EDGE");
+            return;
+        }
+        if (helper.getBlockState(new BlockPos(1, 5, 1)).getValue(MultiblockTrim.PART) != CasingPart.CORNER) {
+            helper.fail("Expected top corner casing to have PART=CORNER");
+            return;
+        }
+        if (helper.getBlockState(new BlockPos(5, 3, 3)).getValue(MultiblockTrim.PART) != CasingPart.PANEL) {
+            helper.fail("Expected wall center casing to have PART=PANEL");
+            return;
+        }
+
+        var centerGlass = helper.getBlockState(new BlockPos(3, 3, 1));
+        if (!centerGlass.getValue(ReactorGlassBlock.UP) || !centerGlass.getValue(ReactorGlassBlock.DOWN)
+                || !centerGlass.getValue(ReactorGlassBlock.EAST) || !centerGlass.getValue(ReactorGlassBlock.WEST)
+                || centerGlass.getValue(ReactorGlassBlock.NORTH) || centerGlass.getValue(ReactorGlassBlock.SOUTH)) {
+            helper.fail("Expected center glass block to connect only in-plane: " + centerGlass);
+            return;
+        }
+
+        if (!helper.getBlockState(new BlockPos(2, 3, 3)).getValue(ReactorFuelRodBlock.ACTIVE)) {
+            helper.fail("Expected active fuel rod to have ACTIVE=true");
+            return;
+        }
+
+        BlockPos rodPos = new BlockPos(2, 5, 3);
+        ReactorControlRodBlockEntity controlRod = ((ReactorControlRodBlockEntity) helper.getBlockEntity(rodPos));
+        int[] insertions = {0, 30, 60, 90};
+        for (int expectedLevel = 0; expectedLevel < insertions.length; expectedLevel++) {
+            controlRod.setInsertion(insertions[expectedLevel]);
+            int actualLevel = helper.getBlockState(rodPos).getValue(ReactorControlRodBlock.LEVEL);
+            if (actualLevel != expectedLevel) {
+                helper.fail("Expected control rod level " + expectedLevel
+                        + " for insertion " + insertions[expectedLevel] + ", got " + actualLevel);
+                return;
+            }
+        }
+
+        helper.setBlock(new BlockPos(5, 3, 3), Blocks.AIR);
+        if (ctrl.tryAssemble()) {
+            helper.fail("Expected broken reactor to fail reassembly");
+            return;
+        }
+        if (helper.getBlockState(new BlockPos(3, 1, 1)).getValue(MultiblockTrim.PART) != CasingPart.NONE) {
+            helper.fail("Expected disassembled casing to reset to PART=NONE");
+            return;
+        }
+        if (helper.getBlockState(new BlockPos(2, 3, 3)).getValue(ReactorFuelRodBlock.ACTIVE)) {
+            helper.fail("Expected disassembled fuel rod to reset to ACTIVE=false");
+            return;
+        }
+        helper.succeed();
+    }
+
+    private static void allMultiblocksTrimAndConnectedGlass(GameTestHelper helper) {
+        // 1. Turbine
+        for (int dx = 1; dx <= 5; dx++) {
+            for (int dy = 1; dy <= 5; dy++) {
+                for (int dz = 1; dz <= 5; dz++) {
+                    BlockPos p = new BlockPos(dx, dy, dz);
+                    boolean onX = dx == 1 || dx == 5;
+                    boolean onY = dy == 1 || dy == 5;
+                    boolean onZ = dz == 1 || dz == 5;
+                    int axes = (onX ? 1 : 0) + (onY ? 1 : 0) + (onZ ? 1 : 0);
+                    if (axes >= 2) {
+                        helper.setBlock(p, ModBlocks.TURBINE_CASING.get());
+                    } else if (axes == 1) {
+                        if (dx == 3 && dy == 2 && dz == 5) {
+                            helper.setBlock(p, ModBlocks.TURBINE_CONTROLLER.get());
+                        } else if (dx == 3 && dy == 1 && dz == 3) {
+                            helper.setBlock(p, ModBlocks.TURBINE_ROTOR_BEARING.get());
+                        } else if (dz == 1) {
+                            helper.setBlock(p, ModBlocks.TURBINE_GLASS.get());
+                        } else {
+                            helper.setBlock(p, ModBlocks.TURBINE_CASING.get());
+                        }
+                    } else if (dx == 3 && dz == 3) {
+                        helper.setBlock(p, ModBlocks.TURBINE_ROTOR_SHAFT.get());
+                    } else if (dy == 2 && dx == 2 && dz == 3) {
+                        helper.setBlock(p, ModBlocks.TURBINE_ROTOR_BLADE.get());
+                    } else if (dy == 4 && dx >= 2 && dx <= 4 && dz >= 2 && dz <= 4) {
+                        helper.setBlock(p, Blocks.GOLD_BLOCK);
+                    } else {
+                        helper.setBlock(p, Blocks.AIR);
+                    }
+                }
+            }
+        }
+        // Simulate pre-existing saved world where glass blocks lack directional connection properties
+        BlockPos glassPos = new BlockPos(3, 3, 1);
+        helper.getLevel().setBlock(helper.absolutePos(glassPos),
+                ModBlocks.TURBINE_GLASS.get().defaultBlockState(), Block.UPDATE_CLIENTS);
+
+        TurbineControllerBlockEntity turbine = ((TurbineControllerBlockEntity) helper.getBlockEntity(new BlockPos(3, 2, 5)));
+        if (!turbine.tryAssemble()) {
+            helper.fail("Expected 5x5x5 turbine to assemble: " + turbine.getLastValidationError());
+            return;
+        }
+        if (!verifyTrimAndGlass(helper, "Turbine")) return;
+        helper.setBlock(new BlockPos(5, 3, 3), Blocks.AIR);
+        if (turbine.tryAssemble() || helper.getBlockState(new BlockPos(3, 1, 1)).getValue(MultiblockTrim.PART) != CasingPart.NONE) {
+            helper.fail("Expected broken turbine to reset casing trim");
+            return;
+        }
+
+        // 2. Heat Exchanger
+        buildBox5(helper, ModBlocks.HEAT_EXCHANGER_CASING.get(), ModBlocks.HEAT_EXCHANGER_GLASS.get(),
+                ModBlocks.HEAT_EXCHANGER_CONTROLLER.get(), ModBlocks.HEAT_EXCHANGER_TUBE.get());
+        var ex = ((com.justreactors.exchanger.HeatExchangerControllerBlockEntity) helper.getBlockEntity(new BlockPos(3, 2, 5)));
+        if (!ex.tryAssemble()) {
+            helper.fail("Expected 5x5x5 heat exchanger to assemble: " + ex.getLastValidationError());
+            return;
+        }
+        if (!verifyTrimAndGlass(helper, "Heat Exchanger")) return;
+        helper.setBlock(new BlockPos(5, 3, 3), Blocks.AIR);
+        if (ex.tryAssemble() || helper.getBlockState(new BlockPos(3, 1, 1)).getValue(MultiblockTrim.PART) != CasingPart.NONE) {
+            helper.fail("Expected broken heat exchanger to reset casing trim");
+            return;
+        }
+
+        // 3. Battery
+        buildBox5(helper, ModBlocks.BATTERY_CASING.get(), ModBlocks.BATTERY_GLASS.get(),
+                ModBlocks.BATTERY_CONTROLLER.get(), ModBlocks.BATTERY_CELL.get());
+        var bat = ((com.justreactors.battery.BatteryControllerBlockEntity) helper.getBlockEntity(new BlockPos(3, 2, 5)));
+        if (!bat.tryAssemble()) {
+            helper.fail("Expected 5x5x5 battery to assemble: " + bat.getLastValidationError());
+            return;
+        }
+        if (!verifyTrimAndGlass(helper, "Battery")) return;
+        helper.setBlock(new BlockPos(5, 3, 3), Blocks.AIR);
+        if (bat.tryAssemble() || helper.getBlockState(new BlockPos(3, 1, 1)).getValue(MultiblockTrim.PART) != CasingPart.NONE) {
+            helper.fail("Expected broken battery to reset casing trim");
+            return;
+        }
+        helper.succeed();
+    }
+
+    private static void buildBox5(GameTestHelper helper, Block casing, Block glass, Block controller, Block core) {
+        for (int dx = 1; dx <= 5; dx++) {
+            for (int dy = 1; dy <= 5; dy++) {
+                for (int dz = 1; dz <= 5; dz++) {
+                    BlockPos p = new BlockPos(dx, dy, dz);
+                    boolean onX = dx == 1 || dx == 5;
+                    boolean onY = dy == 1 || dy == 5;
+                    boolean onZ = dz == 1 || dz == 5;
+                    int axes = (onX ? 1 : 0) + (onY ? 1 : 0) + (onZ ? 1 : 0);
+                    if (axes >= 2) {
+                        helper.setBlock(p, casing);
+                    } else if (axes == 1) {
+                        if (dx == 3 && dy == 2 && dz == 5) {
+                            helper.setBlock(p, controller);
+                        } else if (dz == 1) {
+                            helper.setBlock(p, glass);
+                        } else {
+                            helper.setBlock(p, casing);
+                        }
+                    } else {
+                        helper.setBlock(p, core);
+                    }
+                }
+            }
+        }
+    }
+
+    private static boolean verifyTrimAndGlass(GameTestHelper helper, String label) {
+        if (helper.getBlockState(new BlockPos(3, 1, 1)).getValue(MultiblockTrim.PART) != CasingPart.BASE
+                || helper.getBlockState(new BlockPos(1, 3, 1)).getValue(MultiblockTrim.PART) != CasingPart.PILLAR
+                || helper.getBlockState(new BlockPos(1, 5, 1)).getValue(MultiblockTrim.PART) != CasingPart.CORNER
+                || helper.getBlockState(new BlockPos(3, 5, 1)).getValue(MultiblockTrim.PART) != CasingPart.TOP_EDGE
+                || helper.getBlockState(new BlockPos(5, 3, 3)).getValue(MultiblockTrim.PART) != CasingPart.PANEL) {
+            helper.fail(label + " casing trim parts mismatch");
+            return false;
+        }
+        var glass = helper.getBlockState(new BlockPos(3, 3, 1));
+        if (!glass.getValue(ConnectedGlassBlock.UP) || !glass.getValue(ConnectedGlassBlock.DOWN)
+                || !glass.getValue(ConnectedGlassBlock.EAST) || !glass.getValue(ConnectedGlassBlock.WEST)
+                || glass.getValue(ConnectedGlassBlock.NORTH) || glass.getValue(ConnectedGlassBlock.SOUTH)) {
+            helper.fail(label + " connected glass mismatch: " + glass);
+            return false;
+        }
+        return true;
     }
 }
