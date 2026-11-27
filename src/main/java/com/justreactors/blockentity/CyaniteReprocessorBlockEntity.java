@@ -1,14 +1,18 @@
 package com.justreactors.blockentity;
 
+import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import net.minecraftforge.common.capabilities.Capability;
+import com.justreactors.transfer.Caps;
 import com.justreactors.transfer.Handlers;
-import net.neoforged.neoforge.energy.IEnergyStorage;
-import net.neoforged.neoforge.fluids.capability.IFluidHandler;
-import net.neoforged.neoforge.items.IItemHandler;
+import net.minecraftforge.energy.IEnergyStorage;
+import net.minecraftforge.fluids.capability.IFluidHandler;
+import net.minecraftforge.items.IItemHandler;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import com.justreactors.JustReactorsConfig;
 import com.justreactors.block.CyaniteReprocessorBlock;
-import com.justreactors.datagen.ModTags;
+import com.justreactors.registry.ModTags;
 import com.justreactors.menu.CyaniteReprocessorMenu;
 import com.justreactors.registry.ModBlockEntities;
 import com.justreactors.registry.ModItems;
@@ -57,7 +61,7 @@ public class CyaniteReprocessorBlockEntity extends BlockEntity implements MenuPr
     private final IItemHandler automationHandler = Handlers.slots(inventory,
             slot -> slot == SLOT_INPUT, slot -> slot == SLOT_OUTPUT);
 
-    private final ReactorFluidTank waterTank = new ReactorFluidTank(8_000, stack -> stack.is(Fluids.WATER), this::setChanged);
+    private final ReactorFluidTank waterTank = new ReactorFluidTank(8_000, stack -> stack.getFluid().isSame(Fluids.WATER), this::setChanged);
     private final ReactorEnergyStorage energyStorage = new ReactorEnergyStorage(100_000, 2_000, 0, this::setChanged);
 
     private int progress = 0;
@@ -179,9 +183,9 @@ public class CyaniteReprocessorBlockEntity extends BlockEntity implements MenuPr
     }
 
     @Override
-    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.saveAdditional(tag, registries);
-        ValueOutput output = new ValueOutput(tag, registries);
+    protected void saveAdditional(CompoundTag tag) {
+        super.saveAdditional(tag);
+        ValueOutput output = new ValueOutput(tag);
         inventory.serialize(output.child("Inventory"));
         waterTank.save(output, "WaterTank");
         energyStorage.serialize(output);
@@ -189,12 +193,20 @@ public class CyaniteReprocessorBlockEntity extends BlockEntity implements MenuPr
     }
 
     @Override
-    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.loadAdditional(tag, registries);
-        ValueInput input = new ValueInput(tag, registries);
+    public void load(CompoundTag tag) {
+        super.load(tag);
+        ValueInput input = new ValueInput(tag);
         input.child("Inventory").ifPresent(inventory::deserialize);
         waterTank.load(input, "WaterTank");
         energyStorage.deserialize(input);
         progress = input.getIntOr("Progress", 0);
+    }
+
+    @Override
+    public <T> LazyOptional<T> getCapability(Capability<T> cap, @Nullable Direction side) {
+        if (cap == ForgeCapabilities.ITEM_HANDLER) return Caps.of(getItemHandler(side)).cast();
+        if (cap == ForgeCapabilities.FLUID_HANDLER) return Caps.of(getFluidHandler(side)).cast();
+        if (cap == ForgeCapabilities.ENERGY) return Caps.of(getEnergyHandler(side)).cast();
+        return super.getCapability(cap, side);
     }
 }

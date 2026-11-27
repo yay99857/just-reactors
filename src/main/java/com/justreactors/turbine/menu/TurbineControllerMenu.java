@@ -6,7 +6,7 @@ import com.justreactors.registry.ModMenus;
 import com.justreactors.turbine.TurbineVentMode;
 import com.justreactors.turbine.blockentity.TurbineControllerBlockEntity;
 
-import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -40,7 +40,7 @@ public class TurbineControllerMenu extends AbstractContainerMenu {
     private final SyncedInt lastSteamFlow;
     private final SyncedInt ventMode;
 
-    public TurbineControllerMenu(int containerId, Inventory inv, RegistryFriendlyByteBuf extraData) {
+    public TurbineControllerMenu(int containerId, Inventory inv, FriendlyByteBuf extraData) {
         this(containerId, inv, inv.player.level().getBlockEntity(extraData.readBlockPos()));
     }
 

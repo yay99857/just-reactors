@@ -1,5 +1,6 @@
 package com.justreactors.turbine.blockentity;
 
+import net.minecraft.world.phys.AABB;
 import com.justreactors.JustReactorsConfig;
 import com.justreactors.client.ClientMachineSounds;
 import com.justreactors.registry.ModBlockEntities;
@@ -38,7 +39,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluids;
 import com.justreactors.compat.nbt.ValueInput;
 import com.justreactors.compat.nbt.ValueOutput;
-import net.neoforged.neoforge.fluids.FluidStack;
+import net.minecraftforge.fluids.FluidStack;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -94,7 +95,7 @@ public class TurbineControllerBlockEntity extends BlockEntity implements MenuPro
                 this::setChanged
         );
         this.steamTank = new ReactorFluidTank(FLUID_TANK_CAPACITY_MB, stack -> true, this::setChanged);
-        this.waterTank = new ReactorFluidTank(FLUID_TANK_CAPACITY_MB, stack -> stack.is(Fluids.WATER), this::setChanged);
+        this.waterTank = new ReactorFluidTank(FLUID_TANK_CAPACITY_MB, stack -> stack.getFluid().isSame(Fluids.WATER), this::setChanged);
         this.simulation.setMaxSteamFlowMb(JustReactorsConfig.get(JustReactorsConfig.TURBINE_MAX_STEAM_FLOW));
     }
 
@@ -465,8 +466,8 @@ public class TurbineControllerBlockEntity extends BlockEntity implements MenuPro
     }
 
     @Override
-    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
-        return saveWithoutMetadata(registries);
+    public CompoundTag getUpdateTag() {
+        return saveWithoutMetadata();
     }
 
     @Nullable
@@ -476,9 +477,9 @@ public class TurbineControllerBlockEntity extends BlockEntity implements MenuPro
     }
 
     @Override
-    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.saveAdditional(tag, registries);
-        ValueOutput output = new ValueOutput(tag, registries);
+    protected void saveAdditional(CompoundTag tag) {
+        super.saveAdditional(tag);
+        ValueOutput output = new ValueOutput(tag);
         energyStorage.serialize(output);
         steamTank.save(output, "SteamTank");
         waterTank.save(output, "WaterTank");
@@ -514,9 +515,9 @@ public class TurbineControllerBlockEntity extends BlockEntity implements MenuPro
     }
 
     @Override
-    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.loadAdditional(tag, registries);
-        ValueInput input = new ValueInput(tag, registries);
+    public void load(CompoundTag tag) {
+        super.load(tag);
+        ValueInput input = new ValueInput(tag);
         energyStorage.deserialize(input);
         steamTank.load(input, "SteamTank");
         waterTank.load(input, "WaterTank");
@@ -539,5 +540,16 @@ public class TurbineControllerBlockEntity extends BlockEntity implements MenuPro
         this.clientInwardDir = (inwardOrd >= 0 && inwardOrd < dirs.length) ? dirs[inwardOrd] : Direction.UP;
         this.clientShaftLength = input.getIntOr("SyncShaftLen", 0);
         this.clientBladeOffsets = input.getIntArray("SyncBlades").orElse(new int[0]);
+    }
+
+    @Override
+    public AABB getRenderBoundingBox() {
+        // the renderer draws the whole core (fuel rods / rotor), not just the controller block
+        BlockPos min = getClientMin();
+        BlockPos max = getClientMax();
+        if (isClientAssembled() && min != null && max != null) {
+            return new AABB(min.getX(), min.getY(), min.getZ(), max.getX() + 1.0, max.getY() + 1.0, max.getZ() + 1.0);
+        }
+        return super.getRenderBoundingBox();
     }
 }

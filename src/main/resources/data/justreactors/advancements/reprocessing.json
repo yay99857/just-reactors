@@ -1,0 +1,36 @@
+{
+  "display": {
+    "icon": {
+      "item": "justreactors:cyanite_reprocessor"
+    },
+    "title": {
+      "translate": "advancements.justreactors.reprocessing.title"
+    },
+    "description": {
+      "translate": "advancements.justreactors.reprocessing.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "has_item": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "justreactors:cyanite_reprocessor"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_item"
+    ]
+  ],
+  "parent": "justreactors:first_reactor"
+}

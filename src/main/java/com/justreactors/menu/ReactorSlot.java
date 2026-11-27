@@ -41,7 +41,7 @@ public class ReactorSlot extends Slot {
     }
 
     @Override
-    public void setByPlayer(ItemStack newStack, ItemStack oldStack) {
+    public void setByPlayer(ItemStack newStack) {
         handler.setStackInSlot(index, newStack);
         setChanged();
     }

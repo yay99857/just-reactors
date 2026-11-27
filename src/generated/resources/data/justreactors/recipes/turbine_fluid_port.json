@@ -1,0 +1,26 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "B": {
+      "item": "minecraft:bucket"
+    },
+    "I": {
+      "tag": "forge:ingots/iron"
+    },
+    "P": {
+      "item": "minecraft:piston"
+    },
+    "T": {
+      "item": "justreactors:turbine_casing"
+    }
+  },
+  "pattern": [
+    "TBT",
+    "IPI",
+    "TBT"
+  ],
+  "result": {
+    "item": "justreactors:turbine_fluid_port"
+  }
+}

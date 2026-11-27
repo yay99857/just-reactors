@@ -1,8 +1,11 @@
 package com.justreactors.turbine.blockentity;
 
+import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.common.capabilities.Capability;
+import com.justreactors.transfer.Caps;
 import com.justreactors.transfer.Handlers;
-import net.neoforged.neoforge.fluids.capability.IFluidHandler;
-import com.justreactors.datagen.ModTags;
+import net.minecraftforge.fluids.capability.IFluidHandler;
+import com.justreactors.registry.ModTags;
 import com.justreactors.registry.ModBlockEntities;
 import com.justreactors.registry.ModFluids;
 import com.justreactors.transfer.ReactorFluidTank;
@@ -11,8 +14,8 @@ import com.justreactors.turbine.block.TurbineFluidPortBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.fluids.FluidStack;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import net.minecraftforge.fluids.FluidStack;
 import org.jetbrains.annotations.Nullable;
 
 public class TurbineFluidPortBlockEntity extends TurbinePartBlockEntity {
@@ -36,7 +39,7 @@ public class TurbineFluidPortBlockEntity extends TurbinePartBlockEntity {
     }
 
     private static boolean isSteam(FluidStack stack) {
-        return stack.is(ModFluids.STEAM_SOURCE.get()) || stack.is(ModTags.FLUIDS_STEAM);
+        return stack.getFluid().isSame(ModFluids.STEAM_SOURCE.get()) || stack.getFluid().is(ModTags.FLUIDS_STEAM);
     }
 
     public void pushWaterToNeighbors(ReactorFluidTank waterTank, int maxRate) {
@@ -51,14 +54,20 @@ public class TurbineFluidPortBlockEntity extends TurbinePartBlockEntity {
             if (controller != null && controller.getStructure() != null && controller.getStructure().contains(neighborPos)) {
                 continue;
             }
-            IFluidHandler neighbor = level.getCapability(Capabilities.FluidHandler.BLOCK, neighborPos, dir.getOpposite());
+            IFluidHandler neighbor = Caps.block(level, neighborPos, ForgeCapabilities.FLUID_HANDLER, dir.getOpposite());
             if (neighbor == null) continue;
-            FluidStack toPush = waterTank.getFluid().copyWithAmount(remaining);
+            FluidStack toPush = ReactorFluidTank.withAmount(waterTank.getFluid(), remaining);
             int pushed = ReactorFluidTank.pushFluid(neighbor, toPush);
             if (pushed > 0) {
                 waterTank.drainInternal(pushed);
                 remaining -= pushed;
             }
         }
+    }
+
+    @Override
+    public <T> LazyOptional<T> getCapability(Capability<T> cap, @Nullable Direction side) {
+        if (cap == ForgeCapabilities.FLUID_HANDLER) return Caps.of(getFluidHandler(side)).cast();
+        return super.getCapability(cap, side);
     }
 }

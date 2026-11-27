@@ -2,10 +2,10 @@ package com.justreactors.transfer;
 
 import com.justreactors.compat.nbt.ValueInput;
 import com.justreactors.compat.nbt.ValueOutput;
-import net.neoforged.neoforge.items.ItemStackHandler;
+import net.minecraftforge.items.ItemStackHandler;
 
 /**
- * Simple slot-based item handler on NeoForge 1.21.1's {@link ItemStackHandler}.
+ * Simple slot-based item handler on Forge 1.20.1's {@link ItemStackHandler}.
  */
 public class ReactorItemHandler extends ItemStackHandler {
     public ReactorItemHandler(int size) {
@@ -29,10 +29,10 @@ public class ReactorItemHandler extends ItemStackHandler {
     }
 
     public void serialize(ValueOutput output) {
-        output.tag().merge(serializeNBT(output.registries()));
+        output.tag().merge(serializeNBT());
     }
 
     public void deserialize(ValueInput input) {
-        deserializeNBT(input.registries(), input.tag());
+        deserializeNBT(input.tag());
     }
 }

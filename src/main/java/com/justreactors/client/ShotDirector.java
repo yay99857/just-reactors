@@ -1,5 +1,6 @@
 package com.justreactors.client;
 
+import net.minecraftforge.network.NetworkHooks;
 import com.justreactors.JustReactors;
 import com.justreactors.demo.DemoSetup;
 import com.justreactors.registry.ModBlocks;
@@ -7,7 +8,7 @@ import com.justreactors.registry.ModFluids;
 import com.justreactors.turbine.blockentity.TurbineControllerBlockEntity;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
-import net.neoforged.neoforge.fluids.FluidStack;
+import net.minecraftforge.fluids.FluidStack;
 import net.minecraft.client.Minecraft;
 import org.lwjgl.glfw.GLFW;
 import net.minecraft.client.Screenshot;
@@ -22,10 +23,10 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.AABB;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
+import net.minecraftforge.event.TickEvent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -126,19 +127,19 @@ public final class ShotDirector {
     }
 
     private static void feedTurbine(ServerPlayer p) {
-        if (BuiltInRegistries.BLOCK.containsKey(ResourceLocation.fromNamespaceAndPath("voltaicdynamics", "fluid_cable"))) return;
+        if (BuiltInRegistries.BLOCK.containsKey(new ResourceLocation("voltaicdynamics", "fluid_cable"))) return;
         if (p.level().getBlockEntity(demo.turbineControllerPos()) instanceof TurbineControllerBlockEntity turbine) {
             turbine.getSteamTank().fillInternal(new FluidStack(ModFluids.STEAM_SOURCE.get(), turbine.getSteamTank().getSpace()));
         }
     }
 
     private static void openMenu(ServerPlayer p, BlockPos pos) {
-        if (p.level().getBlockEntity(pos) instanceof MenuProvider provider) p.openMenu(provider, pos);
+        if (p.level().getBlockEntity(pos) instanceof MenuProvider provider) NetworkHooks.openScreen(p, provider, pos);
     }
 
     @SubscribeEvent
-    static void tick(ClientTickEvent.Post event) {
-        if (!ON) return;
+    public static void tick(TickEvent.ClientTickEvent event) {
+        if (!ON || event.phase != TickEvent.Phase.END) return;
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null || mc.getSingleplayerServer() == null) return;
         if (index < 0) {

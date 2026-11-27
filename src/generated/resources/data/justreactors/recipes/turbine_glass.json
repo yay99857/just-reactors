@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "C": {
+      "item": "justreactors:turbine_casing"
+    },
+    "G": {
+      "tag": "forge:glass_blocks"
+    }
+  },
+  "pattern": [
+    "GCG"
+  ],
+  "result": {
+    "item": "justreactors:turbine_glass",
+    "count": 2
+  }
+}

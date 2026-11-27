@@ -1,5 +1,5 @@
 {
-  "tag": "c:storage_blocks/copper",
+  "tag": "forge:storage_blocks/copper",
   "absorption": 0.48,
   "heat_efficiency": 0.72,
   "moderation": 1.38,

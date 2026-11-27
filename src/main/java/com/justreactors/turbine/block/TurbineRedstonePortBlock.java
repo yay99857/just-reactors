@@ -1,5 +1,7 @@
 package com.justreactors.turbine.block;
 
+import net.minecraftforge.network.NetworkHooks;
+import net.minecraft.world.InteractionHand;
 import com.justreactors.turbine.blockentity.TurbineRedstonePortBlockEntity;
 
 import net.minecraft.core.BlockPos;
@@ -38,21 +40,26 @@ public class TurbineRedstonePortBlock extends TurbinePartBlock implements Entity
     }
 
     @Override
-    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand,
+                                 BlockHitResult hit) {
+        return hand == InteractionHand.MAIN_HAND ? jrUseWithoutItem(state, level, pos, player, hit) : InteractionResult.PASS;
+    }
+
+    private InteractionResult jrUseWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         if (level.isClientSide()) return InteractionResult.SUCCESS;
         if (level.getBlockEntity(pos) instanceof TurbineRedstonePortBlockEntity port && player instanceof ServerPlayer serverPlayer) {
-            serverPlayer.openMenu(port, pos);
+            NetworkHooks.openScreen(serverPlayer, port, pos);
         }
         return InteractionResult.CONSUME;
     }
 
     @Override
-    protected boolean isSignalSource(BlockState state) {
+    public boolean isSignalSource(BlockState state) {
         return true;
     }
 
     @Override
-    protected int getSignal(BlockState state, BlockGetter level, BlockPos pos, Direction direction) {
+    public int getSignal(BlockState state, BlockGetter level, BlockPos pos, Direction direction) {
         if (level.getBlockEntity(pos) instanceof TurbineRedstonePortBlockEntity port && port.getMode().isOutput()) {
             return port.getEmittedSignal();
         }
@@ -60,12 +67,12 @@ public class TurbineRedstonePortBlock extends TurbinePartBlock implements Entity
     }
 
     @Override
-    protected int getDirectSignal(BlockState state, BlockGetter level, BlockPos pos, Direction direction) {
+    public int getDirectSignal(BlockState state, BlockGetter level, BlockPos pos, Direction direction) {
         return getSignal(state, level, pos, direction);
     }
 
     @Override
-    protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block neighborBlock,
+    public void neighborChanged(BlockState state, Level level, BlockPos pos, Block neighborBlock,
                                    BlockPos fromPos, boolean movedByPiston) {
         super.neighborChanged(state, level, pos, neighborBlock, fromPos, movedByPiston);
         if (level.isClientSide()) return;

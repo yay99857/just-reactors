@@ -1,6 +1,6 @@
 package com.justreactors.block;
 
-import net.minecraft.world.ItemInteractionResult;
+import com.justreactors.transfer.Caps;
 import com.justreactors.blockentity.ReactorCoolantPortBlockEntity;
 
 import net.minecraft.ChatFormatting;
@@ -18,8 +18,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.phys.BlockHitResult;
-import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.fluids.FluidUtil;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import net.minecraftforge.fluids.FluidUtil;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -46,18 +46,24 @@ public class ReactorCoolantPortBlock extends ReactorPartBlock implements EntityB
     }
 
     @Override
-    protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player,
-                                              InteractionHand hand, BlockHitResult hit) {
-        if (!stack.isEmpty() && stack.getCapability(Capabilities.FluidHandler.ITEM) != null) {
-            if (FluidUtil.interactWithFluidHandler(player, hand, level, pos, hit.getDirection())) {
-                return ItemInteractionResult.sidedSuccess(level.isClientSide());
-            }
-        }
-        return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand,
+                                 BlockHitResult hit) {
+        InteractionResult held = jrUseItemOn(player.getItemInHand(hand), state, level, pos, player, hand, hit);
+        if (held != InteractionResult.PASS) return held;
+        return hand == InteractionHand.MAIN_HAND ? jrUseWithoutItem(state, level, pos, player, hit) : InteractionResult.PASS;
     }
 
-    @Override
-    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+    private InteractionResult jrUseItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player,
+                                              InteractionHand hand, BlockHitResult hit) {
+        if (!stack.isEmpty() && Caps.item(stack, ForgeCapabilities.FLUID_HANDLER_ITEM) != null) {
+            if (FluidUtil.interactWithFluidHandler(player, hand, level, pos, hit.getDirection())) {
+                return InteractionResult.sidedSuccess(level.isClientSide());
+            }
+        }
+        return InteractionResult.PASS;
+    }
+
+    private InteractionResult jrUseWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         if (level.isClientSide()) return InteractionResult.SUCCESS;
         boolean nextOutlet = !state.getValue(OUTLET);
         level.setBlock(pos, state.setValue(OUTLET, nextOutlet), 3);

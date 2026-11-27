@@ -1,35 +1,35 @@
 package com.justreactors;
 
-import net.neoforged.neoforge.common.ModConfigSpec;
+import net.minecraftforge.common.ForgeConfigSpec;
 
 /**
  * Synced server config for Just Reactors. Every getter falls back to its default before config load.
  */
 public final class JustReactorsConfig {
-    public static final ModConfigSpec SPEC;
+    public static final ForgeConfigSpec SPEC;
 
-    public static final ModConfigSpec.IntValue MAX_REACTOR_SIZE;
-    public static final ModConfigSpec.IntValue MAX_REACTOR_HEIGHT;
-    public static final ModConfigSpec.IntValue ENERGY_BUFFER_CAPACITY;
-    public static final ModConfigSpec.IntValue POWER_TAP_MAX_EXTRACT;
-    public static final ModConfigSpec.DoubleValue POWER_PRODUCTION_MULTIPLIER;
-    public static final ModConfigSpec.DoubleValue FUEL_USAGE_MULTIPLIER;
-    public static final ModConfigSpec.IntValue FUEL_CAPACITY_PER_ROD_MB;
-    public static final ModConfigSpec.DoubleValue STEAM_PRODUCTION_MULTIPLIER;
-    public static final ModConfigSpec.IntValue COOLANT_TANK_PER_ROD_MB;
+    public static final ForgeConfigSpec.IntValue MAX_REACTOR_SIZE;
+    public static final ForgeConfigSpec.IntValue MAX_REACTOR_HEIGHT;
+    public static final ForgeConfigSpec.IntValue ENERGY_BUFFER_CAPACITY;
+    public static final ForgeConfigSpec.IntValue POWER_TAP_MAX_EXTRACT;
+    public static final ForgeConfigSpec.DoubleValue POWER_PRODUCTION_MULTIPLIER;
+    public static final ForgeConfigSpec.DoubleValue FUEL_USAGE_MULTIPLIER;
+    public static final ForgeConfigSpec.IntValue FUEL_CAPACITY_PER_ROD_MB;
+    public static final ForgeConfigSpec.DoubleValue STEAM_PRODUCTION_MULTIPLIER;
+    public static final ForgeConfigSpec.IntValue COOLANT_TANK_PER_ROD_MB;
 
-    public static final ModConfigSpec.IntValue MAX_TURBINE_SIZE;
-    public static final ModConfigSpec.IntValue MAX_TURBINE_HEIGHT;
-    public static final ModConfigSpec.IntValue TURBINE_ENERGY_CAPACITY;
-    public static final ModConfigSpec.DoubleValue TURBINE_POWER_MULTIPLIER;
-    public static final ModConfigSpec.IntValue TURBINE_MAX_STEAM_FLOW;
+    public static final ForgeConfigSpec.IntValue MAX_TURBINE_SIZE;
+    public static final ForgeConfigSpec.IntValue MAX_TURBINE_HEIGHT;
+    public static final ForgeConfigSpec.IntValue TURBINE_ENERGY_CAPACITY;
+    public static final ForgeConfigSpec.DoubleValue TURBINE_POWER_MULTIPLIER;
+    public static final ForgeConfigSpec.IntValue TURBINE_MAX_STEAM_FLOW;
 
-    public static final ModConfigSpec.IntValue REPROCESSOR_ENERGY_COST;
-    public static final ModConfigSpec.IntValue REPROCESSOR_WATER_COST;
-    public static final ModConfigSpec.IntValue REPROCESSOR_TICKS;
+    public static final ForgeConfigSpec.IntValue REPROCESSOR_ENERGY_COST;
+    public static final ForgeConfigSpec.IntValue REPROCESSOR_WATER_COST;
+    public static final ForgeConfigSpec.IntValue REPROCESSOR_TICKS;
 
     static {
-        ModConfigSpec.Builder b = new ModConfigSpec.Builder();
+        ForgeConfigSpec.Builder b = new ForgeConfigSpec.Builder();
 
         b.push("reactor");
         MAX_REACTOR_SIZE = b.comment("Maximum X/Z outer dimension of a reactor multiblock (minimum is 3).")
@@ -80,11 +80,11 @@ public final class JustReactorsConfig {
     private JustReactorsConfig() {
     }
 
-    public static int get(ModConfigSpec.IntValue value) {
-        return SPEC.isLoaded() ? value.getAsInt() : value.getDefault();
+    public static int get(ForgeConfigSpec.IntValue value) {
+        return SPEC.isLoaded() ? value.get() : value.getDefault();
     }
 
-    public static double get(ModConfigSpec.DoubleValue value) {
-        return SPEC.isLoaded() ? value.getAsDouble() : value.getDefault();
+    public static double get(ForgeConfigSpec.DoubleValue value) {
+        return SPEC.isLoaded() ? value.get() : value.getDefault();
     }
 }

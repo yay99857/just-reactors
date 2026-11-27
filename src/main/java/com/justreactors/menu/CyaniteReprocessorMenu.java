@@ -4,7 +4,7 @@ import com.justreactors.blockentity.CyaniteReprocessorBlockEntity;
 import com.justreactors.registry.ModBlocks;
 import com.justreactors.registry.ModMenus;
 
-import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -27,7 +27,7 @@ public class CyaniteReprocessorMenu extends AbstractContainerMenu {
     private final SyncedInt progress;
     private final SyncedInt maxProgress;
 
-    public CyaniteReprocessorMenu(int containerId, Inventory inv, RegistryFriendlyByteBuf extraData) {
+    public CyaniteReprocessorMenu(int containerId, Inventory inv, FriendlyByteBuf extraData) {
         this(containerId, inv, inv.player.level().getBlockEntity(extraData.readBlockPos()));
     }
 

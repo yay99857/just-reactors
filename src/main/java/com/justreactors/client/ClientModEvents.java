@@ -2,57 +2,35 @@ package com.justreactors.client;
 
 import com.justreactors.JustReactors;
 import com.justreactors.registry.ModBlockEntities;
-import com.justreactors.registry.ModFluids;
 import com.justreactors.registry.ModMenus;
 import com.justreactors.turbine.client.TurbineControllerScreen;
 import com.justreactors.turbine.client.TurbineRedstonePortScreen;
 import com.justreactors.turbine.client.TurbineRotorRenderer;
 
-import net.minecraft.resources.ResourceLocation;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.EntityRenderersEvent;
-import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
-import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
-import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
+import net.minecraft.client.gui.screens.MenuScreens;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.event.EntityRenderersEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 
-@EventBusSubscriber(modid = JustReactors.MOD_ID, value = Dist.CLIENT)
+// The steam fluid's client textures are set in ModFluids (FluidType#initializeClient on 1.20.1).
+@EventBusSubscriber(modid = JustReactors.MOD_ID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
 public final class ClientModEvents {
     private ClientModEvents() {
     }
 
     @SubscribeEvent
-    public static void registerScreens(RegisterMenuScreensEvent event) {
-        event.register(ModMenus.REACTOR_CONTROLLER.get(), ReactorControllerScreen::new);
-        event.register(ModMenus.REACTOR_CONTROL_ROD.get(), ReactorControlRodScreen::new);
-        event.register(ModMenus.REACTOR_ACCESS_PORT.get(), ReactorAccessPortScreen::new);
-        event.register(ModMenus.REACTOR_REDSTONE_PORT.get(), ReactorRedstonePortScreen::new);
-        event.register(ModMenus.TURBINE_CONTROLLER.get(), TurbineControllerScreen::new);
-        event.register(ModMenus.TURBINE_REDSTONE_PORT.get(), TurbineRedstonePortScreen::new);
-        event.register(ModMenus.CYANITE_REPROCESSOR.get(), CyaniteReprocessorScreen::new);
-    }
-
-    @SubscribeEvent
-    public static void registerClientExtensions(RegisterClientExtensionsEvent event) {
-        ResourceLocation still = ResourceLocation.withDefaultNamespace("block/water_still");
-        ResourceLocation flowing = ResourceLocation.withDefaultNamespace("block/water_flow");
-        event.registerFluidType(new IClientFluidTypeExtensions() {
-            @Override
-            public ResourceLocation getStillTexture() {
-                return still;
-            }
-
-            @Override
-            public ResourceLocation getFlowingTexture() {
-                return flowing;
-            }
-
-            @Override
-            public int getTintColor() {
-                return 0xFFE8F1F8;
-            }
-        }, ModFluids.STEAM_TYPE.get());
+    public static void clientSetup(FMLClientSetupEvent event) {
+        event.enqueueWork(() -> {
+            MenuScreens.register(ModMenus.REACTOR_CONTROLLER.get(), ReactorControllerScreen::new);
+            MenuScreens.register(ModMenus.REACTOR_CONTROL_ROD.get(), ReactorControlRodScreen::new);
+            MenuScreens.register(ModMenus.REACTOR_ACCESS_PORT.get(), ReactorAccessPortScreen::new);
+            MenuScreens.register(ModMenus.REACTOR_REDSTONE_PORT.get(), ReactorRedstonePortScreen::new);
+            MenuScreens.register(ModMenus.TURBINE_CONTROLLER.get(), TurbineControllerScreen::new);
+            MenuScreens.register(ModMenus.TURBINE_REDSTONE_PORT.get(), TurbineRedstonePortScreen::new);
+            MenuScreens.register(ModMenus.CYANITE_REPROCESSOR.get(), CyaniteReprocessorScreen::new);
+        });
     }
 
     @SubscribeEvent

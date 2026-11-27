@@ -27,8 +27,8 @@ import com.justreactors.compat.nbt.ValueInput;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import snownee.jade.api.BlockAccessor;
 import snownee.jade.api.IBlockComponentProvider;
 import snownee.jade.api.IServerDataProvider;
@@ -79,68 +79,56 @@ public class JustReactorsJadePlugin implements IWailaPlugin {
 
         @Override
         public void appendServerData(CompoundTag data, BlockAccessor accessor) {
-            switch (accessor.getBlockEntity()) {
-                case ReactorControllerBlockEntity controller -> {
-                    data.putString("Kind", "Reactor");
-                    data.putBoolean("Assembled", controller.isAssembled());
-                    if (controller.isAssembled()) {
-                        data.putBoolean("Active", controller.getSimulation().isActive());
-                        data.putBoolean("ActiveCooled", controller.getSimulation().getMode() == ReactorMode.ACTIVE);
-                        data.putInt("Rate", controller.getSimulation().getLastGeneratedFe());
-                        data.putInt("SteamRate", controller.getSimulation().getLastSteamProducedMb());
-                        data.putInt("Fuel", (int) Math.round(controller.getSimulation().getFuelMb()));
-                        data.putInt("MaxFuel", controller.getTotalFuelCapacityMb());
-                        data.putInt("CoreTemp", (int) Math.round(controller.getSimulation().getFuelHeat()));
-                        data.putInt("CasingTemp", (int) Math.round(controller.getSimulation().getCasingHeat()));
-                    } else if (controller.getLastValidationError() != null) {
-                        ComponentSerialization.CODEC.encodeStart(NbtOps.INSTANCE, controller.getLastValidationError())
-                                .result().ifPresent(tag -> data.put("Error", tag));
-                    }
+            BlockEntity be = accessor.getBlockEntity();
+            if (be instanceof ReactorControllerBlockEntity controller) {
+                data.putString("Kind", "Reactor");
+                data.putBoolean("Assembled", controller.isAssembled());
+                if (controller.isAssembled()) {
+                    data.putBoolean("Active", controller.getSimulation().isActive());
+                    data.putBoolean("ActiveCooled", controller.getSimulation().getMode() == ReactorMode.ACTIVE);
+                    data.putInt("Rate", controller.getSimulation().getLastGeneratedFe());
+                    data.putInt("SteamRate", controller.getSimulation().getLastSteamProducedMb());
+                    data.putInt("Fuel", (int) Math.round(controller.getSimulation().getFuelMb()));
+                    data.putInt("MaxFuel", controller.getTotalFuelCapacityMb());
+                    data.putInt("CoreTemp", (int) Math.round(controller.getSimulation().getFuelHeat()));
+                    data.putInt("CasingTemp", (int) Math.round(controller.getSimulation().getCasingHeat()));
+                } else if (controller.getLastValidationError() != null) {
+                    data.putString("Error", Component.Serializer.toJson(controller.getLastValidationError()));
                 }
-                case ReactorControlRodBlockEntity rod -> {
-                    data.putString("Kind", "Rod");
-                    data.putInt("Insertion", rod.getInsertion());
+            } else if (be instanceof ReactorControlRodBlockEntity rod) {
+                data.putString("Kind", "Rod");
+                data.putInt("Insertion", rod.getInsertion());
+            } else if (be instanceof ReactorCoolantPortBlockEntity port) {
+                data.putString("Kind", "ReactorPort");
+                data.putBoolean("Outlet", port.isOutlet());
+            } else if (be instanceof ReactorRedstonePortBlockEntity port) {
+                data.putString("Kind", "RedstonePort");
+                data.putInt("Mode", port.getMode().ordinal());
+                data.putInt("Threshold", port.getThresholdPercent());
+                data.putInt("Signal", port.getCurrentDisplaySignal());
+            } else if (be instanceof TurbineControllerBlockEntity turbine) {
+                data.putString("Kind", "Turbine");
+                data.putBoolean("Assembled", turbine.isAssembled());
+                if (turbine.isAssembled()) {
+                    data.putBoolean("Active", turbine.getSimulation().isActive());
+                    data.putInt("Rate", turbine.getSimulation().getLastGeneratedFe());
+                    data.putInt("Rpm", (int) Math.round(turbine.getSimulation().getRpm()));
+                    data.putInt("VentMode", turbine.getVentMode().ordinal());
+                } else if (turbine.getLastValidationError() != null) {
+                    data.putString("Error", Component.Serializer.toJson(turbine.getLastValidationError()));
                 }
-                case ReactorCoolantPortBlockEntity port -> {
-                    data.putString("Kind", "ReactorPort");
-                    data.putBoolean("Outlet", port.isOutlet());
-                }
-                case ReactorRedstonePortBlockEntity port -> {
-                    data.putString("Kind", "RedstonePort");
-                    data.putInt("Mode", port.getMode().ordinal());
-                    data.putInt("Threshold", port.getThresholdPercent());
-                    data.putInt("Signal", port.getCurrentDisplaySignal());
-                }
-                case TurbineControllerBlockEntity turbine -> {
-                    data.putString("Kind", "Turbine");
-                    data.putBoolean("Assembled", turbine.isAssembled());
-                    if (turbine.isAssembled()) {
-                        data.putBoolean("Active", turbine.getSimulation().isActive());
-                        data.putInt("Rate", turbine.getSimulation().getLastGeneratedFe());
-                        data.putInt("Rpm", (int) Math.round(turbine.getSimulation().getRpm()));
-                        data.putInt("VentMode", turbine.getVentMode().ordinal());
-                    } else if (turbine.getLastValidationError() != null) {
-                        ComponentSerialization.CODEC.encodeStart(NbtOps.INSTANCE, turbine.getLastValidationError())
-                                .result().ifPresent(tag -> data.put("Error", tag));
-                    }
-                }
-                case TurbineFluidPortBlockEntity port -> {
-                    data.putString("Kind", "TurbinePort");
-                    data.putBoolean("Outlet", port.isOutlet());
-                }
-                case TurbineRedstonePortBlockEntity port -> {
-                    data.putString("Kind", "TurbineRedstonePort");
-                    data.putInt("Mode", port.getMode().ordinal());
-                    data.putInt("Threshold", port.getThresholdPercent());
-                    data.putInt("Signal", port.getCurrentDisplaySignal());
-                }
-                case CyaniteReprocessorBlockEntity rep -> {
-                    data.putString("Kind", "Reprocessor");
-                    data.putInt("Progress", rep.getProgress());
-                    data.putInt("MaxProgress", rep.getMaxProgress());
-                }
-                default -> {
-                }
+            } else if (be instanceof TurbineFluidPortBlockEntity port) {
+                data.putString("Kind", "TurbinePort");
+                data.putBoolean("Outlet", port.isOutlet());
+            } else if (be instanceof TurbineRedstonePortBlockEntity port) {
+                data.putString("Kind", "TurbineRedstonePort");
+                data.putInt("Mode", port.getMode().ordinal());
+                data.putInt("Threshold", port.getThresholdPercent());
+                data.putInt("Signal", port.getCurrentDisplaySignal());
+            } else if (be instanceof CyaniteReprocessorBlockEntity rep) {
+                data.putString("Kind", "Reprocessor");
+                data.putInt("Progress", rep.getProgress());
+                data.putInt("MaxProgress", rep.getMaxProgress());
             }
         }
     }
@@ -156,7 +144,7 @@ public class JustReactorsJadePlugin implements IWailaPlugin {
         @Override
         public void appendTooltip(ITooltip tooltip, BlockAccessor accessor, IPluginConfig config) {
             CompoundTag data = accessor.getServerData();
-            ValueInput in = new ValueInput(data, accessor.getLevel().registryAccess());
+            ValueInput in = new ValueInput(data);
             String kind = in.getStringOr("Kind", "");
             switch (kind) {
                 case "Reactor" -> {
@@ -248,8 +236,8 @@ public class JustReactorsJadePlugin implements IWailaPlugin {
 
         private static void addErrorTooltip(ITooltip tooltip, CompoundTag data) {
             if (!data.contains("Error")) return;
-            ComponentSerialization.CODEC.parse(NbtOps.INSTANCE, data.get("Error")).result()
-                    .ifPresent(err -> tooltip.add(err.copy().withStyle(ChatFormatting.YELLOW)));
+            Component err = Component.Serializer.fromJson(data.getString("Error"));
+            if (err != null) tooltip.add(err.copy().withStyle(ChatFormatting.YELLOW));
         }
     }
 }

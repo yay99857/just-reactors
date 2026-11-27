@@ -1,11 +1,15 @@
 package com.justreactors.blockentity;
 
+import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import net.minecraftforge.common.capabilities.Capability;
+import com.justreactors.transfer.Caps;
 import com.justreactors.transfer.Handlers;
-import net.neoforged.neoforge.items.IItemHandler;
+import net.minecraftforge.items.IItemHandler;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import com.justreactors.block.ReactorAccessPortBlock;
-import com.justreactors.datagen.ModTags;
+import com.justreactors.registry.ModTags;
 import com.justreactors.menu.ReactorAccessPortMenu;
 import com.justreactors.registry.ModBlockEntities;
 import com.justreactors.registry.ModItems;
@@ -132,16 +136,22 @@ public class ReactorAccessPortBlockEntity extends ReactorPartBlockEntity impleme
     }
 
     @Override
-    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.saveAdditional(tag, registries);
-        ValueOutput output = new ValueOutput(tag, registries);
+    protected void saveAdditional(CompoundTag tag) {
+        super.saveAdditional(tag);
+        ValueOutput output = new ValueOutput(tag);
         inventory.serialize(output.child("Inventory"));
     }
 
     @Override
-    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.loadAdditional(tag, registries);
-        ValueInput input = new ValueInput(tag, registries);
+    public void load(CompoundTag tag) {
+        super.load(tag);
+        ValueInput input = new ValueInput(tag);
         input.child("Inventory").ifPresent(inventory::deserialize);
+    }
+
+    @Override
+    public <T> LazyOptional<T> getCapability(Capability<T> cap, @Nullable Direction side) {
+        if (cap == ForgeCapabilities.ITEM_HANDLER) return Caps.of(getItemHandler(side)).cast();
+        return super.getCapability(cap, side);
     }
 }

@@ -19,60 +19,68 @@ import com.justreactors.turbine.block.TurbineRedstonePortBlock;
 import com.justreactors.turbine.block.TurbineRotorBladeBlock;
 import com.justreactors.turbine.block.TurbineRotorShaftBlock;
 
+import net.minecraft.core.registries.Registries;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.DropExperienceBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
-import net.neoforged.neoforge.registries.DeferredBlock;
-import net.neoforged.neoforge.registries.DeferredRegister;
+import net.minecraftforge.registries.RegistryObject;
+import net.minecraftforge.registries.DeferredRegister;
+
+import java.util.function.Function;
 
 public final class ModBlocks {
-    public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(JustReactors.MOD_ID);
+    public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(Registries.BLOCK, JustReactors.MOD_ID);
+
+    private static <T extends Block> RegistryObject<T> registerBlock(String name, Function<BlockBehaviour.Properties, T> factory,
+                                                                     BlockBehaviour.Properties properties) {
+        return BLOCKS.register(name, () -> factory.apply(properties));
+    }
 
     // Ores & storage blocks
-    public static final DeferredBlock<Block> URANIUM_ORE = BLOCKS.registerBlock("uranium_ore",
-            p -> new DropExperienceBlock(UniformInt.of(2, 5), p),
+    public static final RegistryObject<Block> URANIUM_ORE = registerBlock("uranium_ore",
+            p -> new DropExperienceBlock(p, UniformInt.of(2, 5)),
             BlockBehaviour.Properties.of()
                     .strength(3.0F, 3.0F)
                     .sound(SoundType.STONE)
                     .requiresCorrectToolForDrops());
 
-    public static final DeferredBlock<Block> DEEPSLATE_URANIUM_ORE = BLOCKS.registerBlock("deepslate_uranium_ore",
-            p -> new DropExperienceBlock(UniformInt.of(2, 5), p),
+    public static final RegistryObject<Block> DEEPSLATE_URANIUM_ORE = registerBlock("deepslate_uranium_ore",
+            p -> new DropExperienceBlock(p, UniformInt.of(2, 5)),
             BlockBehaviour.Properties.of()
                     .strength(4.5F, 3.0F)
                     .sound(SoundType.DEEPSLATE)
                     .requiresCorrectToolForDrops());
 
-    public static final DeferredBlock<Block> URANIUM_BLOCK = BLOCKS.registerBlock("uranium_block",
+    public static final RegistryObject<Block> URANIUM_BLOCK = registerBlock("uranium_block",
             Block::new,
             JustReactors.reactorBlockProperties(5.0F, 6.0F));
 
-    public static final DeferredBlock<Block> GRAPHITE_BLOCK = BLOCKS.registerBlock("graphite_block",
+    public static final RegistryObject<Block> GRAPHITE_BLOCK = registerBlock("graphite_block",
             Block::new,
             JustReactors.reactorBlockProperties(4.0F, 6.0F));
 
-    public static final DeferredBlock<Block> CYANITE_BLOCK = BLOCKS.registerBlock("cyanite_block",
+    public static final RegistryObject<Block> CYANITE_BLOCK = registerBlock("cyanite_block",
             Block::new,
             JustReactors.reactorBlockProperties(5.0F, 6.0F));
 
-    public static final DeferredBlock<Block> BLUTONIUM_BLOCK = BLOCKS.registerBlock("blutonium_block",
+    public static final RegistryObject<Block> BLUTONIUM_BLOCK = registerBlock("blutonium_block",
             Block::new,
             JustReactors.reactorBlockProperties(5.0F, 8.0F));
 
     // Processing machines
-    public static final DeferredBlock<CyaniteReprocessorBlock> CYANITE_REPROCESSOR = BLOCKS.registerBlock("cyanite_reprocessor",
+    public static final RegistryObject<CyaniteReprocessorBlock> CYANITE_REPROCESSOR = registerBlock("cyanite_reprocessor",
             CyaniteReprocessorBlock::new,
             JustReactors.reactorBlockProperties(3.5F, 6.0F)
                     .lightLevel(state -> state.getValue(CyaniteReprocessorBlock.LIT) ? 9 : 0));
 
     // Reactor multiblock parts
-    public static final DeferredBlock<ReactorPartBlock> REACTOR_CASING = BLOCKS.registerBlock("reactor_casing",
+    public static final RegistryObject<ReactorPartBlock> REACTOR_CASING = registerBlock("reactor_casing",
             ReactorPartBlock::new,
             JustReactors.reactorBlockProperties(4.0F, 8.0F));
 
-    public static final DeferredBlock<ReactorGlassBlock> REACTOR_GLASS = BLOCKS.registerBlock("reactor_glass",
+    public static final RegistryObject<ReactorGlassBlock> REACTOR_GLASS = registerBlock("reactor_glass",
             ReactorGlassBlock::new,
             BlockBehaviour.Properties.of()
                     .strength(3.0F, 6.0F)
@@ -83,43 +91,43 @@ public final class ModBlocks {
                     .isSuffocating((s, l, p) -> false)
                     .requiresCorrectToolForDrops());
 
-    public static final DeferredBlock<ReactorControllerBlock> REACTOR_CONTROLLER = BLOCKS.registerBlock("reactor_controller",
+    public static final RegistryObject<ReactorControllerBlock> REACTOR_CONTROLLER = registerBlock("reactor_controller",
             ReactorControllerBlock::new,
             JustReactors.reactorBlockProperties(4.0F, 8.0F)
                     .lightLevel(state -> state.getValue(ReactorControllerBlock.ACTIVE) ? 10 : 0));
 
-    public static final DeferredBlock<ReactorPartBlock> REACTOR_FUEL_ROD = BLOCKS.registerBlock("reactor_fuel_rod",
+    public static final RegistryObject<ReactorPartBlock> REACTOR_FUEL_ROD = registerBlock("reactor_fuel_rod",
             ReactorPartBlock::new,
             JustReactors.reactorBlockProperties(3.5F, 6.0F)
                     .noOcclusion()
                     .lightLevel(state -> 4));
 
-    public static final DeferredBlock<ReactorControlRodBlock> REACTOR_CONTROL_ROD = BLOCKS.registerBlock("reactor_control_rod",
+    public static final RegistryObject<ReactorControlRodBlock> REACTOR_CONTROL_ROD = registerBlock("reactor_control_rod",
             ReactorControlRodBlock::new,
             JustReactors.reactorBlockProperties(4.0F, 8.0F));
 
-    public static final DeferredBlock<ReactorPowerTapBlock> REACTOR_POWER_TAP = BLOCKS.registerBlock("reactor_power_tap",
+    public static final RegistryObject<ReactorPowerTapBlock> REACTOR_POWER_TAP = registerBlock("reactor_power_tap",
             ReactorPowerTapBlock::new,
             JustReactors.reactorBlockProperties(4.0F, 8.0F));
 
-    public static final DeferredBlock<ReactorAccessPortBlock> REACTOR_ACCESS_PORT = BLOCKS.registerBlock("reactor_access_port",
+    public static final RegistryObject<ReactorAccessPortBlock> REACTOR_ACCESS_PORT = registerBlock("reactor_access_port",
             ReactorAccessPortBlock::new,
             JustReactors.reactorBlockProperties(4.0F, 8.0F));
 
-    public static final DeferredBlock<ReactorRedstonePortBlock> REACTOR_REDSTONE_PORT = BLOCKS.registerBlock("reactor_redstone_port",
+    public static final RegistryObject<ReactorRedstonePortBlock> REACTOR_REDSTONE_PORT = registerBlock("reactor_redstone_port",
             ReactorRedstonePortBlock::new,
             JustReactors.reactorBlockProperties(4.0F, 8.0F));
 
-    public static final DeferredBlock<ReactorCoolantPortBlock> REACTOR_COOLANT_PORT = BLOCKS.registerBlock("reactor_coolant_port",
+    public static final RegistryObject<ReactorCoolantPortBlock> REACTOR_COOLANT_PORT = registerBlock("reactor_coolant_port",
             ReactorCoolantPortBlock::new,
             JustReactors.reactorBlockProperties(4.0F, 8.0F));
 
     // Steam Turbine multiblock parts
-    public static final DeferredBlock<TurbinePartBlock> TURBINE_CASING = BLOCKS.registerBlock("turbine_casing",
+    public static final RegistryObject<TurbinePartBlock> TURBINE_CASING = registerBlock("turbine_casing",
             TurbinePartBlock::new,
             JustReactors.reactorBlockProperties(4.0F, 8.0F));
 
-    public static final DeferredBlock<TurbineGlassBlock> TURBINE_GLASS = BLOCKS.registerBlock("turbine_glass",
+    public static final RegistryObject<TurbineGlassBlock> TURBINE_GLASS = registerBlock("turbine_glass",
             TurbineGlassBlock::new,
             BlockBehaviour.Properties.of()
                     .strength(3.0F, 6.0F)
@@ -130,32 +138,32 @@ public final class ModBlocks {
                     .isSuffocating((s, l, p) -> false)
                     .requiresCorrectToolForDrops());
 
-    public static final DeferredBlock<TurbineControllerBlock> TURBINE_CONTROLLER = BLOCKS.registerBlock("turbine_controller",
+    public static final RegistryObject<TurbineControllerBlock> TURBINE_CONTROLLER = registerBlock("turbine_controller",
             TurbineControllerBlock::new,
             JustReactors.reactorBlockProperties(4.0F, 8.0F)
                     .lightLevel(state -> state.getValue(TurbineControllerBlock.ACTIVE) ? 10 : 0));
 
-    public static final DeferredBlock<TurbinePartBlock> TURBINE_ROTOR_BEARING = BLOCKS.registerBlock("turbine_rotor_bearing",
+    public static final RegistryObject<TurbinePartBlock> TURBINE_ROTOR_BEARING = registerBlock("turbine_rotor_bearing",
             TurbinePartBlock::new,
             JustReactors.reactorBlockProperties(4.0F, 8.0F));
 
-    public static final DeferredBlock<TurbineRotorShaftBlock> TURBINE_ROTOR_SHAFT = BLOCKS.registerBlock("turbine_rotor_shaft",
+    public static final RegistryObject<TurbineRotorShaftBlock> TURBINE_ROTOR_SHAFT = registerBlock("turbine_rotor_shaft",
             TurbineRotorShaftBlock::new,
             JustReactors.reactorBlockProperties(3.5F, 6.0F).noOcclusion());
 
-    public static final DeferredBlock<TurbineRotorBladeBlock> TURBINE_ROTOR_BLADE = BLOCKS.registerBlock("turbine_rotor_blade",
+    public static final RegistryObject<TurbineRotorBladeBlock> TURBINE_ROTOR_BLADE = registerBlock("turbine_rotor_blade",
             TurbineRotorBladeBlock::new,
             JustReactors.reactorBlockProperties(3.0F, 6.0F).noOcclusion());
 
-    public static final DeferredBlock<TurbineFluidPortBlock> TURBINE_FLUID_PORT = BLOCKS.registerBlock("turbine_fluid_port",
+    public static final RegistryObject<TurbineFluidPortBlock> TURBINE_FLUID_PORT = registerBlock("turbine_fluid_port",
             TurbineFluidPortBlock::new,
             JustReactors.reactorBlockProperties(4.0F, 8.0F));
 
-    public static final DeferredBlock<TurbinePowerTapBlock> TURBINE_POWER_TAP = BLOCKS.registerBlock("turbine_power_tap",
+    public static final RegistryObject<TurbinePowerTapBlock> TURBINE_POWER_TAP = registerBlock("turbine_power_tap",
             TurbinePowerTapBlock::new,
             JustReactors.reactorBlockProperties(4.0F, 8.0F));
 
-    public static final DeferredBlock<TurbineRedstonePortBlock> TURBINE_REDSTONE_PORT = BLOCKS.registerBlock("turbine_redstone_port",
+    public static final RegistryObject<TurbineRedstonePortBlock> TURBINE_REDSTONE_PORT = registerBlock("turbine_redstone_port",
             TurbineRedstonePortBlock::new,
             JustReactors.reactorBlockProperties(4.0F, 8.0F));
 

@@ -14,15 +14,15 @@ import com.justreactors.registry.ModSounds;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.fml.ModContainer;
-import net.neoforged.fml.ModList;
-import net.neoforged.fml.common.Mod;
-import net.neoforged.fml.config.ModConfig;
-import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.gametest.GameTestHooks;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.ModList;
+import net.minecraftforge.fml.ModLoadingContext;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.config.ModConfig;
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.gametest.ForgeGameTestHooks;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,10 +31,11 @@ public class JustReactors {
     public static final String MOD_ID = "justreactors";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
-    public JustReactors(IEventBus modEventBus, ModContainer modContainer) {
+    public JustReactors() {
         LOGGER.info("Initializing Just Reactors");
+        IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
 
-        modContainer.registerConfig(ModConfig.Type.SERVER, JustReactorsConfig.SPEC);
+        ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, JustReactorsConfig.SPEC);
 
         ModFluids.FLUID_TYPES.register(modEventBus);
         ModFluids.FLUIDS.register(modEventBus);
@@ -45,17 +46,17 @@ public class JustReactors {
         ModSounds.SOUND_EVENTS.register(modEventBus);
         ModCreativeTabs.CREATIVE_MODE_TABS.register(modEventBus);
 
-        modEventBus.addListener(JustReactors::registerCapabilities);
-        DemoSetup.register(NeoForge.EVENT_BUS);
-        ReactorDataReloadListeners.register(NeoForge.EVENT_BUS);
+        modEventBus.addListener(JustReactors::commonSetup);
+        DemoSetup.register(MinecraftForge.EVENT_BUS);
+        ReactorDataReloadListeners.register(MinecraftForge.EVENT_BUS);
 
-        if (GameTestHooks.isGametestEnabled()) {
+        if (ForgeGameTestHooks.isGametestEnabled()) {
             ReactorGameTests.register(modEventBus);
         }
     }
 
     public static ResourceLocation id(String path) {
-        return ResourceLocation.fromNamespaceAndPath(MOD_ID, path);
+        return new ResourceLocation(MOD_ID, path);
     }
 
     public static BlockBehaviour.Properties reactorBlockProperties(float hardness, float resistance) {
@@ -65,28 +66,10 @@ public class JustReactors {
                 .requiresCorrectToolForDrops();
     }
 
-    private static void registerCapabilities(RegisterCapabilitiesEvent event) {
-        event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, ModBlockEntities.REACTOR_POWER_TAP.get(),
-                (be, side) -> be.getEnergyHandler(side));
-        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, ModBlockEntities.REACTOR_ACCESS_PORT.get(),
-                (be, side) -> be.getItemHandler(side));
-        event.registerBlockEntity(Capabilities.FluidHandler.BLOCK, ModBlockEntities.REACTOR_COOLANT_PORT.get(),
-                (be, side) -> be.getFluidHandler(side));
-
-        event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, ModBlockEntities.TURBINE_POWER_TAP.get(),
-                (be, side) -> be.getEnergyHandler(side));
-        event.registerBlockEntity(Capabilities.FluidHandler.BLOCK, ModBlockEntities.TURBINE_FLUID_PORT.get(),
-                (be, side) -> be.getFluidHandler(side));
-
-        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, ModBlockEntities.CYANITE_REPROCESSOR.get(),
-                (be, side) -> be.getItemHandler(side));
-        event.registerBlockEntity(Capabilities.FluidHandler.BLOCK, ModBlockEntities.CYANITE_REPROCESSOR.get(),
-                (be, side) -> be.getFluidHandler(side));
-        event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, ModBlockEntities.CYANITE_REPROCESSOR.get(),
-                (be, side) -> be.getEnergyHandler(side));
-
+    // Item, fluid and energy handlers are exposed by each block entity's getCapability (see transfer/Caps).
+    private static void commonSetup(FMLCommonSetupEvent event) {
         if (ModList.get().isLoaded("computercraft")) {
-            com.justreactors.compat.cc.JustReactorsCCCompat.registerCapabilities(event);
+            com.justreactors.compat.cc.JustReactorsCCCompat.register();
         }
     }
 }

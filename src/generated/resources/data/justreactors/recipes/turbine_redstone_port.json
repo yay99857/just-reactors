@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "G": {
+      "tag": "forge:ingots/gold"
+    },
+    "R": {
+      "tag": "forge:dusts/redstone"
+    },
+    "T": {
+      "item": "justreactors:turbine_casing"
+    }
+  },
+  "pattern": [
+    "TRT",
+    "RGR",
+    "TRT"
+  ],
+  "result": {
+    "item": "justreactors:turbine_redstone_port"
+  }
+}

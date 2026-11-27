@@ -4,7 +4,7 @@ import com.justreactors.blockentity.ReactorAccessPortBlockEntity;
 import com.justreactors.registry.ModBlocks;
 import com.justreactors.registry.ModMenus;
 
-import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -22,7 +22,7 @@ public class ReactorAccessPortMenu extends AbstractContainerMenu {
     private final Level level;
     private int syncedOutlet;
 
-    public ReactorAccessPortMenu(int containerId, Inventory inv, RegistryFriendlyByteBuf extraData) {
+    public ReactorAccessPortMenu(int containerId, Inventory inv, FriendlyByteBuf extraData) {
         this(containerId, inv, inv.player.level().getBlockEntity(extraData.readBlockPos()));
     }
 

@@ -5,7 +5,7 @@ import com.justreactors.reactor.ReactorMode;
 import com.justreactors.registry.ModBlocks;
 import com.justreactors.registry.ModMenus;
 
-import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -42,7 +42,7 @@ public class ReactorControllerMenu extends AbstractContainerMenu {
     private final SyncedInt burnRateMilliMb; // mB/t * 1000 for 3 decimal places
     private final SyncedInt avgInsertion;
 
-    public ReactorControllerMenu(int containerId, Inventory inv, RegistryFriendlyByteBuf extraData) {
+    public ReactorControllerMenu(int containerId, Inventory inv, FriendlyByteBuf extraData) {
         this(containerId, inv, inv.player.level().getBlockEntity(extraData.readBlockPos()));
     }
 

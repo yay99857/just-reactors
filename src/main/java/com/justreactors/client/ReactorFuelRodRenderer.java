@@ -51,16 +51,6 @@ public class ReactorFuelRodRenderer implements BlockEntityRenderer<ReactorContro
         return 96;
     }
 
-    @Override
-    public AABB getRenderBoundingBox(ReactorControllerBlockEntity be) {
-        BlockPos min = be.getClientMin();
-        BlockPos max = be.getClientMax();
-        if (be.isClientAssembled() && min != null && max != null) {
-            return new AABB(min.getX(), min.getY(), min.getZ(),
-                    max.getX() + 1.0, max.getY() + 1.0, max.getZ() + 1.0);
-        }
-        return BlockEntityRenderer.super.getRenderBoundingBox(be);
-    }
 
     @Override
     public void render(ReactorControllerBlockEntity be, float partialTicks, PoseStack poseStack, MultiBufferSource buffers,
@@ -171,11 +161,12 @@ public class ReactorFuelRodRenderer implements BlockEntityRenderer<ReactorContro
 
     private static void vertex(PoseStack.Pose p, VertexConsumer c, int color, int light, float nx, float ny, float nz,
                                float x, float y, float z, float u, float v) {
-        c.addVertex(p, x, y, z)
-                .setColor(color)
-                .setUv(u, v)
-                .setOverlay(OverlayTexture.NO_OVERLAY)
-                .setLight(light)
-                .setNormal(p, nx, ny, nz);
+        c.vertex(p.pose(), x, y, z)
+                .color(color >> 16 & 0xFF, color >> 8 & 0xFF, color & 0xFF, color >>> 24)
+                .uv(u, v)
+                .overlayCoords(OverlayTexture.NO_OVERLAY)
+                .uv2(light)
+                .normal(p.normal(), nx, ny, nz)
+                .endVertex();
     }
 }

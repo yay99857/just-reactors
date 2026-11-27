@@ -73,6 +73,7 @@ public class ReactorRedstonePortScreen extends AbstractContainerScreen<ReactorRe
 
     @Override
     public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
+        renderBackground(g);
         super.render(g, mouseX, mouseY, partialTick);
         renderTooltip(g, mouseX, mouseY);
     }

@@ -1,0 +1,10 @@
+{
+  "values": [
+    "#forge:ingots/uranium",
+    "#forge:ingots/blutonium",
+    {
+      "id": "#forge:ingots/yellorium",
+      "required": false
+    }
+  ]
+}

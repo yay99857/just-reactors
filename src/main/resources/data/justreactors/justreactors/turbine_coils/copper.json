@@ -1,5 +1,5 @@
 {
-  "tag": "c:storage_blocks/copper",
+  "tag": "forge:storage_blocks/copper",
   "efficiency": 1.1,
   "bonus": 1.05,
   "drag": 1.05

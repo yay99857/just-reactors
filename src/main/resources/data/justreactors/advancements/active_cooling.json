@@ -1,0 +1,36 @@
+{
+  "display": {
+    "icon": {
+      "item": "justreactors:reactor_coolant_port"
+    },
+    "title": {
+      "translate": "advancements.justreactors.active_cooling.title"
+    },
+    "description": {
+      "translate": "advancements.justreactors.active_cooling.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "has_item": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "justreactors:reactor_coolant_port"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_item"
+    ]
+  ],
+  "parent": "justreactors:first_reactor"
+}

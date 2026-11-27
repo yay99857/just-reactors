@@ -14,7 +14,7 @@ import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
-import net.neoforged.neoforge.common.Tags;
+import net.minecraftforge.common.Tags;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -204,7 +204,7 @@ public record ReactorModerator(
     @Nullable
     private static DisplayEntry blockToDisplayEntry(Block block, ReactorModerator mod) {
         if (block instanceof LiquidBlock liquid) {
-            return new DisplayEntry(List.of(), liquid.fluid, null, mod);
+            return new DisplayEntry(List.of(), liquid.getFluid(), null, mod);
         }
         if (block == Blocks.WATER) {
             return new DisplayEntry(List.of(), Fluids.WATER, null, mod);

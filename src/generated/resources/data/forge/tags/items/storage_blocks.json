@@ -1,0 +1,8 @@
+{
+  "values": [
+    "#forge:storage_blocks/uranium",
+    "#forge:storage_blocks/graphite",
+    "#forge:storage_blocks/cyanite",
+    "#forge:storage_blocks/blutonium"
+  ]
+}

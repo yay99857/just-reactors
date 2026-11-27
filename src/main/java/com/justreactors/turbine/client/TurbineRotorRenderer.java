@@ -51,16 +51,6 @@ public class TurbineRotorRenderer implements BlockEntityRenderer<TurbineControll
         return 96;
     }
 
-    @Override
-    public AABB getRenderBoundingBox(TurbineControllerBlockEntity be) {
-        BlockPos min = be.getClientMin();
-        BlockPos max = be.getClientMax();
-        if (be.isClientAssembled() && min != null && max != null) {
-            return new AABB(min.getX(), min.getY(), min.getZ(),
-                    max.getX() + 1.0, max.getY() + 1.0, max.getZ() + 1.0);
-        }
-        return BlockEntityRenderer.super.getRenderBoundingBox(be);
-    }
 
     @Override
     public void render(TurbineControllerBlockEntity be, float partialTicks, PoseStack poseStack, MultiBufferSource buffers,
@@ -228,11 +218,12 @@ public class TurbineRotorRenderer implements BlockEntityRenderer<TurbineControll
 
     private static void vertex(PoseStack.Pose p, VertexConsumer c, int light, float nx, float ny, float nz,
                                float x, float y, float z, float u, float v) {
-        c.addVertex(p, x, y, z)
-                .setColor(0xFFFFFFFF)
-                .setUv(u, v)
-                .setOverlay(OverlayTexture.NO_OVERLAY)
-                .setLight(light)
-                .setNormal(p, nx, ny, nz);
+        c.vertex(p.pose(), x, y, z)
+                .color(255, 255, 255, 255)
+                .uv(u, v)
+                .overlayCoords(OverlayTexture.NO_OVERLAY)
+                .uv2(light)
+                .normal(p.normal(), nx, ny, nz)
+                .endVertex();
     }
 }

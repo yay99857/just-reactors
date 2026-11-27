@@ -32,10 +32,10 @@ import net.minecraft.world.level.block.entity.SignText;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.material.Fluids;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.event.RegisterCommandsEvent;
-import net.neoforged.neoforge.event.entity.player.PlayerEvent;
-import net.neoforged.neoforge.fluids.FluidStack;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.event.RegisterCommandsEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.fluids.FluidStack;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -272,10 +272,10 @@ public final class DemoSetup {
         BlockPos accumulatorPos = origin.offset(14, 2, 4);
         List<BlockPos> placedCables = new ArrayList<>();
 
-        Optional<Block> fluidCable = BuiltInRegistries.BLOCK.getOptional(ResourceLocation.fromNamespaceAndPath("voltaicdynamics", "fluid_cable"));
-        Optional<Block> voltaicCable = BuiltInRegistries.BLOCK.getOptional(ResourceLocation.fromNamespaceAndPath("voltaicdynamics", "voltaic_cable"));
-        Optional<Block> accumulator = BuiltInRegistries.BLOCK.getOptional(ResourceLocation.fromNamespaceAndPath("voltaicdynamics", "elite_accumulator"))
-                .or(() -> BuiltInRegistries.BLOCK.getOptional(ResourceLocation.fromNamespaceAndPath("voltaicdynamics", "basic_accumulator")));
+        Optional<Block> fluidCable = BuiltInRegistries.BLOCK.getOptional(new ResourceLocation("voltaicdynamics", "fluid_cable"));
+        Optional<Block> voltaicCable = BuiltInRegistries.BLOCK.getOptional(new ResourceLocation("voltaicdynamics", "voltaic_cable"));
+        Optional<Block> accumulator = BuiltInRegistries.BLOCK.getOptional(new ResourceLocation("voltaicdynamics", "elite_accumulator"))
+                .or(() -> BuiltInRegistries.BLOCK.getOptional(new ResourceLocation("voltaicdynamics", "basic_accumulator")));
 
         accumulator.ifPresent(b -> {
             // Put a pedestal block under the accumulator so it sits flush at power-tap height

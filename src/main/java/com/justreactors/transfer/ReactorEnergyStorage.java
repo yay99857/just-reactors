@@ -2,8 +2,8 @@ package com.justreactors.transfer;
 
 import com.justreactors.compat.nbt.ValueInput;
 import com.justreactors.compat.nbt.ValueOutput;
-import net.neoforged.neoforge.energy.EnergyStorage;
-import net.neoforged.neoforge.energy.IEnergyStorage;
+import net.minecraftforge.energy.EnergyStorage;
+import net.minecraftforge.energy.IEnergyStorage;
 import org.jetbrains.annotations.Nullable;
 
 /**

@@ -4,7 +4,7 @@ import com.justreactors.blockentity.ReactorControlRodBlockEntity;
 import com.justreactors.registry.ModBlocks;
 import com.justreactors.registry.ModMenus;
 
-import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -25,7 +25,7 @@ public class ReactorControlRodMenu extends AbstractContainerMenu {
     private final Level level;
     private int syncedInsertion;
 
-    public ReactorControlRodMenu(int containerId, Inventory inv, RegistryFriendlyByteBuf extraData) {
+    public ReactorControlRodMenu(int containerId, Inventory inv, FriendlyByteBuf extraData) {
         this(containerId, inv, inv.player.level().getBlockEntity(extraData.readBlockPos()));
     }
 

@@ -1,5 +1,6 @@
 package com.justreactors.gametest;
 
+import com.justreactors.transfer.Caps;
 import com.justreactors.JustReactors;
 import com.justreactors.block.ReactorCoolantPortBlock;
 import com.justreactors.demo.DemoSetup;
@@ -8,7 +9,7 @@ import com.justreactors.blockentity.ReactorAccessPortBlockEntity;
 import com.justreactors.blockentity.ReactorControlRodBlockEntity;
 import com.justreactors.blockentity.ReactorControllerBlockEntity;
 import com.justreactors.blockentity.ReactorRedstonePortBlockEntity;
-import com.justreactors.datagen.ModTags;
+import com.justreactors.registry.ModTags;
 import com.justreactors.reactor.ReactorMode;
 import com.justreactors.reactor.ReactorModerator;
 import com.justreactors.reactor.RedstonePortMode;
@@ -38,12 +39,12 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.material.Fluids;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.event.RegisterGameTestsEvent;
-import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.gametest.GameTestHolder;
-import net.neoforged.neoforge.energy.IEnergyStorage;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import net.minecraftforge.event.RegisterGameTestsEvent;
+import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.gametest.GameTestHolder;
+import net.minecraftforge.energy.IEnergyStorage;
 
 import java.util.Collection;
 import java.util.List;
@@ -207,7 +208,7 @@ public final class ReactorGameTests {
                 return;
             }
             BlockPos tapAbs = helper.absolutePos(new BlockPos(3, 2, 2));
-            IEnergyStorage cap = helper.getLevel().getCapability(Capabilities.EnergyStorage.BLOCK, tapAbs, null);
+            IEnergyStorage cap = Caps.block(helper.getLevel(), tapAbs, ForgeCapabilities.ENERGY, null);
             if (cap == null || cap.getEnergyStored() <= 0) {
                 helper.fail(String.valueOf("Expected Power Tap to expose stored FE"));
                 return;
@@ -447,7 +448,7 @@ public final class ReactorGameTests {
                 return;
             }
             BlockPos tapAbs = helper.absolutePos(new BlockPos(ox + 4, oy + 2, oz + 2));
-            IEnergyStorage cap = helper.getLevel().getCapability(Capabilities.EnergyStorage.BLOCK, tapAbs, null);
+            IEnergyStorage cap = Caps.block(helper.getLevel(), tapAbs, ForgeCapabilities.ENERGY, null);
             if (cap == null || cap.getEnergyStored() <= 0) {
                 helper.fail(String.valueOf("Expected Turbine Power Tap to expose FE"));
                 return;
@@ -465,7 +466,7 @@ public final class ReactorGameTests {
         rep.getInventory().setStackInSlot(CyaniteReprocessorBlockEntity.SLOT_INPUT, new ItemStack(ModItems.CYANITE_INGOT.get(), 2));
         rep.getWaterTank().fillInternal(new FluidStack(Fluids.WATER, 1_000));
 
-        IEnergyStorage energyCap = helper.getLevel().getCapability(Capabilities.EnergyStorage.BLOCK, helper.absolutePos(pos), null);
+        IEnergyStorage energyCap = Caps.block(helper.getLevel(), helper.absolutePos(pos), ForgeCapabilities.ENERGY, null);
         if (energyCap == null) {
             helper.fail(String.valueOf("Expected Reprocessor Energy capability"));
             return;
@@ -507,7 +508,7 @@ public final class ReactorGameTests {
         // Without Voltaic Dynamics (no 1.21.1 build) there are no pipes: the turbine only burns its pre-filled
         // steam and spins down, so just check that the closed loop's turbine starts turning.
         if (!net.minecraft.core.registries.BuiltInRegistries.BLOCK.containsKey(
-                ResourceLocation.fromNamespaceAndPath("voltaicdynamics", "fluid_cable"))) {
+                new ResourceLocation("voltaicdynamics", "fluid_cable"))) {
             helper.runAfterDelay(10, () -> {
                 if (turbineCtrl.getSimulation().getRpm() <= 0.0) {
                     helper.fail(String.valueOf("Expected demo turbine to spin up from its pre-filled steam"));
@@ -527,14 +528,14 @@ public final class ReactorGameTests {
                 helper.fail(String.valueOf("Expected demo turbine to generate FE"));
                 return;
             }
-            BlockPos shaftPos = turbineCtrl.getStructure().shaftPositions().getFirst();
-            BlockPos bladePos = turbineCtrl.getStructure().bladePositions().getFirst();
+            BlockPos shaftPos = turbineCtrl.getStructure().shaftPositions().get(0);
+            BlockPos bladePos = turbineCtrl.getStructure().bladePositions().get(0);
             if (!helper.getLevel().getBlockState(shaftPos).getValue(TurbineRotorShaftBlock.SPINNING)
                     || !helper.getLevel().getBlockState(bladePos).getValue(TurbineRotorBladeBlock.SPINNING)) {
                 helper.fail(String.valueOf("Expected turbine shaft and blade blocks to mark SPINNING=true while turning"));
                 return;
             }
-            IEnergyStorage accumCap = helper.getLevel().getCapability(Capabilities.EnergyStorage.BLOCK, result.accumulatorPos(), null);
+            IEnergyStorage accumCap = Caps.block(helper.getLevel(), result.accumulatorPos(), ForgeCapabilities.ENERGY, null);
             if (accumCap != null && accumCap.getEnergyStored() <= 0) {
                 helper.fail(String.valueOf("Expected Voltaic accumulator in demo setup to receive FE"));
                 return;
@@ -857,8 +858,8 @@ public final class ReactorGameTests {
             helper.fail(String.valueOf("Expected >= 8 coil display entries, got: " + coils.size()));
             return;
         }
-        double firstScore = coils.getFirst().coil().efficiency() * coils.getFirst().coil().bonus();
-        double lastScore = coils.getLast().coil().efficiency() * coils.getLast().coil().bonus();
+        double firstScore = coils.get(0).coil().efficiency() * coils.get(0).coil().bonus();
+        double lastScore = coils.get(coils.size() - 1).coil().efficiency() * coils.get(coils.size() - 1).coil().bonus();
         if (firstScore <= lastScore) {
             helper.fail(String.valueOf("Expected coil display entries sorted descending"));
             return;

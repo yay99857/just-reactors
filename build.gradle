@@ -2,10 +2,11 @@ plugins {
     id 'java-library'
     id 'eclipse'
     id 'idea'
-    id 'maven-publish'
-    id 'net.neoforged.moddev' version '2.0.148'
+    id 'net.neoforged.moddev.legacyforge' version '2.0.148'
 }
 
+// Forge 1.20.1 backport of Just Reactors (branch 1.20.1). Data files are kept as plain JSON here:
+// the datagen providers live on the newer branches only.
 version = project.mod_version
 group = project.mod_group_id
 
@@ -13,20 +14,20 @@ base {
     archivesName = project.mod_id
 }
 
-java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
 sourceSets.main.resources {
     srcDir 'src/generated/resources'
     exclude '.cache/'
 }
 
-neoForge {
-    version = project.neo_version
+legacyForge {
+    version = "${project.minecraft_version}-${project.forge_version}"
 
     runs {
         client {
             client()
-            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+            systemProperty 'forge.enabledGameTestNamespaces', project.mod_id
             jvmArgument '-da'
             if (project.hasProperty('quickPlay')) {
                 programArguments.addAll '--quickPlaySingleplayer', project.property('quickPlay').toString()
@@ -34,7 +35,7 @@ neoForge {
         }
         demo {
             client()
-            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+            systemProperty 'forge.enabledGameTestNamespaces', project.mod_id
             systemProperty 'justreactors.autoDemo', 'true'
             jvmArgument '-da'
             def demoSave = file('run/saves/New World')
@@ -55,17 +56,12 @@ neoForge {
         server {
             server()
             programArgument '--nogui'
-            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+            systemProperty 'forge.enabledGameTestNamespaces', project.mod_id
         }
+        // ./gradlew runGameTestServer : runs every @GameTest and exits (non-zero on failure)
         gameTestServer {
             type = "gameTestServer"
-            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
-        }
-        data {
-            data()
-            programArguments.addAll '--mod', project.mod_id, '--all',
-                    '--output', file('src/generated/resources/').getAbsolutePath(),
-                    '--existing', file('src/main/resources/').getAbsolutePath()
+            systemProperty 'forge.enabledGameTestNamespaces', project.mod_id
         }
     }
 
@@ -83,19 +79,13 @@ repositories {
         url = 'https://api.modrinth.com/maven'
         content { includeGroup 'maven.modrinth' }
     }
-    maven {
-        url = 'https://cursemaven.com'
-        content { includeGroup 'curse.maven' }
-    }
 }
 
 dependencies {
-    compileOnly 'maven.modrinth:jei:19.76.1.482'
-    compileOnly 'maven.modrinth:jade:15.10.6+neoforge'
-    compileOnly 'maven.modrinth:cc-tweaked:2jhB1Ii4'
+    modCompileOnly 'maven.modrinth:jei:15.75.0.243'
+    modCompileOnly 'maven.modrinth:jade:11.13.3+forge'
+    modCompileOnly 'maven.modrinth:cc-tweaked:YFHKowXT'
 }
-
-// syncDevMods (copies the 26.3 Voltaic Dynamics jar into run/mods) is left out: that jar does not load on 1.21.1.
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
@@ -110,12 +100,12 @@ var modMetadata = [
         mod_authors            : mod_authors,
         mod_description        : mod_description,
         minecraft_version_range: minecraft_version_range,
-        neo_version_range      : neo_version_range,
+        forge_version_range    : forge_version_range,
         loader_version_range   : loader_version_range,
 ]
 processResources {
     inputs.properties modMetadata
-    filesMatching('META-INF/neoforge.mods.toml') {
+    filesMatching('META-INF/mods.toml') {
         expand modMetadata
     }
 }

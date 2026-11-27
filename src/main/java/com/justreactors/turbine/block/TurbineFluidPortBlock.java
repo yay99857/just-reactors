@@ -1,5 +1,6 @@
 package com.justreactors.turbine.block;
 
+import net.minecraft.world.InteractionHand;
 import com.justreactors.turbine.blockentity.TurbineFluidPortBlockEntity;
 
 import net.minecraft.ChatFormatting;
@@ -41,7 +42,12 @@ public class TurbineFluidPortBlock extends TurbinePartBlock implements EntityBlo
     }
 
     @Override
-    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand,
+                                 BlockHitResult hit) {
+        return hand == InteractionHand.MAIN_HAND ? jrUseWithoutItem(state, level, pos, player, hit) : InteractionResult.PASS;
+    }
+
+    private InteractionResult jrUseWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         if (level.isClientSide()) return InteractionResult.SUCCESS;
         boolean nextOutlet = !state.getValue(OUTLET);
         level.setBlock(pos, state.setValue(OUTLET, nextOutlet), 3);

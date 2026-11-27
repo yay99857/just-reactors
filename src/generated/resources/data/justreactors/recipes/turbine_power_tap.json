@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "K": {
+      "tag": "forge:ingots/copper"
+    },
+    "R": {
+      "tag": "forge:dusts/redstone"
+    },
+    "T": {
+      "item": "justreactors:turbine_casing"
+    }
+  },
+  "pattern": [
+    "TRT",
+    "RKR",
+    "TRT"
+  ],
+  "result": {
+    "item": "justreactors:turbine_power_tap"
+  }
+}

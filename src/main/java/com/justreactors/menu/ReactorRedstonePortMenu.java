@@ -5,7 +5,7 @@ import com.justreactors.reactor.RedstonePortMode;
 import com.justreactors.registry.ModBlocks;
 import com.justreactors.registry.ModMenus;
 
-import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -29,7 +29,7 @@ public class ReactorRedstonePortMenu extends AbstractContainerMenu {
     private int syncedThreshold;
     private int syncedSignal;
 
-    public ReactorRedstonePortMenu(int containerId, Inventory inv, RegistryFriendlyByteBuf extraData) {
+    public ReactorRedstonePortMenu(int containerId, Inventory inv, FriendlyByteBuf extraData) {
         this(containerId, inv, inv.player.level().getBlockEntity(extraData.readBlockPos()));
     }
 

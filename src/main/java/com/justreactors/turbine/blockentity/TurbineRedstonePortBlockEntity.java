@@ -178,17 +178,17 @@ public class TurbineRedstonePortBlockEntity extends TurbinePartBlockEntity imple
     }
 
     @Override
-    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.saveAdditional(tag, registries);
-        ValueOutput output = new ValueOutput(tag, registries);
+    protected void saveAdditional(CompoundTag tag) {
+        super.saveAdditional(tag);
+        ValueOutput output = new ValueOutput(tag);
         output.putInt("Mode", mode.ordinal());
         output.putInt("Threshold", thresholdPercent);
     }
 
     @Override
-    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.loadAdditional(tag, registries);
-        ValueInput input = new ValueInput(tag, registries);
+    public void load(CompoundTag tag) {
+        super.load(tag);
+        ValueInput input = new ValueInput(tag);
         this.mode = TurbineRedstonePortMode.byOrdinal(input.getIntOr("Mode", 0));
         this.thresholdPercent = Math.max(0, Math.min(100, input.getIntOr("Threshold", 50)));
     }

@@ -1,5 +1,7 @@
 package com.justreactors.turbine.block;
 
+import net.minecraftforge.network.NetworkHooks;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import com.justreactors.registry.ModBlockEntities;
 import com.justreactors.turbine.blockentity.TurbineControllerBlockEntity;
@@ -66,12 +68,17 @@ public class TurbineControllerBlock extends TurbinePartBlock implements EntityBl
     }
 
     @Override
-    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand,
+                                 BlockHitResult hit) {
+        return hand == InteractionHand.MAIN_HAND ? jrUseWithoutItem(state, level, pos, player, hit) : InteractionResult.PASS;
+    }
+
+    private InteractionResult jrUseWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         if (level.isClientSide()) return InteractionResult.SUCCESS;
         if (level.getBlockEntity(pos) instanceof TurbineControllerBlockEntity controller && player instanceof ServerPlayer serverPlayer) {
             controller.tryAssemble();
             if (controller.isAssembled()) {
-                serverPlayer.openMenu(controller, pos);
+                NetworkHooks.openScreen(serverPlayer, controller, pos);
             } else {
                 Component error = controller.getLastValidationError();
                 player.displayClientMessage(

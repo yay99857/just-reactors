@@ -1,5 +1,6 @@
 package com.justreactors.blockentity;
 
+import net.minecraft.world.phys.AABB;
 import com.justreactors.JustReactorsConfig;
 import com.justreactors.block.ReactorControllerBlock;
 import com.justreactors.client.ClientMachineSounds;
@@ -31,7 +32,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluids;
 import com.justreactors.compat.nbt.ValueInput;
 import com.justreactors.compat.nbt.ValueOutput;
-import net.neoforged.neoforge.fluids.FluidStack;
+import net.minecraftforge.fluids.FluidStack;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -80,8 +81,8 @@ public class ReactorControllerBlockEntity extends BlockEntity implements MenuPro
                 this::setChanged
         );
         int defaultTank = Math.max(10_000, JustReactorsConfig.get(JustReactorsConfig.COOLANT_TANK_PER_ROD_MB));
-        this.coolantTank = new ReactorFluidTank(defaultTank, stack -> stack.is(Fluids.WATER), this::setChanged);
-        this.steamTank = new ReactorFluidTank(defaultTank, stack -> stack.is(ModFluids.STEAM_SOURCE.get()), this::setChanged);
+        this.coolantTank = new ReactorFluidTank(defaultTank, stack -> stack.getFluid().isSame(Fluids.WATER), this::setChanged);
+        this.steamTank = new ReactorFluidTank(defaultTank, stack -> stack.getFluid().isSame(ModFluids.STEAM_SOURCE.get()), this::setChanged);
     }
 
     public static void clientTick(Level level, BlockPos pos, BlockState state, ReactorControllerBlockEntity be) {
@@ -434,8 +435,8 @@ public class ReactorControllerBlockEntity extends BlockEntity implements MenuPro
     }
 
     @Override
-    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
-        return saveWithoutMetadata(registries);
+    public CompoundTag getUpdateTag() {
+        return saveWithoutMetadata();
     }
 
     @Nullable
@@ -445,9 +446,9 @@ public class ReactorControllerBlockEntity extends BlockEntity implements MenuPro
     }
 
     @Override
-    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.saveAdditional(tag, registries);
-        ValueOutput output = new ValueOutput(tag, registries);
+    protected void saveAdditional(CompoundTag tag) {
+        super.saveAdditional(tag);
+        ValueOutput output = new ValueOutput(tag);
         energyStorage.serialize(output);
         coolantTank.save(output, "CoolantTank");
         steamTank.save(output, "SteamTank");
@@ -480,9 +481,9 @@ public class ReactorControllerBlockEntity extends BlockEntity implements MenuPro
     }
 
     @Override
-    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.loadAdditional(tag, registries);
-        ValueInput input = new ValueInput(tag, registries);
+    public void load(CompoundTag tag) {
+        super.load(tag);
+        ValueInput input = new ValueInput(tag);
         energyStorage.deserialize(input);
         coolantTank.load(input, "CoolantTank");
         steamTank.load(input, "SteamTank");
@@ -500,5 +501,16 @@ public class ReactorControllerBlockEntity extends BlockEntity implements MenuPro
         this.clientFuelRatio = (float) input.getDoubleOr("SyncFuelRatio", 0.0);
         this.clientWasteRatio = (float) input.getDoubleOr("SyncWasteRatio", 0.0);
         this.clientFuelRodOffsets = input.getIntArray("SyncFuelRods").orElse(new int[0]);
+    }
+
+    @Override
+    public AABB getRenderBoundingBox() {
+        // the renderer draws the whole core (fuel rods / rotor), not just the controller block
+        BlockPos min = getClientMin();
+        BlockPos max = getClientMax();
+        if (isClientAssembled() && min != null && max != null) {
+            return new AABB(min.getX(), min.getY(), min.getZ(), max.getX() + 1.0, max.getY() + 1.0, max.getZ() + 1.0);
+        }
+        return super.getRenderBoundingBox();
     }
 }

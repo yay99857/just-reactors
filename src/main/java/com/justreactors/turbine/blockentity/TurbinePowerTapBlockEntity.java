@@ -1,13 +1,16 @@
 package com.justreactors.turbine.blockentity;
 
-import net.neoforged.neoforge.energy.IEnergyStorage;
+import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.common.capabilities.Capability;
+import com.justreactors.transfer.Caps;
+import net.minecraftforge.energy.IEnergyStorage;
 import com.justreactors.registry.ModBlockEntities;
 import com.justreactors.transfer.ReactorEnergyStorage;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.capabilities.Capabilities;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import org.jetbrains.annotations.Nullable;
 
 public class TurbinePowerTapBlockEntity extends TurbinePartBlockEntity {
@@ -33,7 +36,7 @@ public class TurbinePowerTapBlockEntity extends TurbinePartBlockEntity {
             if (controller != null && controller.getStructure() != null && controller.getStructure().contains(neighborPos)) {
                 continue;
             }
-            IEnergyStorage neighbor = level.getCapability(Capabilities.EnergyStorage.BLOCK, neighborPos, dir.getOpposite());
+            IEnergyStorage neighbor = Caps.block(level, neighborPos, ForgeCapabilities.ENERGY, dir.getOpposite());
             if (neighbor == null) continue;
             int pushed = ReactorEnergyStorage.pushEnergy(neighbor, remaining);
             if (pushed > 0) {
@@ -41,5 +44,11 @@ public class TurbinePowerTapBlockEntity extends TurbinePartBlockEntity {
                 remaining -= pushed;
             }
         }
+    }
+
+    @Override
+    public <T> LazyOptional<T> getCapability(Capability<T> cap, @Nullable Direction side) {
+        if (cap == ForgeCapabilities.ENERGY) return Caps.of(getEnergyHandler(side)).cast();
+        return super.getCapability(cap, side);
     }
 }

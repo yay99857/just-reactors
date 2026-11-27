@@ -1,0 +1,26 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "D": {
+      "tag": "forge:gems/diamond"
+    },
+    "G": {
+      "tag": "forge:ingots/cyanite"
+    },
+    "I": {
+      "tag": "forge:ingots/iron"
+    },
+    "T": {
+      "item": "justreactors:turbine_casing"
+    }
+  },
+  "pattern": [
+    "TGT",
+    "IDI",
+    "TGT"
+  ],
+  "result": {
+    "item": "justreactors:turbine_rotor_bearing"
+  }
+}

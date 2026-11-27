@@ -1,5 +1,7 @@
 package com.justreactors.block;
 
+import net.minecraftforge.network.NetworkHooks;
+import net.minecraft.world.InteractionHand;
 import com.justreactors.blockentity.ReactorControlRodBlockEntity;
 
 import net.minecraft.core.BlockPos;
@@ -25,10 +27,15 @@ public class ReactorControlRodBlock extends ReactorPartBlock implements EntityBl
     }
 
     @Override
-    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand,
+                                 BlockHitResult hit) {
+        return hand == InteractionHand.MAIN_HAND ? jrUseWithoutItem(state, level, pos, player, hit) : InteractionResult.PASS;
+    }
+
+    private InteractionResult jrUseWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         if (level.isClientSide()) return InteractionResult.SUCCESS;
         if (level.getBlockEntity(pos) instanceof ReactorControlRodBlockEntity rod && player instanceof ServerPlayer serverPlayer) {
-            serverPlayer.openMenu(rod, pos);
+            NetworkHooks.openScreen(serverPlayer, rod, pos);
         }
         return InteractionResult.CONSUME;
     }
