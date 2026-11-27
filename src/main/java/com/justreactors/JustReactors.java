@@ -48,6 +48,11 @@ public class JustReactors {
         modEventBus.addListener(JustReactors::registerCapabilities);
         DemoSetup.register(NeoForge.EVENT_BUS);
         ReactorDataReloadListeners.register(NeoForge.EVENT_BUS);
+        NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.server.ServerStoppedEvent e) ->
+                com.justreactors.multiblock.AssembledMultiblocks.clear());
+        if (ModList.get().isLoaded("carryon")) {
+            com.justreactors.compat.carryon.CarryOnCompat.register();
+        }
 
         if (GameTestHooks.isGametestEnabled()) {
             ReactorGameTests.register(modEventBus);
@@ -83,6 +88,11 @@ public class JustReactors {
         event.registerBlockEntity(Capabilities.Fluid.BLOCK, ModBlockEntities.CYANITE_REPROCESSOR.get(),
                 (be, side) -> be.getFluidHandler(side));
         event.registerBlockEntity(Capabilities.Energy.BLOCK, ModBlockEntities.CYANITE_REPROCESSOR.get(),
+                (be, side) -> be.getEnergyHandler(side));
+
+        event.registerBlockEntity(Capabilities.Fluid.BLOCK, ModBlockEntities.HEAT_EXCHANGER_FLUID_PORT.get(),
+                (be, side) -> be.getFluidHandler(side));
+        event.registerBlockEntity(Capabilities.Energy.BLOCK, ModBlockEntities.BATTERY_POWER_PORT.get(),
                 (be, side) -> be.getEnergyHandler(side));
 
         if (ModList.get().isLoaded("computercraft")) {

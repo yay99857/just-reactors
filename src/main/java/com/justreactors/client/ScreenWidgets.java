@@ -22,6 +22,11 @@ public final class ScreenWidgets {
     public static final int ACCENT_TURBINE = 0xFF56CCF2;
     public static final int ACCENT_REDSTONE = 0xFFE5484D;
     public static final int ACCENT_REPROCESSOR = 0xFF9B6CF2;
+    public static final int ACCENT_EXCHANGER = 0xFFF08A3C;
+    public static final int ACCENT_BATTERY = 0xFF7AD36B;
+
+    public static final int COOLANT = 0xFF4FD6E0;
+    public static final int HOT_COOLANT = 0xFFEF7A35;
 
     public static final int FUEL = 0xFFE6CF3A;
     public static final int WASTE = 0xFF2BB6C4;

@@ -33,6 +33,9 @@ public final class ClientModEvents {
         event.register(ModMenus.TURBINE_CONTROLLER.get(), TurbineControllerScreen::new);
         event.register(ModMenus.TURBINE_REDSTONE_PORT.get(), TurbineRedstonePortScreen::new);
         event.register(ModMenus.CYANITE_REPROCESSOR.get(), CyaniteReprocessorScreen::new);
+        event.register(ModMenus.HEAT_EXCHANGER.get(), com.justreactors.exchanger.client.HeatExchangerScreen::new);
+        event.register(ModMenus.BATTERY.get(), com.justreactors.battery.client.BatteryScreen::new);
+        event.register(ModMenus.BATTERY_SENSOR.get(), com.justreactors.battery.client.BatterySensorScreen::new);
     }
 
     @SubscribeEvent
@@ -41,6 +44,10 @@ public final class ClientModEvents {
         Material flowing = new Material(Identifier.withDefaultNamespace("block/water_flow"));
         event.register(new FluidModel.Unbaked(still, flowing, null, (FluidTintSource) (state -> 0xFFE8F1F8)),
                 ModFluids.STEAM_SOURCE, ModFluids.STEAM_FLOWING);
+        event.register(new FluidModel.Unbaked(still, flowing, null, (FluidTintSource) (state -> 0xFF4FD6E0)),
+                ModFluids.COOLANT_SOURCE, ModFluids.COOLANT_FLOWING);
+        event.register(new FluidModel.Unbaked(still, flowing, null, (FluidTintSource) (state -> 0xFFEF7A35)),
+                ModFluids.HOT_COOLANT_SOURCE, ModFluids.HOT_COOLANT_FLOWING);
     }
 
     @SubscribeEvent

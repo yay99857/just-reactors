@@ -18,5 +18,9 @@ public final class JustReactorsCCCompat {
                 (be, side) -> new ReactorPeripheral(be));
         event.registerBlockEntity(PeripheralCapability.get(), ModBlockEntities.TURBINE_CONTROLLER.get(),
                 (be, side) -> new TurbinePeripheral(be));
+        event.registerBlockEntity(PeripheralCapability.get(), ModBlockEntities.HEAT_EXCHANGER_CONTROLLER.get(),
+                (be, side) -> new HeatExchangerPeripheral(be));
+        event.registerBlockEntity(PeripheralCapability.get(), ModBlockEntities.BATTERY_CONTROLLER.get(),
+                (be, side) -> new BatteryPeripheral(be));
     }
 }

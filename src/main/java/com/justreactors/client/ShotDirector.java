@@ -137,6 +137,75 @@ public final class ShotDirector {
         else LOG.warn("shots: no {} in the demo", block);
     }
 
+    /** A size^3 box of {@code casing} filled with {@code core}; the north face gets glass with the controller in the middle. */
+    private static void box(ServerLevel level, BlockPos o, int size, Block casing, Block glass, Block core, Block controller) {
+        for (int x = 0; x < size; x++) {
+            for (int y = 0; y < size; y++) {
+                for (int z = 0; z < size; z++) {
+                    int axes = (x == 0 || x == size - 1 ? 1 : 0) + (y == 0 || y == size - 1 ? 1 : 0) + (z == 0 || z == size - 1 ? 1 : 0);
+                    Block b = axes == 0 ? core : axes >= 2 ? casing : z == 0 ? glass : casing;
+                    level.setBlock(o.offset(x, y, z), b.defaultBlockState(), Block.UPDATE_ALL);
+                }
+            }
+        }
+        level.setBlock(o.offset(size / 2, size / 2, 0), controller.defaultBlockState(), Block.UPDATE_ALL);
+    }
+
+    private static BlockPos exchangerOrigin() {
+        return new BlockPos(cx + 16, g + 1, cz + 2);
+    }
+
+    private static BlockPos batteryOrigin() {
+        return new BlockPos(cx + 23, g + 1, cz + 2);
+    }
+
+    /** Builds a 5x5x5 Heat Exchanger and a 5x5x5 Battery east of the turbine, already running. */
+    private static void buildNewMachines(ServerPlayer p) {
+        ServerLevel level = p.level();
+        BlockPos ex = exchangerOrigin();
+        box(level, ex, 5, ModBlocks.HEAT_EXCHANGER_CASING.get(), ModBlocks.HEAT_EXCHANGER_GLASS.get(),
+                ModBlocks.HEAT_EXCHANGER_TUBE.get(), ModBlocks.HEAT_EXCHANGER_CONTROLLER.get());
+        var port = ModBlocks.HEAT_EXCHANGER_FLUID_PORT.get().defaultBlockState();
+        level.setBlock(ex.offset(4, 1, 2), port, Block.UPDATE_ALL);
+        level.setBlock(ex.offset(4, 2, 2), port.setValue(com.justreactors.exchanger.HeatExchangerFluidPortBlock.MODE,
+                com.justreactors.exchanger.ExchangerPortMode.OUTPUT_COOLANT), Block.UPDATE_ALL);
+        level.setBlock(ex.offset(4, 3, 2), port.setValue(com.justreactors.exchanger.HeatExchangerFluidPortBlock.MODE,
+                com.justreactors.exchanger.ExchangerPortMode.OUTPUT_STEAM), Block.UPDATE_ALL);
+
+        BlockPos bat = batteryOrigin();
+        box(level, bat, 5, ModBlocks.BATTERY_CASING.get(), ModBlocks.BATTERY_GLASS.get(),
+                ModBlocks.BATTERY_CELL.get(), ModBlocks.BATTERY_CONTROLLER.get());
+        level.setBlock(bat.offset(4, 2, 1), ModBlocks.BATTERY_POWER_PORT.get().defaultBlockState(), Block.UPDATE_ALL);
+        level.setBlock(bat.offset(4, 2, 3), ModBlocks.BATTERY_POWER_PORT.get().defaultBlockState()
+                .setValue(com.justreactors.battery.BatteryPowerPortBlock.OUTLET, true), Block.UPDATE_ALL);
+        level.setBlock(bat.offset(4, 3, 2), ModBlocks.BATTERY_REDSTONE_SENSOR.get().defaultBlockState(), Block.UPDATE_ALL);
+    }
+
+    private static void fillNewMachines(ServerPlayer p) {
+        ServerLevel level = p.level();
+        if (level.getBlockEntity(exchangerOrigin().offset(2, 2, 0)) instanceof com.justreactors.exchanger.HeatExchangerControllerBlockEntity ex
+                && ex.tryAssemble()) {
+            ex.getHotTank().fillInternal(new net.neoforged.neoforge.fluids.FluidStack(com.justreactors.registry.ModFluids.HOT_COOLANT_SOURCE.get(), 40_000));
+            ex.getWaterTank().fillInternal(new net.neoforged.neoforge.fluids.FluidStack(net.minecraft.world.level.material.Fluids.WATER, 70_000));
+        } else {
+            LOG.warn("shots: heat exchanger did not assemble");
+        }
+        if (level.getBlockEntity(batteryOrigin().offset(2, 2, 0)) instanceof com.justreactors.battery.BatteryControllerBlockEntity bat
+                && bat.tryAssemble()) {
+            bat.getEnergyStorage().generateEnergy((int) (bat.getEnergyStorage().getMaxEnergyStored() * 0.62));
+        } else {
+            LOG.warn("shots: battery did not assemble");
+        }
+    }
+
+    private static void reactorOnCoolant(ServerPlayer p) {
+        ServerLevel level = p.level();
+        if (level.getBlockEntity(demo.reactorControllerPos()) instanceof com.justreactors.blockentity.ReactorControllerBlockEntity r) {
+            r.getCoolantTank().setFluid(new net.neoforged.neoforge.fluids.FluidStack(com.justreactors.registry.ModFluids.COOLANT_SOURCE.get(), 30_000));
+            r.getSteamTank().setFluid(net.neoforged.neoforge.fluids.FluidStack.EMPTY);
+        }
+    }
+
     /** Loose machines next to the camera, for the screens the demo has no block for. */
     private static BlockPos loose(int i) {
         return new BlockPos(cx + 1 + i * 2, g + 1, cz - 3);
@@ -191,6 +260,8 @@ public final class ShotDirector {
         add(1, () -> server(ShotDirector::setup));
         add(200, () -> server(ShotDirector::flattenAndBuild));
         add(20, () -> hideHud(mc, true));
+        add(5, () -> server(ShotDirector::buildNewMachines));
+        add(40, () -> server(ShotDirector::fillNewMachines));
         // Layout (relative to the platform): reactor x1..5 z2..6 y1..5, turbine x8..12 z2..6 y1..7.
         // The camera looks south (+Z), so +X (the turbine) is on the left of the picture.
         if (!UI_ONLY) {
@@ -239,7 +310,52 @@ public final class ShotDirector {
         add(5, () -> server(p -> openMenu(p, demo.turbineControllerPos())));
         add(20, () -> hover(mc, 244, 196, 132, 80));
         add(20, () -> shot("ui_turbine_tooltip"));
+        if (net.neoforged.fml.ModList.get().isLoaded("carryon")) {
+            add(5, () -> server(p -> {
+                BlockPos loose = new BlockPos(cx + 22, g + 1, cz - 2);
+                p.level().setBlock(loose, ModBlocks.BATTERY_POWER_PORT.get().defaultBlockState(), Block.UPDATE_ALL);
+                LOG.info("shots carryon: assembled port protected={}, loose port protected={}",
+                        com.justreactors.compat.carryon.CarryOnCompat.isProtected(p.level(), batteryOrigin().offset(4, 2, 1)),
+                        com.justreactors.compat.carryon.CarryOnCompat.isProtected(p.level(), loose));
+            }));
+        }
+        // the heat exchanger and the battery
+        add(5, () -> {
+            mc.gui.setScreen(null);
+            hideHud(mc, true);
+            server(p -> look(p, 21.5, 6.5, -5.5, 24, 3, 4.5));
+        });
+        add(60, () -> shot("exchanger_battery"));
+        add(5, () -> hideHud(mc, false));
+        ui(mc, "ui_heat_exchanger", p -> {
+            look(p, 18.5, 1, -1.5, 18.5, 3, 2);
+            openMenu(p, exchangerOrigin().offset(2, 2, 0));
+        });
+        add(10, () -> hover(mc, 244, 176, 200, 36));
+        add(20, () -> shot("ui_heat_exchanger_status"));
+        ui(mc, "ui_battery", p -> {
+            look(p, 25.5, 1, -1.5, 25.5, 3, 2);
+            openMenu(p, batteryOrigin().offset(2, 2, 0));
+        });
+        ui(mc, "ui_battery_sensor", p -> {
+            look(p, 29.5, 2, 4.5, 27, 4, 4.5);
+            openMenu(p, batteryOrigin().offset(4, 3, 2));
+        });
+        add(5, () -> server(ShotDirector::reactorOnCoolant));
+        add(80, () -> LOG.info("shots: reactor heating coolant"));
+        ui(mc, "ui_reactor_coolant", p -> {
+            look(p, 3.5, 1, -1, 3.5, 2.5, 2.5);
+            openMenu(p, demo.reactorControllerPos());
+        });
         ui(mc, "ui_control_rod", p -> openFound(p, ModBlocks.REACTOR_CONTROL_ROD.get()));
+        if (net.neoforged.fml.ModList.get().isLoaded("roughlyenoughitems")) {
+            for (String cat : List.of("heat_exchanging", "reprocessing", "moderators")) {
+                add(5, () -> mc.gui.setScreen(null));
+                add(5, () -> com.justreactors.compat.rei.ReiShots.open(cat));
+                add(30, () -> parkMouse(mc));
+                add(10, () -> shot("rei_" + cat));
+            }
+        }
         ui(mc, "ui_access_port", p -> openFound(p, ModBlocks.REACTOR_ACCESS_PORT.get()));
         add(5, () -> server(p -> {
             Block[] loose = {ModBlocks.REACTOR_REDSTONE_PORT.get(), ModBlocks.TURBINE_REDSTONE_PORT.get(), ModBlocks.CYANITE_REPROCESSOR.get()};

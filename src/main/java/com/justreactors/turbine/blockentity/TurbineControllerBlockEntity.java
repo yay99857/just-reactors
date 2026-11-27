@@ -261,6 +261,7 @@ public class TurbineControllerBlockEntity extends BlockEntity implements MenuPro
             this.structure = valid.structure();
             this.lastValidationError = null;
             linkParts(valid.structure());
+            com.justreactors.multiblock.AssembledMultiblocks.put(level, worldPosition, valid.structure().min(), valid.structure().max());
             boolean shouldSpin = this.simulation.getRpm() > SPINNING_RPM_THRESHOLD;
             if (wasUnassembled || shouldSpin != this.rotorMarkedSpinning) {
                 setRotorBlocksSpinning(level, valid.structure(), shouldSpin);
@@ -273,6 +274,7 @@ public class TurbineControllerBlockEntity extends BlockEntity implements MenuPro
         } else if (result instanceof TurbineValidator.Result.Invalid invalid) {
             unlinkParts();
             this.structure = null;
+            com.justreactors.multiblock.AssembledMultiblocks.remove(level, worldPosition);
             this.lastValidationError = invalid.reason();
             syncClientRenderData(level, worldPosition, getBlockState());
             return false;
@@ -316,6 +318,7 @@ public class TurbineControllerBlockEntity extends BlockEntity implements MenuPro
             setRotorBlocksSpinning(level, structure, false);
             rotorMarkedSpinning = false;
         }
+        if (level != null) com.justreactors.multiblock.AssembledMultiblocks.remove(level, worldPosition);
         super.setRemoved();
     }
 

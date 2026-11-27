@@ -93,6 +93,10 @@ dependencies {
     compileOnly 'maven.modrinth:jei:31.23.0.130'
     compileOnly 'maven.modrinth:jade:26.3.5+neoforge'
     compileOnly 'maven.modrinth:cc-tweaked:dNPuF2s9'
+    // Roughly Enough Items (optional): REI's API exposes Architectury types
+    compileOnly 'maven.modrinth:rei:26.3.824+neoforge'
+    compileOnly 'maven.modrinth:architectury-api:22.1.7+neoforge'
+    compileOnly 'maven.modrinth:cloth-config:26.3.161+neoforge'
 }
 
 tasks.register('syncDevMods') {

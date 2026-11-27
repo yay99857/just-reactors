@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    "minecraft:bucket",
+    "minecraft:packed_ice",
+    "#c:ingots/graphite",
+    "#c:dusts/redstone"
+  ],
+  "result": {
+    "id": "justreactors:coolant_bucket"
+  }
+}

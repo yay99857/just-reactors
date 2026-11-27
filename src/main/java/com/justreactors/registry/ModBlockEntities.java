@@ -13,6 +13,12 @@ import com.justreactors.turbine.blockentity.TurbineFluidPortBlockEntity;
 import com.justreactors.turbine.blockentity.TurbinePowerTapBlockEntity;
 import com.justreactors.turbine.blockentity.TurbineRedstonePortBlockEntity;
 
+import com.justreactors.battery.BatteryControllerBlockEntity;
+import com.justreactors.battery.BatteryPowerPortBlockEntity;
+import com.justreactors.battery.BatteryRedstoneSensorBlockEntity;
+import com.justreactors.exchanger.HeatExchangerControllerBlockEntity;
+import com.justreactors.exchanger.HeatExchangerFluidPortBlockEntity;
+
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.neoforged.neoforge.registries.DeferredHolder;
@@ -65,6 +71,26 @@ public final class ModBlockEntities {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<TurbineRedstonePortBlockEntity>> TURBINE_REDSTONE_PORT =
             BLOCK_ENTITIES.register("turbine_redstone_port", () ->
                     new BlockEntityType<>(TurbineRedstonePortBlockEntity::new, ModBlocks.TURBINE_REDSTONE_PORT.get()));
+
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<HeatExchangerControllerBlockEntity>> HEAT_EXCHANGER_CONTROLLER =
+            BLOCK_ENTITIES.register("heat_exchanger_controller", () ->
+                    new BlockEntityType<>(HeatExchangerControllerBlockEntity::new, ModBlocks.HEAT_EXCHANGER_CONTROLLER.get()));
+
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<HeatExchangerFluidPortBlockEntity>> HEAT_EXCHANGER_FLUID_PORT =
+            BLOCK_ENTITIES.register("heat_exchanger_fluid_port", () ->
+                    new BlockEntityType<>(HeatExchangerFluidPortBlockEntity::new, ModBlocks.HEAT_EXCHANGER_FLUID_PORT.get()));
+
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<BatteryControllerBlockEntity>> BATTERY_CONTROLLER =
+            BLOCK_ENTITIES.register("battery_controller", () ->
+                    new BlockEntityType<>(BatteryControllerBlockEntity::new, ModBlocks.BATTERY_CONTROLLER.get()));
+
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<BatteryPowerPortBlockEntity>> BATTERY_POWER_PORT =
+            BLOCK_ENTITIES.register("battery_power_port", () ->
+                    new BlockEntityType<>(BatteryPowerPortBlockEntity::new, ModBlocks.BATTERY_POWER_PORT.get()));
+
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<BatteryRedstoneSensorBlockEntity>> BATTERY_REDSTONE_SENSOR =
+            BLOCK_ENTITIES.register("battery_redstone_sensor", () ->
+                    new BlockEntityType<>(BatteryRedstoneSensorBlockEntity::new, ModBlocks.BATTERY_REDSTONE_SENSOR.get()));
 
     private ModBlockEntities() {
     }

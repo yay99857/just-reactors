@@ -2,7 +2,9 @@ package com.justreactors.blockentity;
 
 import com.justreactors.block.ReactorCoolantPortBlock;
 import com.justreactors.registry.ModBlockEntities;
+import com.justreactors.registry.ModFluids;
 import com.justreactors.transfer.ReactorFluidTank;
+import com.justreactors.transfer.RestrictedFluidHandler;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -10,10 +12,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluids;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.transfer.DelegatingResourceHandler;
 import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.fluid.FluidResource;
-import net.neoforged.neoforge.transfer.transaction.TransactionContext;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -32,30 +32,11 @@ public class ReactorCoolantPortBlockEntity extends ReactorPartBlockEntity {
     public ResourceHandler<FluidResource> getFluidHandler(@Nullable Direction side) {
         ReactorControllerBlockEntity controller = getController();
         if (controller == null) return null;
-
-        if (isOutlet()) {
-            // Outlet: extract-only Steam
-            return new DelegatingResourceHandler<>(controller.getSteamTank()) {
-                @Override
-                public int insert(int index, FluidResource resource, int amount, TransactionContext transaction) {
-                    return 0;
-                }
-            };
-        } else {
-            // Inlet: insert-only Water
-            return new DelegatingResourceHandler<>(controller.getCoolantTank()) {
-                @Override
-                public int insert(int index, FluidResource resource, int amount, TransactionContext transaction) {
-                    if (!resource.is(Fluids.WATER)) return 0;
-                    return super.insert(index, resource, amount, transaction);
-                }
-
-                @Override
-                public int extract(int index, FluidResource resource, int amount, TransactionContext transaction) {
-                    return 0;
-                }
-            };
-        }
+        // Outlet: extract-only Steam / Hot Coolant. Inlet: insert-only Water / Coolant.
+        return isOutlet()
+                ? RestrictedFluidHandler.extractOnly(controller.getSteamTank())
+                : RestrictedFluidHandler.insertOnly(controller.getCoolantTank(),
+                        r -> r.is(Fluids.WATER) || ModFluids.isCoolant(r.getFluid()));
     }
 
     public void pushSteamToNeighbors(ReactorFluidTank steamTank, int maxRate) {

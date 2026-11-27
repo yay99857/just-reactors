@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "key": {
+    "G": "#c:ingots/graphite",
+    "K": "#c:ingots/copper"
+  },
+  "pattern": [
+    "KKK",
+    "GGG",
+    "KKK"
+  ],
+  "result": {
+    "count": 4,
+    "id": "justreactors:heat_exchanger_tube"
+  }
+}

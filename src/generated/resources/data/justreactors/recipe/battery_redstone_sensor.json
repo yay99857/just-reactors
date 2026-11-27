@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "C": "justreactors:battery_casing",
+    "R": "#c:dusts/redstone",
+    "X": "minecraft:comparator"
+  },
+  "pattern": [
+    "CRC",
+    "RXR",
+    "CRC"
+  ],
+  "result": {
+    "id": "justreactors:battery_redstone_sensor"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "C": "justreactors:battery_casing",
+    "K": "#c:ingots/copper",
+    "R": "#c:dusts/redstone"
+  },
+  "pattern": [
+    "CRC",
+    "RKR",
+    "CRC"
+  ],
+  "result": {
+    "id": "justreactors:battery_power_port"
+  }
+}

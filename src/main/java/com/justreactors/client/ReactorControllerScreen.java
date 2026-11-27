@@ -30,6 +30,8 @@ public class ReactorControllerScreen extends AbstractContainerScreen<ReactorCont
     private final ItemStack wasteIcon = new ItemStack(ModItems.CYANITE_INGOT.get());
     private final ItemStack waterIcon = new ItemStack(Items.WATER_BUCKET);
     private final ItemStack steamIcon = new ItemStack(ModItems.STEAM_BUCKET.get());
+    private final ItemStack coolantIcon = new ItemStack(ModItems.COOLANT_BUCKET.get());
+    private final ItemStack hotCoolantIcon = new ItemStack(ModItems.HOT_COOLANT_BUCKET.get());
     private final ItemStack rodIcon = new ItemStack(ModItems.REACTOR_CONTROL_ROD.get());
 
     public ReactorControllerScreen(ReactorControllerMenu menu, Inventory playerInventory, Component title) {
@@ -89,13 +91,14 @@ public class ReactorControllerScreen extends AbstractContainerScreen<ReactorCont
         drawHeatGauge(g, x + CASING_X, y + GY, 16, GH, menu.getCasingHeat() / HEAT_SCALE);
         vDivider(g, x + 94, y + 30, 94);
 
+        boolean loop = menu.isCoolantLoop();
         if (steam) {
             double maxFluid = Math.max(1, menu.getMaxFluidMb());
-            icon(g, waterIcon, x + WATER_X, y + 29);
-            drawVerticalGauge(g, x + WATER_X, y + GY, 16, GH, menu.getCoolantMb() / maxFluid, WATER);
+            icon(g, loop ? coolantIcon : waterIcon, x + WATER_X, y + 29);
+            drawVerticalGauge(g, x + WATER_X, y + GY, 16, GH, menu.getCoolantMb() / maxFluid, loop ? COOLANT : WATER);
             ruler(g, x + 123, y + GY, GH);
-            icon(g, steamIcon, x + STEAM_X, y + 29);
-            drawVerticalGauge(g, x + STEAM_X, y + GY, 16, GH, menu.getSteamMb() / maxFluid, STEAM);
+            icon(g, loop ? hotCoolantIcon : steamIcon, x + STEAM_X, y + 29);
+            drawVerticalGauge(g, x + STEAM_X, y + GY, 16, GH, menu.getSteamMb() / maxFluid, loop ? HOT_COOLANT : STEAM);
         } else {
             pixelIcon(g, PixelIcon.BOLT, x + ENERGY_X + (ENERGY_W - 16) / 2, y + 29);
             drawVerticalGauge(g, x + ENERGY_X, y + GY, ENERGY_W, GH,
@@ -111,7 +114,7 @@ public class ReactorControllerScreen extends AbstractContainerScreen<ReactorCont
         inset(g, x + 8, y + SY, 228, 36);
         vDivider(g, x + 122, y + SY + 3, 30);
         if (steam) {
-            icon(g, steamIcon, x + 11, y + SY + 1);
+            icon(g, loop ? hotCoolantIcon : steamIcon, x + 11, y + SY + 1);
         } else {
             pixelIcon(g, PixelIcon.BOLT, x + 11, y + SY + 1);
         }
@@ -126,7 +129,8 @@ public class ReactorControllerScreen extends AbstractContainerScreen<ReactorCont
         boolean on = menu.isActive();
 
         drawTitle(g, font, title, 0, 0, on ? ON : OFF, on);
-        badge(g, font, Component.translatable(steam ? "gui.justreactors.mode.active" : "gui.justreactors.mode.passive"),
+        badge(g, font, Component.translatable(!steam ? "gui.justreactors.mode.passive"
+                        : menu.isCoolantLoop() ? "gui.justreactors.mode.active_coolant" : "gui.justreactors.mode.active"),
                 imageWidth - 6, 5, steam ? ACCENT_TURBINE : ENERGY);
 
         // status display
@@ -141,7 +145,7 @@ public class ReactorControllerScreen extends AbstractContainerScreen<ReactorCont
         g.text(font, rods, 236 - font.width(rods), 98, VALUE, false);
 
         // stats
-        g.text(font, steam ? fmt(menu.getLastSteamMb()) + " mB/t" : fmt(menu.getGeneratedFe()) + " FE/t", 31, SY + 5, VALUE, true);
+        g.text(font, steam ? fmt(menu.getLastOutputMb()) + " mB/t" : fmt(menu.getGeneratedFe()) + " FE/t", 31, SY + 5, VALUE, true);
         g.text(font, String.format(Locale.ROOT, "%.3f mB/t", menu.getBurnRateMb()), 147, SY + 5, VALUE, true);
         g.text(font, fmt(menu.getFuelHeat()) + " °C", 31, SY + 23, VALUE, true);
         g.text(font, fmt(menu.getCasingHeat()) + " °C", 147, SY + 23, VALUE, true);
@@ -171,10 +175,18 @@ public class ReactorControllerScreen extends AbstractContainerScreen<ReactorCont
             tip.add(value("gui.justreactors.tip.temp", fmt(menu.getCasingHeat())));
             tip.add(hint("gui.justreactors.tip.casing.hint"));
         } else if (steam && isHovering(WATER_X, 29, 16, GY - 29 + GH, mx, my)) {
-            tip = fluidTip("gui.justreactors.tip.water.title", menu.getCoolantMb(), menu.getMaxFluidMb());
+            tip = fluidTip(menu.isCoolantLoop() ? "gui.justreactors.tip.coolant.title" : "gui.justreactors.tip.water.title",
+                    menu.getCoolantMb(), menu.getMaxFluidMb());
+            tip.add(hint("gui.justreactors.tip.reactor_coolant.hint"));
         } else if (steam && isHovering(STEAM_X, 29, 16, GY - 29 + GH, mx, my)) {
-            tip = fluidTip("gui.justreactors.tip.steam.title", menu.getSteamMb(), menu.getMaxFluidMb());
-            tip.add(line("gui.justreactors.tip.steam.rate", fmt(menu.getLastSteamMb())));
+            if (menu.isCoolantLoop()) {
+                tip = fluidTip("gui.justreactors.tip.hot_coolant.title", menu.getSteamMb(), menu.getMaxFluidMb());
+                tip.add(line("gui.justreactors.tip.hot_coolant.rate", fmt(menu.getLastOutputMb())));
+                tip.add(hint("gui.justreactors.tip.hot_coolant.hint"));
+            } else {
+                tip = fluidTip("gui.justreactors.tip.steam.title", menu.getSteamMb(), menu.getMaxFluidMb());
+                tip.add(line("gui.justreactors.tip.steam.rate", fmt(menu.getLastSteamMb())));
+            }
         } else if (!steam && isHovering(ENERGY_X, 29, ENERGY_W, GY - 29 + GH, mx, my)) {
             tip = tip("gui.justreactors.tip.energy.title");
             tip.add(value("gui.justreactors.tip.percent", pct((double) menu.getEnergy() / Math.max(1, menu.getMaxEnergy()))));
@@ -185,9 +197,10 @@ public class ReactorControllerScreen extends AbstractContainerScreen<ReactorCont
             tip.add(hint(steam ? "gui.justreactors.mode.active_tooltip" : "gui.justreactors.mode.passive_tooltip"));
         }
         if (tip == null && isHovering(9, SY + 1, 112, 17, mx, my)) {
-            tip = tip(steam ? "gui.justreactors.label.steam" : "gui.justreactors.label.output");
-            tip.add(value(steam ? "gui.justreactors.tip.steam.rate" : "gui.justreactors.tip.energy.output",
-                    fmt(steam ? menu.getLastSteamMb() : menu.getGeneratedFe())));
+            boolean loop = menu.isCoolantLoop();
+            tip = tip(!steam ? "gui.justreactors.label.output" : loop ? "gui.justreactors.tip.hot_coolant.title" : "gui.justreactors.label.steam");
+            tip.add(value(!steam ? "gui.justreactors.tip.energy.output" : loop ? "gui.justreactors.tip.hot_coolant.rate" : "gui.justreactors.tip.steam.rate",
+                    fmt(steam ? menu.getLastOutputMb() : menu.getGeneratedFe())));
         } else if (tip == null && isHovering(124, SY + 1, 112, 17, mx, my)) {
             tip = tip("gui.justreactors.label.burn");
             tip.add(value("gui.justreactors.tip.burn", String.format(Locale.ROOT, "%.3f", menu.getBurnRateMb())));
