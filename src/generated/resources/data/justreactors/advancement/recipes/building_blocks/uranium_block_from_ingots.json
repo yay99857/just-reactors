@@ -3,7 +3,7 @@
   "criteria": {
     "has_the_recipe": {
       "conditions": {
-        "recipes": "justreactors:uranium_block_from_ingots"
+        "recipe": "justreactors:uranium_block_from_ingots"
       },
       "trigger": "minecraft:recipe_unlocked"
     },

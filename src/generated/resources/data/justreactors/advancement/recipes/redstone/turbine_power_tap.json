@@ -3,7 +3,7 @@
   "criteria": {
     "has_the_recipe": {
       "conditions": {
-        "recipes": "justreactors:turbine_power_tap"
+        "recipe": "justreactors:turbine_power_tap"
       },
       "trigger": "minecraft:recipe_unlocked"
     },

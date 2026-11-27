@@ -2,7 +2,13 @@ package com.justreactors.client;
 
 import com.justreactors.JustReactors;
 import com.justreactors.demo.DemoSetup;
+import com.justreactors.registry.ModFluids;
+import com.justreactors.turbine.blockentity.TurbineControllerBlockEntity;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
+import net.neoforged.neoforge.fluids.FluidStack;
 import net.minecraft.client.Minecraft;
+import org.lwjgl.glfw.GLFW;
 import net.minecraft.client.Screenshot;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.MinecraftServer;
@@ -52,8 +58,8 @@ public final class ShotDirector {
     }
 
     private static void cmd(ServerPlayer p, String c) {
-        p.level().getServer().getCommands().performPrefixedCommand(p.createCommandSourceStack()
-                .withPermission(net.minecraft.server.permissions.LevelBasedPermissionSet.OWNER).withSuppressedOutput(), c);
+        p.getServer().getCommands().performPrefixedCommand(p.createCommandSourceStack()
+                .withPermission(4).withSuppressedOutput(), c);
     }
 
     /** Puts the camera at (x, y, z) relative to the demo origin, looking at (tx, ty, tz). */
@@ -64,36 +70,36 @@ public final class ShotDirector {
         float pitch = (float) -Math.toDegrees(Math.atan2(dy, Math.sqrt(dx * dx + dz * dz)));
         p.getAbilities().flying = true;
         p.onUpdateAbilities();
-        p.teleportTo(p.level(), x, y, z, Set.of(), yaw, pitch, true);
+        p.teleportTo(p.serverLevel(), x, y, z, Set.of(), yaw, pitch);
         p.setDeltaMovement(0, 0, 0);
     }
 
     private static void shot(String name) {
         Minecraft mc = Minecraft.getInstance();
-        Screenshot.grab(mc.gameDirectory, "justreactors_" + name + ".png", mc.gameRenderer.mainRenderTarget(), 1,
+        Screenshot.grab(mc.gameDirectory, "justreactors_" + name + ".png", mc.getMainRenderTarget(),
                 c -> LOG.info("shot {}", name));
     }
 
     private static void hideHud(Minecraft mc, boolean hidden) {
-        if (mc.gui.hud.isHidden() != hidden) mc.gui.hud.toggle();
+        mc.options.hideGui = hidden;
     }
 
     private static void setup(ServerPlayer p) {
         for (String c : List.of("gamerule doDaylightCycle false", "gamerule doWeatherCycle false",
                 "gamerule doMobSpawning false", "time set 6000", "weather clear", "gamemode creative"))
             cmd(p, c);
-        var found = p.level().findClosestBiome3d(b -> b.is(net.minecraft.world.level.biome.Biomes.PLAINS),
+        var found = p.serverLevel().findClosestBiome3d(b -> b.is(net.minecraft.world.level.biome.Biomes.PLAINS),
                 new BlockPos(6000, 64, 6000), 6400, 32, 64);
         if (found != null) {
             cx = found.getFirst().getX();
             cz = found.getFirst().getZ();
         }
         cmd(p, "forceload add " + (cx - 48) + " " + (cz - 48) + " " + (cx + 48) + " " + (cz + 48));
-        p.teleportTo(p.level(), cx, 200, cz, Set.of(), 0, 0, true);
+        p.teleportTo(p.serverLevel(), cx, 200, cz, Set.of(), 0, 0);
     }
 
     private static void flattenAndBuild(ServerPlayer p) {
-        ServerLevel level = p.level();
+        ServerLevel level = p.serverLevel();
         g = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, cx, cz);
         BlockPos.MutableBlockPos m = new BlockPos.MutableBlockPos();
         for (int x = -40; x <= 56; x++) {
@@ -114,6 +120,13 @@ public final class ShotDirector {
         // the demo's guide signs are in Portuguese; the CurseForge page is in English
         for (int dx : new int[]{3, 6, 10, 14}) level.setBlock(origin.offset(dx, 1, 1), Blocks.AIR.defaultBlockState(), 3);
         g = g - 1; // coordinates below are relative to the platform
+    }
+
+    private static void feedTurbine(ServerPlayer p) {
+        if (BuiltInRegistries.BLOCK.containsKey(ResourceLocation.fromNamespaceAndPath("voltaicdynamics", "fluid_cable"))) return;
+        if (p.level().getBlockEntity(demo.turbineControllerPos()) instanceof TurbineControllerBlockEntity turbine) {
+            turbine.getSteamTank().fillInternal(new FluidStack(ModFluids.STEAM_SOURCE.get(), turbine.getSteamTank().getSpace()));
+        }
     }
 
     private static void openMenu(ServerPlayer p, BlockPos pos) {
@@ -144,8 +157,7 @@ public final class ShotDirector {
 
     /** Parks the cursor in a corner so no tooltip shows up over a screen. */
     private static void parkMouse(Minecraft mc) {
-        long handle = mc.getWindow().handle();
-        mc.mouseHandler.onMove(handle, 2, 2, 0, 0);
+        GLFW.glfwSetCursorPos(mc.getWindow().getWindow(), 2, 2);
     }
 
     private static final int GIF_FRAMES = 48;
@@ -179,22 +191,27 @@ public final class ShotDirector {
         }));
         add(20, () -> parkMouse(mc));
         add(20, () -> shot("reactor_controller"));
-        add(5, () -> mc.gui.setScreen(null));
+        add(5, () -> mc.setScreen(null));
         add(5, () -> server(p -> {
             look(p, 10.5, 1, -1, 10.5, 2.5, 2.5);
             openMenu(p, demo.turbineControllerPos());
         }));
         add(20, () -> parkMouse(mc));
         add(20, () -> shot("turbine_controller"));
-        add(5, () -> mc.gui.setScreen(null));
+        add(5, () -> mc.setScreen(null));
         // GIF: the rotor spinning, straight through the turbine's front glass, one frame per tick
         add(5, () -> {
             hideHud(mc, true);
             server(p -> look(p, 10.5, 2.0, -1.8, 10.5, 3.8, 4.5));
         });
+        // 1.21.1 has no Voltaic Dynamics pipes, so keep the turbine fed directly while it spins up and records
+        for (int i = 0; i < 60; i++) add(1, () -> server(ShotDirector::feedTurbine));
         for (int i = 0; i < GIF_FRAMES; i++) {
             final int frame = i;
-            add(i == 0 ? 60 : 1, () -> shot(String.format("gif_%02d", frame)));
+            add(1, () -> {
+                server(ShotDirector::feedTurbine);
+                shot(String.format("gif_%02d", frame));
+            });
         }
         // night, closer, so the glass glow reads
         add(10, () -> server(p -> cmd(p, "time set 18000")));

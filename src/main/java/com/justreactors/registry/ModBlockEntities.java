@@ -24,47 +24,47 @@ public final class ModBlockEntities {
 
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ReactorControllerBlockEntity>> REACTOR_CONTROLLER =
             BLOCK_ENTITIES.register("reactor_controller", () ->
-                    new BlockEntityType<>(ReactorControllerBlockEntity::new, ModBlocks.REACTOR_CONTROLLER.get()));
+                    BlockEntityType.Builder.of(ReactorControllerBlockEntity::new, ModBlocks.REACTOR_CONTROLLER.get()).build(null));
 
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ReactorControlRodBlockEntity>> REACTOR_CONTROL_ROD =
             BLOCK_ENTITIES.register("reactor_control_rod", () ->
-                    new BlockEntityType<>(ReactorControlRodBlockEntity::new, ModBlocks.REACTOR_CONTROL_ROD.get()));
+                    BlockEntityType.Builder.of(ReactorControlRodBlockEntity::new, ModBlocks.REACTOR_CONTROL_ROD.get()).build(null));
 
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ReactorPowerTapBlockEntity>> REACTOR_POWER_TAP =
             BLOCK_ENTITIES.register("reactor_power_tap", () ->
-                    new BlockEntityType<>(ReactorPowerTapBlockEntity::new, ModBlocks.REACTOR_POWER_TAP.get()));
+                    BlockEntityType.Builder.of(ReactorPowerTapBlockEntity::new, ModBlocks.REACTOR_POWER_TAP.get()).build(null));
 
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ReactorAccessPortBlockEntity>> REACTOR_ACCESS_PORT =
             BLOCK_ENTITIES.register("reactor_access_port", () ->
-                    new BlockEntityType<>(ReactorAccessPortBlockEntity::new, ModBlocks.REACTOR_ACCESS_PORT.get()));
+                    BlockEntityType.Builder.of(ReactorAccessPortBlockEntity::new, ModBlocks.REACTOR_ACCESS_PORT.get()).build(null));
 
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ReactorRedstonePortBlockEntity>> REACTOR_REDSTONE_PORT =
             BLOCK_ENTITIES.register("reactor_redstone_port", () ->
-                    new BlockEntityType<>(ReactorRedstonePortBlockEntity::new, ModBlocks.REACTOR_REDSTONE_PORT.get()));
+                    BlockEntityType.Builder.of(ReactorRedstonePortBlockEntity::new, ModBlocks.REACTOR_REDSTONE_PORT.get()).build(null));
 
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ReactorCoolantPortBlockEntity>> REACTOR_COOLANT_PORT =
             BLOCK_ENTITIES.register("reactor_coolant_port", () ->
-                    new BlockEntityType<>(ReactorCoolantPortBlockEntity::new, ModBlocks.REACTOR_COOLANT_PORT.get()));
+                    BlockEntityType.Builder.of(ReactorCoolantPortBlockEntity::new, ModBlocks.REACTOR_COOLANT_PORT.get()).build(null));
 
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<CyaniteReprocessorBlockEntity>> CYANITE_REPROCESSOR =
             BLOCK_ENTITIES.register("cyanite_reprocessor", () ->
-                    new BlockEntityType<>(CyaniteReprocessorBlockEntity::new, ModBlocks.CYANITE_REPROCESSOR.get()));
+                    BlockEntityType.Builder.of(CyaniteReprocessorBlockEntity::new, ModBlocks.CYANITE_REPROCESSOR.get()).build(null));
 
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<TurbineControllerBlockEntity>> TURBINE_CONTROLLER =
             BLOCK_ENTITIES.register("turbine_controller", () ->
-                    new BlockEntityType<>(TurbineControllerBlockEntity::new, ModBlocks.TURBINE_CONTROLLER.get()));
+                    BlockEntityType.Builder.of(TurbineControllerBlockEntity::new, ModBlocks.TURBINE_CONTROLLER.get()).build(null));
 
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<TurbineFluidPortBlockEntity>> TURBINE_FLUID_PORT =
             BLOCK_ENTITIES.register("turbine_fluid_port", () ->
-                    new BlockEntityType<>(TurbineFluidPortBlockEntity::new, ModBlocks.TURBINE_FLUID_PORT.get()));
+                    BlockEntityType.Builder.of(TurbineFluidPortBlockEntity::new, ModBlocks.TURBINE_FLUID_PORT.get()).build(null));
 
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<TurbinePowerTapBlockEntity>> TURBINE_POWER_TAP =
             BLOCK_ENTITIES.register("turbine_power_tap", () ->
-                    new BlockEntityType<>(TurbinePowerTapBlockEntity::new, ModBlocks.TURBINE_POWER_TAP.get()));
+                    BlockEntityType.Builder.of(TurbinePowerTapBlockEntity::new, ModBlocks.TURBINE_POWER_TAP.get()).build(null));
 
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<TurbineRedstonePortBlockEntity>> TURBINE_REDSTONE_PORT =
             BLOCK_ENTITIES.register("turbine_redstone_port", () ->
-                    new BlockEntityType<>(TurbineRedstonePortBlockEntity::new, ModBlocks.TURBINE_REDSTONE_PORT.get()));
+                    BlockEntityType.Builder.of(TurbineRedstonePortBlockEntity::new, ModBlocks.TURBINE_REDSTONE_PORT.get()).build(null));
 
     private ModBlockEntities() {
     }

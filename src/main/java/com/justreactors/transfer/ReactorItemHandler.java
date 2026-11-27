@@ -1,42 +1,24 @@
 package com.justreactors.transfer;
 
-import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.transfer.item.ItemResource;
-import net.neoforged.neoforge.transfer.item.ItemStacksResourceHandler;
+import com.justreactors.compat.nbt.ValueInput;
+import com.justreactors.compat.nbt.ValueOutput;
+import net.neoforged.neoforge.items.ItemStackHandler;
 
 /**
- * Simple slot-based item handler on NeoForge 26.3's transactional transfer API.
+ * Simple slot-based item handler on NeoForge 1.21.1's {@link ItemStackHandler}.
  */
-public class ReactorItemHandler extends ItemStacksResourceHandler {
+public class ReactorItemHandler extends ItemStackHandler {
     public ReactorItemHandler(int size) {
         super(size);
     }
 
-    public int getSlots() {
-        return size();
-    }
-
-    public ItemStack getStackInSlot(int slot) {
-        return stacks.get(slot);
-    }
-
-    public void setStackInSlot(int slot, ItemStack stack) {
-        set(slot, stack.isEmpty() ? ItemResource.EMPTY : ItemResource.of(stack),
-                stack.isEmpty() ? 0 : stack.getCount());
-    }
-
-    public boolean isItemValid(int slot, ItemStack stack) {
-        return true;
+    public int size() {
+        return getSlots();
     }
 
     @Override
-    public boolean isValid(int index, ItemResource resource) {
-        return isItemValid(index, resource.toStack());
-    }
-
-    @Override
-    protected void onContentsChanged(int index, ItemStack previousContents) {
-        onSlotChanged(index);
+    protected void onContentsChanged(int slot) {
+        onSlotChanged(slot);
     }
 
     protected void onSlotChanged(int slot) {
@@ -44,5 +26,13 @@ public class ReactorItemHandler extends ItemStacksResourceHandler {
 
     public void markChanged(int slot) {
         onSlotChanged(slot);
+    }
+
+    public void serialize(ValueOutput output) {
+        output.tag().merge(serializeNBT(output.registries()));
+    }
+
+    public void deserialize(ValueInput input) {
+        deserializeNBT(input.registries(), input.tag());
     }
 }

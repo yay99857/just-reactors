@@ -2,7 +2,9 @@
   "type": "minecraft:crafting_shaped",
   "category": "building",
   "key": {
-    "I": "#c:ingots/cyanite"
+    "I": {
+      "tag": "c:ingots/cyanite"
+    }
   },
   "pattern": [
     "III",
@@ -10,6 +12,7 @@
     "III"
   ],
   "result": {
+    "count": 1,
     "id": "justreactors:cyanite_block"
   }
 }

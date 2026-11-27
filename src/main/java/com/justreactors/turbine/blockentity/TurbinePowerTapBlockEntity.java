@@ -1,5 +1,6 @@
 package com.justreactors.turbine.blockentity;
 
+import net.neoforged.neoforge.energy.IEnergyStorage;
 import com.justreactors.registry.ModBlockEntities;
 import com.justreactors.transfer.ReactorEnergyStorage;
 
@@ -7,7 +8,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.transfer.energy.EnergyHandler;
 import org.jetbrains.annotations.Nullable;
 
 public class TurbinePowerTapBlockEntity extends TurbinePartBlockEntity {
@@ -16,7 +16,7 @@ public class TurbinePowerTapBlockEntity extends TurbinePartBlockEntity {
     }
 
     @Nullable
-    public EnergyHandler getEnergyHandler(@Nullable Direction side) {
+    public IEnergyStorage getEnergyHandler(@Nullable Direction side) {
         TurbineControllerBlockEntity controller = getController();
         return controller != null ? controller.getEnergyStorage() : null;
     }
@@ -33,7 +33,7 @@ public class TurbinePowerTapBlockEntity extends TurbinePartBlockEntity {
             if (controller != null && controller.getStructure() != null && controller.getStructure().contains(neighborPos)) {
                 continue;
             }
-            EnergyHandler neighbor = level.getCapability(Capabilities.Energy.BLOCK, neighborPos, dir.getOpposite());
+            IEnergyStorage neighbor = level.getCapability(Capabilities.EnergyStorage.BLOCK, neighborPos, dir.getOpposite());
             if (neighbor == null) continue;
             int pushed = ReactorEnergyStorage.pushEnergy(neighbor, remaining);
             if (pushed > 0) {

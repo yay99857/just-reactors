@@ -2,10 +2,18 @@
   "type": "minecraft:crafting_shaped",
   "category": "redstone",
   "key": {
-    "B": "minecraft:bucket",
-    "I": "#c:ingots/iron",
-    "P": "minecraft:piston",
-    "T": "justreactors:turbine_casing"
+    "B": {
+      "item": "minecraft:bucket"
+    },
+    "I": {
+      "tag": "c:ingots/iron"
+    },
+    "P": {
+      "item": "minecraft:piston"
+    },
+    "T": {
+      "item": "justreactors:turbine_casing"
+    }
   },
   "pattern": [
     "TBT",
@@ -13,6 +21,7 @@
     "TBT"
   ],
   "result": {
+    "count": 1,
     "id": "justreactors:turbine_fluid_port"
   }
 }

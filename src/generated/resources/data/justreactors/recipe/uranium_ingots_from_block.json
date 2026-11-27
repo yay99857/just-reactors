@@ -1,7 +1,10 @@
 {
   "type": "minecraft:crafting_shapeless",
+  "category": "misc",
   "ingredients": [
-    "justreactors:uranium_block"
+    {
+      "item": "justreactors:uranium_block"
+    }
   ],
   "result": {
     "count": 9,

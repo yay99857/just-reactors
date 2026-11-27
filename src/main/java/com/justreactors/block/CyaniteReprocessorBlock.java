@@ -1,5 +1,7 @@
 package com.justreactors.block;
 
+import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.ItemInteractionResult;
 import com.justreactors.blockentity.CyaniteReprocessorBlockEntity;
 import com.justreactors.registry.ModBlockEntities;
 
@@ -25,12 +27,11 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.transfer.access.ItemAccess;
-import net.neoforged.neoforge.transfer.fluid.FluidUtil;
+import net.neoforged.neoforge.fluids.FluidUtil;
 import org.jetbrains.annotations.Nullable;
 
 public class CyaniteReprocessorBlock extends Block implements EntityBlock {
-    public static final EnumProperty<Direction> FACING = HorizontalDirectionalBlock.FACING;
+    public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
     public static final BooleanProperty LIT = BlockStateProperties.LIT;
 
     public CyaniteReprocessorBlock(Properties properties) {
@@ -65,14 +66,14 @@ public class CyaniteReprocessorBlock extends Block implements EntityBlock {
     }
 
     @Override
-    protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player,
-                                          InteractionHand hand, BlockHitResult hit) {
-        if (!stack.isEmpty() && ItemAccess.forStack(stack).getCapability(Capabilities.Fluid.ITEM) != null) {
-            if (FluidUtil.interactWithFluidHandler(player, hand, level, pos, hit.getDirection(), null)) {
-                return InteractionResult.SUCCESS;
+    protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player,
+                                              InteractionHand hand, BlockHitResult hit) {
+        if (!stack.isEmpty() && stack.getCapability(Capabilities.FluidHandler.ITEM) != null) {
+            if (FluidUtil.interactWithFluidHandler(player, hand, level, pos, hit.getDirection())) {
+                return ItemInteractionResult.sidedSuccess(level.isClientSide());
             }
         }
-        return InteractionResult.TRY_WITH_EMPTY_HAND;
+        return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
     }
 
     @Override
@@ -82,5 +83,13 @@ public class CyaniteReprocessorBlock extends Block implements EntityBlock {
             serverPlayer.openMenu(reprocessor, pos);
         }
         return InteractionResult.CONSUME;
+    }
+
+    @Override
+    protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
+        if (!state.is(newState.getBlock()) && level.getBlockEntity(pos) instanceof CyaniteReprocessorBlockEntity be) {
+            be.dropContents();
+        }
+        super.onRemove(state, level, pos, newState, movedByPiston);
     }
 }

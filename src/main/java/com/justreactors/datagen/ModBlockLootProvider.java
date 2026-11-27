@@ -6,15 +6,15 @@ import com.justreactors.registry.ModItems;
 
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.loot.BlockLootSubProvider;
-import net.minecraft.data.loot.LootTableSubProvider;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.level.block.Block;
 
 import java.util.Set;
 
 public class ModBlockLootProvider extends BlockLootSubProvider {
-    public ModBlockLootProvider(LootTableSubProvider.Context output) {
-        super(Set.of(), FeatureFlags.REGISTRY.allFlags(), output);
+    public ModBlockLootProvider(HolderLookup.Provider registries) {
+        super(Set.of(), FeatureFlags.REGISTRY.allFlags(), registries);
     }
 
     @Override

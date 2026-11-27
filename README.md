@@ -1,6 +1,6 @@
 # ☢️ Just Reactors
 
-Standalone multiblock nuclear fission reactor & steam turbine mod inspired by **Extreme Reactors 2**, built for **Minecraft 26.3 (NeoForge)** (with a **1.21.1** backport planned). Works out of the box with **Voltaic Dynamics**, **Mekanism**, **AE2**, **Powah**, and any Forge Energy (FE) or NeoForge Fluid mod.
+Standalone multiblock nuclear fission reactor & steam turbine mod inspired by **Extreme Reactors 2**, this is the **Minecraft 1.21.1 (NeoForge 21.1)** build; the main version targets Minecraft 26.3. Works out of the box with **Mekanism**, **AE2**, **Powah**, and any Forge Energy (FE) or NeoForge Fluid mod.
 
 ![A 5x5x5 active reactor feeding a 5x7x5 steam turbine](docs/screenshots/overview.png)
 

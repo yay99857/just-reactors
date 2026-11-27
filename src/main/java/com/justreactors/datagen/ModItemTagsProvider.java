@@ -6,13 +6,17 @@ import com.justreactors.registry.ModItems;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.neoforged.neoforge.common.Tags;
-import net.neoforged.neoforge.common.data.ItemTagsProvider;
+import net.minecraft.data.tags.ItemTagsProvider;
+import net.minecraft.data.tags.TagsProvider;
+import net.minecraft.world.level.block.Block;
+import net.neoforged.neoforge.common.data.ExistingFileHelper;
 
 import java.util.concurrent.CompletableFuture;
 
 public class ModItemTagsProvider extends ItemTagsProvider {
-    public ModItemTagsProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> lookup) {
-        super(output, lookup, JustReactors.MOD_ID);
+    public ModItemTagsProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> lookup,
+                               CompletableFuture<TagsProvider.TagLookup<Block>> blockTags, ExistingFileHelper files) {
+        super(output, lookup, blockTags, JustReactors.MOD_ID, files);
     }
 
     @Override

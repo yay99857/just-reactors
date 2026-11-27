@@ -1,5 +1,6 @@
 package com.justreactors.block;
 
+import net.minecraft.world.ItemInteractionResult;
 import com.justreactors.blockentity.ReactorCoolantPortBlockEntity;
 
 import net.minecraft.ChatFormatting;
@@ -18,8 +19,7 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.transfer.access.ItemAccess;
-import net.neoforged.neoforge.transfer.fluid.FluidUtil;
+import net.neoforged.neoforge.fluids.FluidUtil;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -46,14 +46,14 @@ public class ReactorCoolantPortBlock extends ReactorPartBlock implements EntityB
     }
 
     @Override
-    protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player,
-                                          InteractionHand hand, BlockHitResult hit) {
-        if (!stack.isEmpty() && ItemAccess.forStack(stack).getCapability(Capabilities.Fluid.ITEM) != null) {
-            if (FluidUtil.interactWithFluidHandler(player, hand, level, pos, hit.getDirection(), null)) {
-                return InteractionResult.SUCCESS;
+    protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player,
+                                              InteractionHand hand, BlockHitResult hit) {
+        if (!stack.isEmpty() && stack.getCapability(Capabilities.FluidHandler.ITEM) != null) {
+            if (FluidUtil.interactWithFluidHandler(player, hand, level, pos, hit.getDirection())) {
+                return ItemInteractionResult.sidedSuccess(level.isClientSide());
             }
         }
-        return InteractionResult.TRY_WITH_EMPTY_HAND;
+        return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
     }
 
     @Override
@@ -61,9 +61,9 @@ public class ReactorCoolantPortBlock extends ReactorPartBlock implements EntityB
         if (level.isClientSide()) return InteractionResult.SUCCESS;
         boolean nextOutlet = !state.getValue(OUTLET);
         level.setBlock(pos, state.setValue(OUTLET, nextOutlet), 3);
-        player.sendOverlayMessage(Component.translatable(
+        player.displayClientMessage(Component.translatable(
                 nextOutlet ? "message.justreactors.coolant_port.outlet" : "message.justreactors.coolant_port.inlet")
-                .withStyle(nextOutlet ? ChatFormatting.AQUA : ChatFormatting.BLUE));
+                .withStyle(nextOutlet ? ChatFormatting.AQUA : ChatFormatting.BLUE), true);
         return InteractionResult.CONSUME;
     }
 }

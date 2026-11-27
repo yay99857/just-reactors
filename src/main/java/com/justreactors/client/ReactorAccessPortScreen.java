@@ -2,7 +2,7 @@ package com.justreactors.client;
 
 import com.justreactors.menu.ReactorAccessPortMenu;
 
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
@@ -12,7 +12,9 @@ public class ReactorAccessPortScreen extends AbstractContainerScreen<ReactorAcce
     private Button modeButton;
 
     public ReactorAccessPortScreen(ReactorAccessPortMenu menu, Inventory playerInventory, Component title) {
-        super(menu, playerInventory, title, 176, 166);
+        super(menu, playerInventory, title);
+        this.imageWidth = 176;
+        this.imageHeight = 166;
     }
 
     @Override
@@ -35,8 +37,7 @@ public class ReactorAccessPortScreen extends AbstractContainerScreen<ReactorAcce
     }
 
     @Override
-    public void extractBackground(GuiGraphicsExtractor g, int mouseX, int mouseY, float partialTick) {
-        super.extractBackground(g, mouseX, mouseY, partialTick);
+    protected void renderBg(GuiGraphics g, float partialTick, int mouseX, int mouseY) {
         if (modeButton != null) {
             modeButton.setMessage(Component.translatable(
                     menu.isOutlet() ? "gui.justreactors.access_port.outlet" : "gui.justreactors.access_port.inlet"));
@@ -58,10 +59,16 @@ public class ReactorAccessPortScreen extends AbstractContainerScreen<ReactorAcce
     }
 
     @Override
-    protected void extractLabels(GuiGraphicsExtractor g, int mouseX, int mouseY) {
-        g.text(font, title, titleLabelX, titleLabelY, 0xFFE5E9F0, false);
-        g.text(font, Component.translatable("gui.justreactors.access_port.fuel"), 40, 23, 0xFFF1C40F, false);
-        g.text(font, Component.translatable("gui.justreactors.access_port.waste"), 110, 23, 0xFF3498DB, false);
-        g.text(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, 0xFFD8DEE9, false);
+    protected void renderLabels(GuiGraphics g, int mouseX, int mouseY) {
+        g.drawString(font, title, titleLabelX, titleLabelY, 0xFFE5E9F0, false);
+        g.drawString(font, Component.translatable("gui.justreactors.access_port.fuel"), 40, 23, 0xFFF1C40F, false);
+        g.drawString(font, Component.translatable("gui.justreactors.access_port.waste"), 110, 23, 0xFF3498DB, false);
+        g.drawString(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, 0xFFD8DEE9, false);
+    }
+
+    @Override
+    public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
+        super.render(g, mouseX, mouseY, partialTick);
+        renderTooltip(g, mouseX, mouseY);
     }
 }

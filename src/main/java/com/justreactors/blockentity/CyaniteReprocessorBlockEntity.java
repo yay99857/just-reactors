@@ -1,5 +1,11 @@
 package com.justreactors.blockentity;
 
+import com.justreactors.transfer.Handlers;
+import net.neoforged.neoforge.energy.IEnergyStorage;
+import net.neoforged.neoforge.fluids.capability.IFluidHandler;
+import net.neoforged.neoforge.items.IItemHandler;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
 import com.justreactors.JustReactorsConfig;
 import com.justreactors.block.CyaniteReprocessorBlock;
 import com.justreactors.datagen.ModTags;
@@ -24,14 +30,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluids;
-import net.minecraft.world.level.storage.ValueInput;
-import net.minecraft.world.level.storage.ValueOutput;
-import net.neoforged.neoforge.transfer.DelegatingResourceHandler;
-import net.neoforged.neoforge.transfer.ResourceHandler;
-import net.neoforged.neoforge.transfer.energy.EnergyHandler;
-import net.neoforged.neoforge.transfer.fluid.FluidResource;
-import net.neoforged.neoforge.transfer.item.ItemResource;
-import net.neoforged.neoforge.transfer.transaction.TransactionContext;
+import com.justreactors.compat.nbt.ValueInput;
+import com.justreactors.compat.nbt.ValueOutput;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -54,17 +54,8 @@ public class CyaniteReprocessorBlockEntity extends BlockEntity implements MenuPr
         }
     };
 
-    private final ResourceHandler<ItemResource> automationHandler = new DelegatingResourceHandler<>(inventory) {
-        @Override
-        public int insert(int slot, ItemResource resource, int amount, TransactionContext transaction) {
-            return slot == SLOT_INPUT ? super.insert(slot, resource, amount, transaction) : 0;
-        }
-
-        @Override
-        public int extract(int slot, ItemResource resource, int amount, TransactionContext transaction) {
-            return slot == SLOT_OUTPUT ? super.extract(slot, resource, amount, transaction) : 0;
-        }
-    };
+    private final IItemHandler automationHandler = Handlers.slots(inventory,
+            slot -> slot == SLOT_INPUT, slot -> slot == SLOT_OUTPUT);
 
     private final ReactorFluidTank waterTank = new ReactorFluidTank(8_000, stack -> stack.is(Fluids.WATER), this::setChanged);
     private final ReactorEnergyStorage energyStorage = new ReactorEnergyStorage(100_000, 2_000, 0, this::setChanged);
@@ -151,23 +142,22 @@ public class CyaniteReprocessorBlockEntity extends BlockEntity implements MenuPr
     }
 
     @Nullable
-    public ResourceHandler<ItemResource> getItemHandler(@Nullable Direction side) {
+    public IItemHandler getItemHandler(@Nullable Direction side) {
         return automationHandler;
     }
 
     @Nullable
-    public ResourceHandler<FluidResource> getFluidHandler(@Nullable Direction side) {
+    public IFluidHandler getFluidHandler(@Nullable Direction side) {
         return waterTank;
     }
 
     @Nullable
-    public EnergyHandler getEnergyHandler(@Nullable Direction side) {
+    public IEnergyStorage getEnergyHandler(@Nullable Direction side) {
         return energyStorage;
     }
 
-    @Override
-    public void preRemoveSideEffects(BlockPos pos, BlockState state) {
-        super.preRemoveSideEffects(pos, state);
+    /** Called from the block's onRemove (1.21.1 has no BlockEntity#preRemoveSideEffects). */
+    public void dropContents() {
         if (level != null && !level.isClientSide()) {
             SimpleContainer drops = new SimpleContainer(inventory.getSlots());
             for (int i = 0; i < inventory.getSlots(); i++) {
@@ -189,8 +179,9 @@ public class CyaniteReprocessorBlockEntity extends BlockEntity implements MenuPr
     }
 
     @Override
-    protected void saveAdditional(ValueOutput output) {
-        super.saveAdditional(output);
+    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.saveAdditional(tag, registries);
+        ValueOutput output = new ValueOutput(tag, registries);
         inventory.serialize(output.child("Inventory"));
         waterTank.save(output, "WaterTank");
         energyStorage.serialize(output);
@@ -198,8 +189,9 @@ public class CyaniteReprocessorBlockEntity extends BlockEntity implements MenuPr
     }
 
     @Override
-    protected void loadAdditional(ValueInput input) {
-        super.loadAdditional(input);
+    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.loadAdditional(tag, registries);
+        ValueInput input = new ValueInput(tag, registries);
         input.child("Inventory").ifPresent(inventory::deserialize);
         waterTank.load(input, "WaterTank");
         energyStorage.deserialize(input);

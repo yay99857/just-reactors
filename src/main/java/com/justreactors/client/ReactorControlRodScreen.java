@@ -2,7 +2,7 @@ package com.justreactors.client;
 
 import com.justreactors.menu.ReactorControlRodMenu;
 
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
@@ -10,7 +10,9 @@ import net.minecraft.world.entity.player.Inventory;
 
 public class ReactorControlRodScreen extends AbstractContainerScreen<ReactorControlRodMenu> {
     public ReactorControlRodScreen(ReactorControlRodMenu menu, Inventory playerInventory, Component title) {
-        super(menu, playerInventory, title, 180, 108);
+        super(menu, playerInventory, title);
+        this.imageWidth = 180;
+        this.imageHeight = 108;
     }
 
     @Override
@@ -42,16 +44,21 @@ public class ReactorControlRodScreen extends AbstractContainerScreen<ReactorCont
     }
 
     @Override
-    public void extractBackground(GuiGraphicsExtractor g, int mouseX, int mouseY, float partialTick) {
-        super.extractBackground(g, mouseX, mouseY, partialTick);
+    protected void renderBg(GuiGraphics g, float partialTick, int mouseX, int mouseY) {
         ScreenWidgets.drawPanel(g, leftPos, topPos, imageWidth, imageHeight);
         ScreenWidgets.drawHorizontalBar(g, leftPos + 10, topPos + 34, 160, 10,
                 menu.getInsertion() / 100.0, 0xFF88C0D0);
     }
 
     @Override
-    protected void extractLabels(GuiGraphicsExtractor g, int mouseX, int mouseY) {
-        g.text(font, title, titleLabelX, titleLabelY, 0xFFE5E9F0, false);
-        g.text(font, Component.translatable("gui.justreactors.control_rod.insertion", menu.getInsertion()), 10, 23, 0xFFD8DEE9, false);
+    protected void renderLabels(GuiGraphics g, int mouseX, int mouseY) {
+        g.drawString(font, title, titleLabelX, titleLabelY, 0xFFE5E9F0, false);
+        g.drawString(font, Component.translatable("gui.justreactors.control_rod.insertion", menu.getInsertion()), 10, 23, 0xFFD8DEE9, false);
+    }
+
+    @Override
+    public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
+        super.render(g, mouseX, mouseY, partialTick);
+        renderTooltip(g, mouseX, mouseY);
     }
 }

@@ -2,7 +2,9 @@
   "type": "minecraft:crafting_shaped",
   "category": "building",
   "key": {
-    "I": "#c:ingots/uranium"
+    "I": {
+      "tag": "c:ingots/uranium"
+    }
   },
   "pattern": [
     "III",
@@ -10,6 +12,7 @@
     "III"
   ],
   "result": {
+    "count": 1,
     "id": "justreactors:uranium_block"
   }
 }

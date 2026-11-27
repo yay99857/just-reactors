@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "justreactors:reactor_access_port"
+        "recipe": "justreactors:reactor_access_port"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

@@ -1,5 +1,9 @@
 package com.justreactors.blockentity;
 
+import com.justreactors.transfer.Handlers;
+import net.neoforged.neoforge.items.IItemHandler;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
 import com.justreactors.block.ReactorAccessPortBlock;
 import com.justreactors.datagen.ModTags;
 import com.justreactors.menu.ReactorAccessPortMenu;
@@ -18,12 +22,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.storage.ValueInput;
-import net.minecraft.world.level.storage.ValueOutput;
-import net.neoforged.neoforge.transfer.DelegatingResourceHandler;
-import net.neoforged.neoforge.transfer.ResourceHandler;
-import net.neoforged.neoforge.transfer.item.ItemResource;
-import net.neoforged.neoforge.transfer.transaction.TransactionContext;
+import com.justreactors.compat.nbt.ValueInput;
+import com.justreactors.compat.nbt.ValueOutput;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -46,19 +46,8 @@ public class ReactorAccessPortBlockEntity extends ReactorPartBlockEntity impleme
     };
 
     /** Pipes/hoppers can insert fuel into slot 0 and extract waste from slot 1. */
-    private final ResourceHandler<ItemResource> automationHandler = new DelegatingResourceHandler<>(inventory) {
-        @Override
-        public int insert(int slot, ItemResource resource, int amount, TransactionContext transaction) {
-            if (slot != SLOT_FUEL) return 0;
-            return super.insert(slot, resource, amount, transaction);
-        }
-
-        @Override
-        public int extract(int slot, ItemResource resource, int amount, TransactionContext transaction) {
-            if (slot != SLOT_WASTE) return 0;
-            return super.extract(slot, resource, amount, transaction);
-        }
-    };
+    private final IItemHandler automationHandler = Handlers.slots(inventory,
+            slot -> slot == SLOT_FUEL, slot -> slot == SLOT_WASTE);
 
     public ReactorAccessPortBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.REACTOR_ACCESS_PORT.get(), pos, state);
@@ -116,13 +105,12 @@ public class ReactorAccessPortBlockEntity extends ReactorPartBlockEntity impleme
     }
 
     @Nullable
-    public ResourceHandler<ItemResource> getItemHandler(@Nullable Direction side) {
+    public IItemHandler getItemHandler(@Nullable Direction side) {
         return automationHandler;
     }
 
-    @Override
-    public void preRemoveSideEffects(BlockPos pos, BlockState state) {
-        super.preRemoveSideEffects(pos, state);
+    /** Called from the block's onRemove (1.21.1 has no BlockEntity#preRemoveSideEffects). */
+    public void dropContents() {
         if (level != null && !level.isClientSide()) {
             SimpleContainer drops = new SimpleContainer(inventory.getSlots());
             for (int i = 0; i < inventory.getSlots(); i++) {
@@ -144,14 +132,16 @@ public class ReactorAccessPortBlockEntity extends ReactorPartBlockEntity impleme
     }
 
     @Override
-    protected void saveAdditional(ValueOutput output) {
-        super.saveAdditional(output);
+    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.saveAdditional(tag, registries);
+        ValueOutput output = new ValueOutput(tag, registries);
         inventory.serialize(output.child("Inventory"));
     }
 
     @Override
-    protected void loadAdditional(ValueInput input) {
-        super.loadAdditional(input);
+    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.loadAdditional(tag, registries);
+        ValueInput input = new ValueInput(tag, registries);
         input.child("Inventory").ifPresent(inventory::deserialize);
     }
 }

@@ -1,9 +1,13 @@
 {
   "type": "minecraft:blasting",
+  "category": "misc",
   "cookingtime": 100,
   "experience": 0.7,
-  "ingredient": "justreactors:raw_uranium",
+  "ingredient": {
+    "item": "justreactors:raw_uranium"
+  },
   "result": {
+    "count": 1,
     "id": "justreactors:uranium_ingot"
   }
 }

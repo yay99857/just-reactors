@@ -3,7 +3,7 @@
   "criteria": {
     "has_the_recipe": {
       "conditions": {
-        "recipes": "justreactors:turbine_redstone_port"
+        "recipe": "justreactors:turbine_redstone_port"
       },
       "trigger": "minecraft:recipe_unlocked"
     },

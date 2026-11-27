@@ -4,7 +4,7 @@ import com.justreactors.client.ScreenWidgets;
 import com.justreactors.turbine.TurbineRedstonePortMode;
 import com.justreactors.turbine.menu.TurbineRedstonePortMenu;
 
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
@@ -17,7 +17,9 @@ public class TurbineRedstonePortScreen extends AbstractContainerScreen<TurbineRe
     private Button plus10;
 
     public TurbineRedstonePortScreen(TurbineRedstonePortMenu menu, Inventory playerInventory, Component title) {
-        super(menu, playerInventory, title, 216, 132);
+        super(menu, playerInventory, title);
+        this.imageWidth = 216;
+        this.imageHeight = 132;
     }
 
     @Override
@@ -49,8 +51,7 @@ public class TurbineRedstonePortScreen extends AbstractContainerScreen<TurbineRe
     }
 
     @Override
-    public void extractBackground(GuiGraphicsExtractor g, int mouseX, int mouseY, float partialTick) {
-        super.extractBackground(g, mouseX, mouseY, partialTick);
+    protected void renderBg(GuiGraphics g, float partialTick, int mouseX, int mouseY) {
         ScreenWidgets.drawPanel(g, leftPos, topPos, imageWidth, imageHeight);
 
         TurbineRedstonePortMode mode = menu.getMode();
@@ -66,30 +67,36 @@ public class TurbineRedstonePortScreen extends AbstractContainerScreen<TurbineRe
     }
 
     @Override
-    protected void extractLabels(GuiGraphicsExtractor g, int mouseX, int mouseY) {
-        g.text(font, title, titleLabelX, titleLabelY, 0xFFE5E9F0, false);
+    protected void renderLabels(GuiGraphics g, int mouseX, int mouseY) {
+        g.drawString(font, title, titleLabelX, titleLabelY, 0xFFE5E9F0, false);
 
         TurbineRedstonePortMode mode = menu.getMode();
         Component kindBadge = Component.translatable(
                 mode.isOutput() ? "gui.justreactors.redstone_port.output" : "gui.justreactors.redstone_port.input");
         int badgeColor = mode.isOutput() ? 0xFFE74C3C : 0xFF5EC8F5;
-        g.text(font, kindBadge, imageWidth - 8 - font.width(kindBadge), 6, badgeColor, false);
+        g.drawString(font, kindBadge, imageWidth - 8 - font.width(kindBadge), 6, badgeColor, false);
 
         Component modeName = Component.translatable(mode.translationKey());
         int centeredX = (imageWidth - font.width(modeName)) / 2;
-        g.text(font, modeName, centeredX, 38, 0xFFF0F4F8, false);
+        g.drawString(font, modeName, centeredX, 38, 0xFFF0F4F8, false);
 
         if (mode.isOutput()) {
             Component thresh = mode.isRpmThreshold()
                     ? Component.translatable("gui.justreactors.turbine_redstone_port.threshold_rpm",
                     menu.getThresholdPercent() * 30, menu.getThresholdPercent())
                     : Component.translatable("gui.justreactors.redstone_port.threshold", menu.getThresholdPercent());
-            g.text(font, thresh, 10, 62, 0xFFD8DEE9, false);
+            g.drawString(font, thresh, 10, 62, 0xFFD8DEE9, false);
         } else {
-            g.text(font, Component.translatable("gui.justreactors.redstone_port.input_hint"), 10, 62, 0xFF9AA5B1, false);
+            g.drawString(font, Component.translatable("gui.justreactors.redstone_port.input_hint"), 10, 62, 0xFF9AA5B1, false);
         }
 
         Component sig = Component.translatable("gui.justreactors.redstone_port.signal", menu.getSignal());
-        g.text(font, sig, 10, 73, 0xFFEBCB8B, false);
+        g.drawString(font, sig, 10, 73, 0xFFEBCB8B, false);
+    }
+
+    @Override
+    public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
+        super.render(g, mouseX, mouseY, partialTick);
+        renderTooltip(g, mouseX, mouseY);
     }
 }

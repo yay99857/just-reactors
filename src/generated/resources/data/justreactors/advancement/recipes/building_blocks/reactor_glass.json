@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "justreactors:reactor_glass"
+        "recipe": "justreactors:reactor_glass"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

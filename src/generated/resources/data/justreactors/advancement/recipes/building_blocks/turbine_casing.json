@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "justreactors:turbine_casing"
+        "recipe": "justreactors:turbine_casing"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

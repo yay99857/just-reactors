@@ -13,7 +13,7 @@ base {
     archivesName = project.mod_id
 }
 
-java.toolchain.languageVersion = JavaLanguageVersion.of(25)
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
 sourceSets.main.resources {
     srcDir 'src/generated/resources'
@@ -61,7 +61,7 @@ neoForge {
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
         }
         data {
-            clientData()
+            data()
             programArguments.addAll '--mod', project.mod_id, '--all',
                     '--output', file('src/generated/resources/').getAbsolutePath(),
                     '--existing', file('src/main/resources/').getAbsolutePath()
@@ -89,33 +89,16 @@ repositories {
 }
 
 dependencies {
-    compileOnly 'maven.modrinth:jei:31.23.0.130'
-    compileOnly 'maven.modrinth:jade:26.3.5+neoforge'
-    compileOnly 'maven.modrinth:cc-tweaked:dNPuF2s9'
+    compileOnly 'maven.modrinth:jei:19.76.1.482'
+    compileOnly 'maven.modrinth:jade:15.10.6+neoforge'
+    compileOnly 'maven.modrinth:cc-tweaked:2jhB1Ii4'
 }
 
-tasks.register('syncDevMods') {
-    doLast {
-        def modsDir = file('run/mods')
-        modsDir.mkdirs()
-        def voltaicJar = file('../voltaic-dynamics/build/libs/voltaicdynamics-2.0.0.jar')
-        if (voltaicJar.exists()) {
-            copy {
-                from voltaicJar
-                into modsDir
-            }
-        }
-    }
-}
-
-tasks.configureEach { task ->
-    if (task.name in ['prepareClientRun', 'prepareDemoRun', 'prepareShotsRun', 'prepareServerRun', 'prepareGameTestServerRun']) {
-        task.dependsOn 'syncDevMods'
-    }
-}
+// syncDevMods (copies the 26.3 Voltaic Dynamics jar into run/mods) is left out: that jar does not load on 1.21.1.
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
+    options.compilerArgs += ['-Xmaxerrs', '2000']
 }
 
 var modMetadata = [

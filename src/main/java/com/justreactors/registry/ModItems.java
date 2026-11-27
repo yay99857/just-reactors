@@ -10,13 +10,12 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.level.block.Block;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
-import java.util.function.Consumer;
+import java.util.List;
 
 public final class ModItems {
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(JustReactors.MOD_ID);
@@ -72,14 +71,12 @@ public final class ModItems {
 
     private static DeferredItem<BlockItem> blockItem(DeferredBlock<? extends Block> block) {
         return ITEMS.registerItem(block.getId().getPath(),
-                props -> new BlockItem(block.get(), props),
-                Item.Properties::useBlockDescriptionPrefix);
+                props -> new BlockItem(block.get(), props));
     }
 
     private static DeferredItem<BlockItem> tooltipBlockItem(DeferredBlock<? extends Block> block, String tooltipKey) {
         return ITEMS.registerItem(block.getId().getPath(),
-                props -> new TooltipBlockItem(block.get(), props, tooltipKey),
-                Item.Properties::useBlockDescriptionPrefix);
+                props -> new TooltipBlockItem(block.get(), props, tooltipKey));
     }
 
     private static final class TooltipBlockItem extends BlockItem {
@@ -91,10 +88,10 @@ public final class ModItems {
         }
 
         @Override
-        public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display,
-                                    Consumer<Component> tooltipComponents, TooltipFlag flag) {
-            super.appendHoverText(stack, context, display, tooltipComponents, flag);
-            tooltipComponents.accept(Component.translatable(tooltipKey).withStyle(ChatFormatting.GRAY));
+        public void appendHoverText(ItemStack stack, TooltipContext context,
+                                    List<Component> tooltipComponents, TooltipFlag flag) {
+            super.appendHoverText(stack, context, tooltipComponents, flag);
+            tooltipComponents.add(Component.translatable(tooltipKey).withStyle(ChatFormatting.GRAY));
         }
     }
 }

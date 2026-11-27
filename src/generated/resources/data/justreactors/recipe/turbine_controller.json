@@ -2,10 +2,18 @@
   "type": "minecraft:crafting_shaped",
   "category": "redstone",
   "key": {
-    "D": "#c:gems/diamond",
-    "R": "#c:dusts/redstone",
-    "T": "justreactors:turbine_casing",
-    "Y": "#c:ingots/cyanite"
+    "D": {
+      "tag": "c:gems/diamond"
+    },
+    "R": {
+      "tag": "c:dusts/redstone"
+    },
+    "T": {
+      "item": "justreactors:turbine_casing"
+    },
+    "Y": {
+      "tag": "c:ingots/cyanite"
+    }
   },
   "pattern": [
     "TYT",
@@ -13,6 +21,7 @@
     "TYT"
   ],
   "result": {
+    "count": 1,
     "id": "justreactors:turbine_controller"
   }
 }

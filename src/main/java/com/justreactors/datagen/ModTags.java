@@ -3,7 +3,7 @@ package com.justreactors.datagen;
 import com.justreactors.JustReactors;
 
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
@@ -38,14 +38,14 @@ public final class ModTags {
     }
 
     private static TagKey<Item> itemTag(String namespace, String path) {
-        return TagKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath(namespace, path));
+        return TagKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath(namespace, path));
     }
 
     private static TagKey<Block> blockTag(String namespace, String path) {
-        return TagKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(namespace, path));
+        return TagKey.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath(namespace, path));
     }
 
     private static TagKey<Fluid> fluidTag(String namespace, String path) {
-        return TagKey.create(Registries.FLUID, Identifier.fromNamespaceAndPath(namespace, path));
+        return TagKey.create(Registries.FLUID, ResourceLocation.fromNamespaceAndPath(namespace, path));
     }
 }

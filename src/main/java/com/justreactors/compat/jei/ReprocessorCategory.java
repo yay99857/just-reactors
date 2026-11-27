@@ -12,9 +12,9 @@ import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.category.IRecipeCategory;
-import mezz.jei.api.recipe.types.IRecipeType;
+import mezz.jei.api.recipe.RecipeType;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.material.Fluids;
@@ -22,8 +22,8 @@ import net.minecraft.world.level.material.Fluids;
 import java.util.Locale;
 
 public class ReprocessorCategory implements IRecipeCategory<ReprocessorCategory.ReprocessorDisplay> {
-    public static final IRecipeType<ReprocessorDisplay> TYPE =
-            IRecipeType.create(JustReactors.id("reprocessing"), ReprocessorDisplay.class);
+    public static final RecipeType<ReprocessorDisplay> TYPE =
+            RecipeType.create(JustReactors.MOD_ID, "reprocessing", ReprocessorDisplay.class);
 
     private static final int WIDTH = 116;
     private static final int HEIGHT = 46;
@@ -41,7 +41,7 @@ public class ReprocessorCategory implements IRecipeCategory<ReprocessorCategory.
     }
 
     @Override
-    public IRecipeType<ReprocessorDisplay> getRecipeType() {
+    public RecipeType<ReprocessorDisplay> getRecipeType() {
         return TYPE;
     }
 
@@ -69,23 +69,23 @@ public class ReprocessorCategory implements IRecipeCategory<ReprocessorCategory.
     public void setRecipe(IRecipeLayoutBuilder builder, ReprocessorDisplay recipe, IFocusGroup focuses) {
         builder.addInputSlot(4, 10)
                 .setStandardSlotBackground()
-                .add(new ItemStack(ModItems.CYANITE_INGOT.get(), recipe.cyaniteCount()));
+                .addItemStack(new ItemStack(ModItems.CYANITE_INGOT.get(), recipe.cyaniteCount()));
         builder.addInputSlot(26, 10)
                 .setStandardSlotBackground()
                 .setFluidRenderer(recipe.waterMb(), false, 16, 16)
-                .add(Fluids.WATER, recipe.waterMb());
+                .addFluidStack(Fluids.WATER, recipe.waterMb());
         builder.addOutputSlot(88, 10)
                 .setOutputSlotBackground()
-                .add(new ItemStack(ModItems.BLUTONIUM_INGOT.get(), 1));
+                .addItemStack(new ItemStack(ModItems.BLUTONIUM_INGOT.get(), 1));
     }
 
     @Override
-    public void draw(ReprocessorDisplay recipe, IRecipeSlotsView recipeSlotsView, GuiGraphicsExtractor g, double mouseX, double mouseY) {
+    public void draw(ReprocessorDisplay recipe, IRecipeSlotsView recipeSlotsView, GuiGraphics g, double mouseX, double mouseY) {
         arrow.draw(g, 52, 10);
         var font = Minecraft.getInstance().font;
         Component info = Component.translatable("jei.justreactors.reprocessing.info",
                 String.format(Locale.ROOT, "%.1f", recipe.ticks() / 20.0),
                 String.format(Locale.ROOT, "%,d", recipe.energyFe()));
-        g.text(font, info, 4, HEIGHT - 10, 0xFF606060, false);
+        g.drawString(font, info, 4, HEIGHT - 10, 0xFF606060, false);
     }
 }

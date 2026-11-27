@@ -11,7 +11,7 @@ import com.justreactors.registry.ModItems;
 import com.justreactors.registry.ModMenus;
 import com.justreactors.registry.ModSounds;
 
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.neoforged.bus.api.IEventBus;
@@ -34,7 +34,7 @@ public class JustReactors {
     public JustReactors(IEventBus modEventBus, ModContainer modContainer) {
         LOGGER.info("Initializing Just Reactors");
 
-        modContainer.registerConfig(ModConfig.Type.SYNCED, JustReactorsConfig.SPEC);
+        modContainer.registerConfig(ModConfig.Type.SERVER, JustReactorsConfig.SPEC);
 
         ModFluids.FLUID_TYPES.register(modEventBus);
         ModFluids.FLUIDS.register(modEventBus);
@@ -54,8 +54,8 @@ public class JustReactors {
         }
     }
 
-    public static Identifier id(String path) {
-        return Identifier.fromNamespaceAndPath(MOD_ID, path);
+    public static ResourceLocation id(String path) {
+        return ResourceLocation.fromNamespaceAndPath(MOD_ID, path);
     }
 
     public static BlockBehaviour.Properties reactorBlockProperties(float hardness, float resistance) {
@@ -66,23 +66,23 @@ public class JustReactors {
     }
 
     private static void registerCapabilities(RegisterCapabilitiesEvent event) {
-        event.registerBlockEntity(Capabilities.Energy.BLOCK, ModBlockEntities.REACTOR_POWER_TAP.get(),
+        event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, ModBlockEntities.REACTOR_POWER_TAP.get(),
                 (be, side) -> be.getEnergyHandler(side));
-        event.registerBlockEntity(Capabilities.Item.BLOCK, ModBlockEntities.REACTOR_ACCESS_PORT.get(),
+        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, ModBlockEntities.REACTOR_ACCESS_PORT.get(),
                 (be, side) -> be.getItemHandler(side));
-        event.registerBlockEntity(Capabilities.Fluid.BLOCK, ModBlockEntities.REACTOR_COOLANT_PORT.get(),
+        event.registerBlockEntity(Capabilities.FluidHandler.BLOCK, ModBlockEntities.REACTOR_COOLANT_PORT.get(),
                 (be, side) -> be.getFluidHandler(side));
 
-        event.registerBlockEntity(Capabilities.Energy.BLOCK, ModBlockEntities.TURBINE_POWER_TAP.get(),
+        event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, ModBlockEntities.TURBINE_POWER_TAP.get(),
                 (be, side) -> be.getEnergyHandler(side));
-        event.registerBlockEntity(Capabilities.Fluid.BLOCK, ModBlockEntities.TURBINE_FLUID_PORT.get(),
+        event.registerBlockEntity(Capabilities.FluidHandler.BLOCK, ModBlockEntities.TURBINE_FLUID_PORT.get(),
                 (be, side) -> be.getFluidHandler(side));
 
-        event.registerBlockEntity(Capabilities.Item.BLOCK, ModBlockEntities.CYANITE_REPROCESSOR.get(),
+        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, ModBlockEntities.CYANITE_REPROCESSOR.get(),
                 (be, side) -> be.getItemHandler(side));
-        event.registerBlockEntity(Capabilities.Fluid.BLOCK, ModBlockEntities.CYANITE_REPROCESSOR.get(),
+        event.registerBlockEntity(Capabilities.FluidHandler.BLOCK, ModBlockEntities.CYANITE_REPROCESSOR.get(),
                 (be, side) -> be.getFluidHandler(side));
-        event.registerBlockEntity(Capabilities.Energy.BLOCK, ModBlockEntities.CYANITE_REPROCESSOR.get(),
+        event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, ModBlockEntities.CYANITE_REPROCESSOR.get(),
                 (be, side) -> be.getEnergyHandler(side));
 
         if (ModList.get().isLoaded("computercraft")) {

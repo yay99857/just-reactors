@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "justreactors:reactor_coolant_port"
+        "recipe": "justreactors:reactor_coolant_port"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

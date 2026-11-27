@@ -18,7 +18,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -29,7 +29,6 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.StandingSignBlock;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
 import net.minecraft.world.level.block.entity.SignText;
-import net.minecraft.world.level.block.entity.SignTextSlot;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.material.Fluids;
@@ -75,13 +74,13 @@ public final class DemoSetup {
         event.getDispatcher().register(
                 Commands.literal(JustReactors.MOD_ID)
                         .then(Commands.literal("demo")
-                                .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
+                                .requires(source -> source.hasPermission(Commands.LEVEL_GAMEMASTERS))
                                 .executes(ctx -> {
                                     if (!(ctx.getSource().getEntity() instanceof ServerPlayer player)) {
                                         ctx.getSource().sendFailure(Component.literal("Use este comando como jogador."));
                                         return 0;
                                     }
-                                    ServerLevel level = player.level();
+                                    ServerLevel level = player.serverLevel();
                                     BlockPos p = player.blockPosition();
                                     BlockPos origin = new BlockPos(p.getX() - 8, p.getY() - 1, p.getZ() + 4);
                                     DemoResult result = build(level, origin);
@@ -96,14 +95,14 @@ public final class DemoSetup {
         if (!Boolean.getBoolean("justreactors.autoDemo")) return;
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
 
-        ServerLevel level = player.level();
+        ServerLevel level = player.serverLevel();
         MinecraftServer server = level.getServer();
         if (!AUTO_DEMO_SERVERS.add(server)) return;
 
         int baseX = 128;
         int baseZ = 128;
         int surfaceY = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, baseX + 8, baseZ + 4) - 1;
-        int groundY = Math.max(level.getMinY(), surfaceY);
+        int groundY = Math.max(level.getMinBuildHeight(), surfaceY);
         BlockPos origin = new BlockPos(baseX, groundY, baseZ);
 
         DemoResult result = build(level, origin);
@@ -115,7 +114,7 @@ public final class DemoSetup {
         double vx = origin.getX() + 8.0;
         double vy = origin.getY() + 1.5;
         double vz = origin.getZ() - 3.0;
-        player.teleportTo(level, vx, vy, vz, Set.of(), 0.0f, 10.0f, true);
+        player.teleportTo(level, vx, vy, vz, Set.of(), 0.0f, 10.0f);
     }
 
     private static void sendGuideMessages(ServerPlayer player, DemoResult result) {
@@ -273,10 +272,10 @@ public final class DemoSetup {
         BlockPos accumulatorPos = origin.offset(14, 2, 4);
         List<BlockPos> placedCables = new ArrayList<>();
 
-        Optional<Block> fluidCable = BuiltInRegistries.BLOCK.getOptional(Identifier.fromNamespaceAndPath("voltaicdynamics", "fluid_cable"));
-        Optional<Block> voltaicCable = BuiltInRegistries.BLOCK.getOptional(Identifier.fromNamespaceAndPath("voltaicdynamics", "voltaic_cable"));
-        Optional<Block> accumulator = BuiltInRegistries.BLOCK.getOptional(Identifier.fromNamespaceAndPath("voltaicdynamics", "elite_accumulator"))
-                .or(() -> BuiltInRegistries.BLOCK.getOptional(Identifier.fromNamespaceAndPath("voltaicdynamics", "basic_accumulator")));
+        Optional<Block> fluidCable = BuiltInRegistries.BLOCK.getOptional(ResourceLocation.fromNamespaceAndPath("voltaicdynamics", "fluid_cable"));
+        Optional<Block> voltaicCable = BuiltInRegistries.BLOCK.getOptional(ResourceLocation.fromNamespaceAndPath("voltaicdynamics", "voltaic_cable"));
+        Optional<Block> accumulator = BuiltInRegistries.BLOCK.getOptional(ResourceLocation.fromNamespaceAndPath("voltaicdynamics", "elite_accumulator"))
+                .or(() -> BuiltInRegistries.BLOCK.getOptional(ResourceLocation.fromNamespaceAndPath("voltaicdynamics", "basic_accumulator")));
 
         accumulator.ifPresent(b -> {
             // Put a pedestal block under the accumulator so it sits flush at power-tap height
@@ -319,7 +318,7 @@ public final class DemoSetup {
             BlockState state = level.getBlockState(pos);
             for (Direction dir : Direction.values()) {
                 BlockPos neighborPos = pos.relative(dir);
-                state = state.updateShape(level, level, pos, dir, neighborPos, level.getBlockState(neighborPos), level.getRandom());
+                state = state.updateShape(dir, level.getBlockState(neighborPos), level, pos, neighborPos);
             }
             level.setBlock(pos, state, Block.UPDATE_ALL);
             level.updateNeighborsAt(pos, state.getBlock());
@@ -329,13 +328,13 @@ public final class DemoSetup {
     private static void placeSign(ServerLevel level, BlockPos pos, String l1, String l2, String l3, String l4) {
         level.setBlock(pos, Blocks.DARK_OAK_SIGN.defaultBlockState().setValue(StandingSignBlock.ROTATION, 8), Block.UPDATE_ALL);
         if (level.getBlockEntity(pos) instanceof SignBlockEntity sign) {
-            List<Component> lines = List.of(
+            Component[] lines = {
                     Component.literal(l1),
                     Component.literal(l2),
                     Component.literal(l3),
                     Component.literal(l4)
-            );
-            sign.setText(new SignText(lines, lines, DyeColor.WHITE, true), SignTextSlot.FRONT);
+            };
+            sign.setText(new SignText(lines, lines, DyeColor.WHITE, true), true);
         }
     }
 }

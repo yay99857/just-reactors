@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "justreactors:cyanite_reprocessor"
+        "recipe": "justreactors:cyanite_reprocessor"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

@@ -2,9 +2,15 @@
   "type": "minecraft:crafting_shaped",
   "category": "redstone",
   "key": {
-    "C": "justreactors:reactor_casing",
-    "H": "minecraft:hopper",
-    "P": "minecraft:piston"
+    "C": {
+      "item": "justreactors:reactor_casing"
+    },
+    "H": {
+      "item": "minecraft:hopper"
+    },
+    "P": {
+      "item": "minecraft:piston"
+    }
   },
   "pattern": [
     "CHC",
@@ -12,6 +18,7 @@
     "C C"
   ],
   "result": {
+    "count": 1,
     "id": "justreactors:reactor_access_port"
   }
 }

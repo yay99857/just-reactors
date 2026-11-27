@@ -1,5 +1,7 @@
 package com.justreactors.turbine.blockentity;
 
+import com.justreactors.transfer.Handlers;
+import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import com.justreactors.datagen.ModTags;
 import com.justreactors.registry.ModBlockEntities;
 import com.justreactors.registry.ModFluids;
@@ -11,10 +13,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.transfer.DelegatingResourceHandler;
-import net.neoforged.neoforge.transfer.ResourceHandler;
-import net.neoforged.neoforge.transfer.fluid.FluidResource;
-import net.neoforged.neoforge.transfer.transaction.TransactionContext;
 import org.jetbrains.annotations.Nullable;
 
 public class TurbineFluidPortBlockEntity extends TurbinePartBlockEntity {
@@ -27,37 +25,18 @@ public class TurbineFluidPortBlockEntity extends TurbinePartBlockEntity {
     }
 
     @Nullable
-    public ResourceHandler<FluidResource> getFluidHandler(@Nullable Direction side) {
+    public IFluidHandler getFluidHandler(@Nullable Direction side) {
         TurbineControllerBlockEntity controller = getController();
         if (controller == null) return null;
 
         if (isOutlet()) {
-            return new DelegatingResourceHandler<>(controller.getWaterTank()) {
-                @Override
-                public int insert(int index, FluidResource resource, int amount, TransactionContext transaction) {
-                    return 0;
-                }
-            };
-        } else {
-            return new DelegatingResourceHandler<>(controller.getSteamTank()) {
-                @Override
-                public int insert(int index, FluidResource resource, int amount, TransactionContext transaction) {
-                    if (!isSteam(resource)) return 0;
-                    return super.insert(index, resource, amount, transaction);
-                }
-
-                @Override
-                public int extract(int index, FluidResource resource, int amount, TransactionContext transaction) {
-                    return 0;
-                }
-            };
+            return Handlers.extractOnly(controller.getWaterTank());
         }
+        return Handlers.insertOnly(controller.getSteamTank(), TurbineFluidPortBlockEntity::isSteam);
     }
 
-    @SuppressWarnings("deprecation")
-    private static boolean isSteam(FluidResource resource) {
-        return resource.is(ModFluids.STEAM_SOURCE.get())
-                || resource.getFluid().builtInRegistryHolder().is(ModTags.FLUIDS_STEAM);
+    private static boolean isSteam(FluidStack stack) {
+        return stack.is(ModFluids.STEAM_SOURCE.get()) || stack.is(ModTags.FLUIDS_STEAM);
     }
 
     public void pushWaterToNeighbors(ReactorFluidTank waterTank, int maxRate) {
@@ -72,7 +51,7 @@ public class TurbineFluidPortBlockEntity extends TurbinePartBlockEntity {
             if (controller != null && controller.getStructure() != null && controller.getStructure().contains(neighborPos)) {
                 continue;
             }
-            ResourceHandler<FluidResource> neighbor = level.getCapability(Capabilities.Fluid.BLOCK, neighborPos, dir.getOpposite());
+            IFluidHandler neighbor = level.getCapability(Capabilities.FluidHandler.BLOCK, neighborPos, dir.getOpposite());
             if (neighbor == null) continue;
             FluidStack toPush = waterTank.getFluid().copyWithAmount(remaining);
             int pushed = ReactorFluidTank.pushFluid(neighbor, toPush);

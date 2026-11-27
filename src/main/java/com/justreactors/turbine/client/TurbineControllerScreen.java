@@ -3,7 +3,7 @@ package com.justreactors.turbine.client;
 import com.justreactors.client.ScreenWidgets;
 import com.justreactors.turbine.menu.TurbineControllerMenu;
 
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
@@ -17,7 +17,9 @@ public class TurbineControllerScreen extends AbstractContainerScreen<TurbineCont
     private Button ventButton;
 
     public TurbineControllerScreen(TurbineControllerMenu menu, Inventory playerInventory, Component title) {
-        super(menu, playerInventory, title, 236, 164);
+        super(menu, playerInventory, title);
+        this.imageWidth = 236;
+        this.imageHeight = 164;
     }
 
     @Override
@@ -65,8 +67,7 @@ public class TurbineControllerScreen extends AbstractContainerScreen<TurbineCont
     }
 
     @Override
-    public void extractBackground(GuiGraphicsExtractor g, int mouseX, int mouseY, float partialTick) {
-        super.extractBackground(g, mouseX, mouseY, partialTick);
+    protected void renderBg(GuiGraphics g, float partialTick, int mouseX, int mouseY) {
 
         if (toggleButton != null) {
             toggleButton.setMessage(Component.translatable(
@@ -94,41 +95,47 @@ public class TurbineControllerScreen extends AbstractContainerScreen<TurbineCont
     }
 
     @Override
-    protected void extractLabels(GuiGraphicsExtractor g, int mouseX, int mouseY) {
-        g.text(font, title, titleLabelX, titleLabelY, 0xFFE5E9F0, false);
+    protected void renderLabels(GuiGraphics g, int mouseX, int mouseY) {
+        g.drawString(font, title, titleLabelX, titleLabelY, 0xFFE5E9F0, false);
 
         int statusColor = menu.isActive() ? 0xFF2ECC71 : 0xFFE74C3C;
-        g.text(font, Component.translatable(
+        g.drawString(font, Component.translatable(
                 menu.isActive() ? "gui.justreactors.status.online" : "gui.justreactors.status.offline"), 10, 23, statusColor, false);
 
-        g.text(font, Component.translatable("gui.justreactors.output", formatNumber(menu.getGeneratedFe())), 10, 35, 0xFF88C0D0, false);
-        g.text(font, Component.translatable("gui.justreactors.turbine.flow",
+        g.drawString(font, Component.translatable("gui.justreactors.output", formatNumber(menu.getGeneratedFe())), 10, 35, 0xFF88C0D0, false);
+        g.drawString(font, Component.translatable("gui.justreactors.turbine.flow",
                 formatNumber(menu.getLastSteamFlow()), formatNumber(menu.getMaxSteamFlow())), 10, 47, 0xFFD8DEE9, false);
-        g.text(font, Component.translatable("gui.justreactors.turbine.rpm", formatNumber(menu.getRpm())), 10, 74, 0xFFEBCB8B, false);
-        g.text(font, Component.literal("S   W   E"), 170, 119, 0xFF9AA5B1, false);
+        g.drawString(font, Component.translatable("gui.justreactors.turbine.rpm", formatNumber(menu.getRpm())), 10, 74, 0xFFEBCB8B, false);
+        g.drawString(font, Component.literal("S   W   E"), 170, 119, 0xFF9AA5B1, false);
     }
 
     @Override
-    protected void extractTooltip(GuiGraphicsExtractor g, int x, int y) {
-        super.extractTooltip(g, x, y);
+    protected void renderTooltip(GuiGraphics g, int x, int y) {
+        super.renderTooltip(g, x, y);
         if (isHovering(166, 24, 16, 92, x, y)) {
-            g.setTooltipForNextFrame(font, Component.translatable("gui.justreactors.steam_tooltip",
+            g.renderTooltip(font, Component.translatable("gui.justreactors.steam_tooltip",
                     formatNumber(menu.getSteamMb()), formatNumber(menu.getMaxFluidMb())), x, y);
         } else if (isHovering(188, 24, 16, 92, x, y)) {
-            g.setTooltipForNextFrame(font, Component.translatable("gui.justreactors.coolant_tooltip",
+            g.renderTooltip(font, Component.translatable("gui.justreactors.coolant_tooltip",
                     formatNumber(menu.getWaterMb()), formatNumber(menu.getMaxFluidMb())), x, y);
         } else if (isHovering(210, 24, 16, 92, x, y)) {
-            g.setTooltipForNextFrame(font, Component.translatable("gui.justreactors.energy_tooltip",
+            g.renderTooltip(font, Component.translatable("gui.justreactors.energy_tooltip",
                     formatNumber(menu.getEnergy()), formatNumber(menu.getMaxEnergy())), x, y);
         } else if (isHovering(10, 86, 146, 10, x, y)) {
-            g.setTooltipForNextFrame(font, Component.translatable("gui.justreactors.rpm_tooltip",
+            g.renderTooltip(font, Component.translatable("gui.justreactors.rpm_tooltip",
                     formatNumber(menu.getRpm())), x, y);
         } else if (isHovering(10, 102, 146, 20, x, y)) {
-            g.setTooltipForNextFrame(font, Component.translatable("gui.justreactors.turbine.vent_tooltip"), x, y);
+            g.renderTooltip(font, Component.translatable("gui.justreactors.turbine.vent_tooltip"), x, y);
         }
     }
 
     private static String formatNumber(int n) {
         return String.format(Locale.ROOT, "%,d", n);
+    }
+
+    @Override
+    public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
+        super.render(g, mouseX, mouseY, partialTick);
+        renderTooltip(g, mouseX, mouseY);
     }
 }

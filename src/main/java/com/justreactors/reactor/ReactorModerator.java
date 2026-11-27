@@ -145,7 +145,7 @@ public record ReactorModerator(
         } else {
             addFallbackBlock(entries, seenBlocks, Blocks.WATER, WATER);
             addFallbackBlock(entries, seenBlocks, Blocks.IRON_BLOCK, IRON);
-            addFallbackTag(entries, seenBlocks, Tags.Blocks.STORAGE_BLOCKS_COPPER, Blocks.COPPER_BLOCK.weathering().unaffected(), COPPER);
+            addFallbackTag(entries, seenBlocks, Tags.Blocks.STORAGE_BLOCKS_COPPER, Blocks.COPPER_BLOCK, COPPER);
             addFallbackBlock(entries, seenBlocks, Blocks.GOLD_BLOCK, GOLD);
             addFallbackBlock(entries, seenBlocks, ModBlocks.GRAPHITE_BLOCK.get(), GRAPHITE);
             addFallbackBlock(entries, seenBlocks, Blocks.REDSTONE_BLOCK, REDSTONE);

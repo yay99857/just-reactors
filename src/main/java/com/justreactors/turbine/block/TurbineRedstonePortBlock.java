@@ -15,7 +15,6 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
-import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
 
@@ -67,8 +66,8 @@ public class TurbineRedstonePortBlock extends TurbinePartBlock implements Entity
 
     @Override
     protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block neighborBlock,
-                                   @Nullable Orientation orientation, boolean movedByPiston) {
-        super.neighborChanged(state, level, pos, neighborBlock, orientation, movedByPiston);
+                                   BlockPos fromPos, boolean movedByPiston) {
+        super.neighborChanged(state, level, pos, neighborBlock, fromPos, movedByPiston);
         if (level.isClientSide()) return;
         if (!(level.getBlockEntity(pos) instanceof TurbineRedstonePortBlockEntity port)) return;
         if (port.getMode().isOutput()) return;

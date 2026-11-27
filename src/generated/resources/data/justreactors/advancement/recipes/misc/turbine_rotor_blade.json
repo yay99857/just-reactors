@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "justreactors:turbine_rotor_blade"
+        "recipe": "justreactors:turbine_rotor_blade"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

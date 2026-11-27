@@ -2,7 +2,7 @@ package com.justreactors.client;
 
 import com.justreactors.menu.CyaniteReprocessorMenu;
 
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
@@ -11,7 +11,9 @@ import java.util.Locale;
 
 public class CyaniteReprocessorScreen extends AbstractContainerScreen<CyaniteReprocessorMenu> {
     public CyaniteReprocessorScreen(CyaniteReprocessorMenu menu, Inventory playerInventory, Component title) {
-        super(menu, playerInventory, title, 176, 166);
+        super(menu, playerInventory, title);
+        this.imageWidth = 176;
+        this.imageHeight = 166;
     }
 
     @Override
@@ -24,8 +26,7 @@ public class CyaniteReprocessorScreen extends AbstractContainerScreen<CyaniteRep
     }
 
     @Override
-    public void extractBackground(GuiGraphicsExtractor g, int mouseX, int mouseY, float partialTick) {
-        super.extractBackground(g, mouseX, mouseY, partialTick);
+    protected void renderBg(GuiGraphics g, float partialTick, int mouseX, int mouseY) {
 
         ScreenWidgets.drawPanel(g, leftPos, topPos, imageWidth, imageHeight);
 
@@ -51,24 +52,30 @@ public class CyaniteReprocessorScreen extends AbstractContainerScreen<CyaniteRep
     }
 
     @Override
-    protected void extractLabels(GuiGraphicsExtractor g, int mouseX, int mouseY) {
-        g.text(font, title, titleLabelX, titleLabelY, 0xFFE5E9F0, false);
-        g.text(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, 0xFFD8DEE9, false);
+    protected void renderLabels(GuiGraphics g, int mouseX, int mouseY) {
+        g.drawString(font, title, titleLabelX, titleLabelY, 0xFFE5E9F0, false);
+        g.drawString(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, 0xFFD8DEE9, false);
     }
 
     @Override
-    protected void extractTooltip(GuiGraphicsExtractor g, int x, int y) {
-        super.extractTooltip(g, x, y);
+    protected void renderTooltip(GuiGraphics g, int x, int y) {
+        super.renderTooltip(g, x, y);
         if (isHovering(12, 24, 12, 46, x, y)) {
-            g.setTooltipForNextFrame(font, Component.translatable("gui.justreactors.energy_tooltip",
+            g.renderTooltip(font, Component.translatable("gui.justreactors.energy_tooltip",
                     formatNumber(menu.getEnergy()), formatNumber(menu.getMaxEnergy())), x, y);
         } else if (isHovering(30, 24, 12, 46, x, y)) {
-            g.setTooltipForNextFrame(font, Component.translatable("gui.justreactors.coolant_tooltip",
+            g.renderTooltip(font, Component.translatable("gui.justreactors.coolant_tooltip",
                     formatNumber(menu.getWater()), formatNumber(menu.getMaxWater())), x, y);
         }
     }
 
     private static String formatNumber(int n) {
         return String.format(Locale.ROOT, "%,d", n);
+    }
+
+    @Override
+    public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
+        super.render(g, mouseX, mouseY, partialTick);
+        renderTooltip(g, mouseX, mouseY);
     }
 }

@@ -3,7 +3,7 @@
   "criteria": {
     "has_the_recipe": {
       "conditions": {
-        "recipes": "justreactors:turbine_glass"
+        "recipe": "justreactors:turbine_glass"
       },
       "trigger": "minecraft:recipe_unlocked"
     },

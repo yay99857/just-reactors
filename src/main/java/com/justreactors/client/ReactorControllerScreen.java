@@ -2,7 +2,7 @@ package com.justreactors.client;
 
 import com.justreactors.menu.ReactorControllerMenu;
 
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
@@ -14,7 +14,9 @@ public class ReactorControllerScreen extends AbstractContainerScreen<ReactorCont
     private Button toggleButton;
 
     public ReactorControllerScreen(ReactorControllerMenu menu, Inventory playerInventory, Component title) {
-        super(menu, playerInventory, title, 236, 154);
+        super(menu, playerInventory, title);
+        this.imageWidth = 236;
+        this.imageHeight = 154;
     }
 
     @Override
@@ -56,8 +58,7 @@ public class ReactorControllerScreen extends AbstractContainerScreen<ReactorCont
     }
 
     @Override
-    public void extractBackground(GuiGraphicsExtractor g, int mouseX, int mouseY, float partialTick) {
-        super.extractBackground(g, mouseX, mouseY, partialTick);
+    protected void renderBg(GuiGraphics g, float partialTick, int mouseX, int mouseY) {
 
         if (toggleButton != null) {
             toggleButton.setMessage(Component.translatable(
@@ -100,65 +101,71 @@ public class ReactorControllerScreen extends AbstractContainerScreen<ReactorCont
     }
 
     @Override
-    protected void extractLabels(GuiGraphicsExtractor g, int mouseX, int mouseY) {
-        g.text(font, title, titleLabelX, titleLabelY, 0xFFE5E9F0, false);
+    protected void renderLabels(GuiGraphics g, int mouseX, int mouseY) {
+        g.drawString(font, title, titleLabelX, titleLabelY, 0xFFE5E9F0, false);
 
         Component modeText = Component.translatable(
                 menu.isActiveCooled() ? "gui.justreactors.mode.active" : "gui.justreactors.mode.passive");
         int modeColor = menu.isActiveCooled() ? 0xFF5EC8F5 : 0xFF64D99B;
         int badgeX = imageWidth - 8 - font.width(modeText);
-        g.text(font, modeText, badgeX, 6, modeColor, false);
+        g.drawString(font, modeText, badgeX, 6, modeColor, false);
 
         int statusColor = menu.isActive() ? 0xFF2ECC71 : 0xFFE74C3C;
-        g.text(font, Component.translatable(
+        g.drawString(font, Component.translatable(
                 menu.isActive() ? "gui.justreactors.status.online" : "gui.justreactors.status.offline"), 10, 23, statusColor, false);
 
         if (menu.isActiveCooled()) {
-            g.text(font, Component.translatable("gui.justreactors.steam_output", formatNumber(menu.getLastSteamMb())), 10, 34, 0xFFDCE6EE, false);
+            g.drawString(font, Component.translatable("gui.justreactors.steam_output", formatNumber(menu.getLastSteamMb())), 10, 34, 0xFFDCE6EE, false);
         } else {
-            g.text(font, Component.translatable("gui.justreactors.output", formatNumber(menu.getGeneratedFe())), 10, 34, 0xFF88C0D0, false);
+            g.drawString(font, Component.translatable("gui.justreactors.output", formatNumber(menu.getGeneratedFe())), 10, 34, 0xFF88C0D0, false);
         }
-        g.text(font, Component.translatable("gui.justreactors.burn_rate", String.format(Locale.ROOT, "%.3f", menu.getBurnRateMb())), 10, 45, 0xFFD8DEE9, false);
-        g.text(font, Component.translatable("gui.justreactors.rods_avg", menu.getAvgInsertion()), 10, 56, 0xFFD8DEE9, false);
+        g.drawString(font, Component.translatable("gui.justreactors.burn_rate", String.format(Locale.ROOT, "%.3f", menu.getBurnRateMb())), 10, 45, 0xFFD8DEE9, false);
+        g.drawString(font, Component.translatable("gui.justreactors.rods_avg", menu.getAvgInsertion()), 10, 56, 0xFFD8DEE9, false);
 
-        g.text(font, Component.translatable("gui.justreactors.core_temp", menu.getFuelHeat()), 10, 68, 0xFFEBCB8B, false);
-        g.text(font, Component.translatable("gui.justreactors.casing_temp", menu.getCasingHeat()), 10, 91, 0xFFD08770, false);
+        g.drawString(font, Component.translatable("gui.justreactors.core_temp", menu.getFuelHeat()), 10, 68, 0xFFEBCB8B, false);
+        g.drawString(font, Component.translatable("gui.justreactors.casing_temp", menu.getCasingHeat()), 10, 91, 0xFFD08770, false);
 
         if (menu.isActiveCooled()) {
-            g.text(font, Component.literal("F   W   S"), 170, 113, 0xFF9AA5B1, false);
+            g.drawString(font, Component.literal("F   W   S"), 170, 113, 0xFF9AA5B1, false);
         } else {
-            g.text(font, Component.literal("F     E"), 170, 113, 0xFF9AA5B1, false);
+            g.drawString(font, Component.literal("F     E"), 170, 113, 0xFF9AA5B1, false);
         }
     }
 
     @Override
-    protected void extractTooltip(GuiGraphicsExtractor g, int x, int y) {
-        super.extractTooltip(g, x, y);
+    protected void renderTooltip(GuiGraphics g, int x, int y) {
+        super.renderTooltip(g, x, y);
         Component modeText = Component.translatable(
                 menu.isActiveCooled() ? "gui.justreactors.mode.active" : "gui.justreactors.mode.passive");
         int badgeW = font.width(modeText);
         int badgeX = imageWidth - 8 - badgeW;
         if (isHovering(badgeX - 2, 4, badgeW + 4, 12, x, y)) {
-            g.setTooltipForNextFrame(font, Component.translatable(
+            g.renderTooltip(font, Component.translatable(
                     menu.isActiveCooled() ? "gui.justreactors.mode.active_tooltip" : "gui.justreactors.mode.passive_tooltip"), x, y);
         } else if (isHovering(166, 24, 16, 86, x, y)) {
-            g.setTooltipForNextFrame(font, Component.translatable("gui.justreactors.fuel_tooltip",
+            g.renderTooltip(font, Component.translatable("gui.justreactors.fuel_tooltip",
                     formatNumber(menu.getFuelMb()), formatNumber(menu.getWasteMb()), formatNumber(menu.getMaxFuelMb())), x, y);
         } else if (menu.isActiveCooled() && isHovering(188, 24, 16, 86, x, y)) {
-            g.setTooltipForNextFrame(font, Component.translatable("gui.justreactors.coolant_tooltip",
+            g.renderTooltip(font, Component.translatable("gui.justreactors.coolant_tooltip",
                     formatNumber(menu.getCoolantMb()), formatNumber(menu.getMaxFluidMb())), x, y);
         } else if (menu.isActiveCooled() && isHovering(210, 24, 16, 86, x, y)) {
-            g.setTooltipForNextFrame(font, Component.translatable("gui.justreactors.steam_tooltip",
+            g.renderTooltip(font, Component.translatable("gui.justreactors.steam_tooltip",
                     formatNumber(menu.getSteamMb()), formatNumber(menu.getMaxFluidMb())), x, y);
         } else if (!menu.isActiveCooled() && isHovering(196, 24, 20, 86, x, y)) {
-            g.setTooltipForNextFrame(font, Component.translatable("gui.justreactors.energy_tooltip",
+            g.renderTooltip(font, Component.translatable("gui.justreactors.energy_tooltip",
                     formatNumber(menu.getEnergy()), formatNumber(menu.getMaxEnergy())), x, y);
         } else if (isHovering(10, 78, 146, 8, x, y) || isHovering(10, 101, 146, 8, x, y)) {
-            g.setTooltipForNextFrame(font, Component.translatable("gui.justreactors.heat_tooltip"), x, y);
+            g.renderTooltip(font, Component.translatable("gui.justreactors.heat_tooltip"), x, y);
         }
     }
 
     private static String formatNumber(int n) {
         return String.format(Locale.ROOT, "%,d", n);
+    }
+
+    @Override
+    public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
+        super.render(g, mouseX, mouseY, partialTick);
+        renderTooltip(g, mouseX, mouseY);
     }
 }

@@ -2,10 +2,18 @@
   "type": "minecraft:crafting_shaped",
   "category": "redstone",
   "key": {
-    "B": "minecraft:bucket",
-    "C": "justreactors:reactor_casing",
-    "I": "#c:ingots/iron",
-    "P": "minecraft:piston"
+    "B": {
+      "item": "minecraft:bucket"
+    },
+    "C": {
+      "item": "justreactors:reactor_casing"
+    },
+    "I": {
+      "tag": "c:ingots/iron"
+    },
+    "P": {
+      "item": "minecraft:piston"
+    }
   },
   "pattern": [
     "CBC",
@@ -13,6 +21,7 @@
     "CBC"
   ],
   "result": {
+    "count": 1,
     "id": "justreactors:reactor_coolant_port"
   }
 }

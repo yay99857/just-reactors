@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "justreactors:graphite_block_from_ingots"
+        "recipe": "justreactors:graphite_block_from_ingots"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

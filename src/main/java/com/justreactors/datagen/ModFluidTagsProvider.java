@@ -6,12 +6,13 @@ import com.justreactors.registry.ModFluids;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.tags.FluidTagsProvider;
+import net.neoforged.neoforge.common.data.ExistingFileHelper;
 
 import java.util.concurrent.CompletableFuture;
 
 public class ModFluidTagsProvider extends FluidTagsProvider {
-    public ModFluidTagsProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> lookup) {
-        super(output, lookup, JustReactors.MOD_ID);
+    public ModFluidTagsProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> lookup, ExistingFileHelper files) {
+        super(output, lookup, JustReactors.MOD_ID, files);
     }
 
     @Override

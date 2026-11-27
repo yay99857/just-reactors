@@ -2,11 +2,21 @@
   "type": "minecraft:crafting_shaped",
   "category": "redstone",
   "key": {
-    "B": "minecraft:bucket",
-    "C": "#c:ingots/cyanite",
-    "F": "minecraft:furnace",
-    "I": "#c:ingots/iron",
-    "R": "#c:dusts/redstone"
+    "B": {
+      "item": "minecraft:bucket"
+    },
+    "C": {
+      "tag": "c:ingots/cyanite"
+    },
+    "F": {
+      "item": "minecraft:furnace"
+    },
+    "I": {
+      "tag": "c:ingots/iron"
+    },
+    "R": {
+      "tag": "c:dusts/redstone"
+    }
   },
   "pattern": [
     "ICI",
@@ -14,6 +24,7 @@
     "IRI"
   ],
   "result": {
+    "count": 1,
     "id": "justreactors:cyanite_reprocessor"
   }
 }

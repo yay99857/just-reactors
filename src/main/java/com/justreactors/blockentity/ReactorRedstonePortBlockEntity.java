@@ -1,5 +1,7 @@
 package com.justreactors.blockentity;
 
+import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
 import com.justreactors.block.ReactorRedstonePortBlock;
 import com.justreactors.menu.ReactorRedstonePortMenu;
 import com.justreactors.reactor.ReactorMode;
@@ -13,8 +15,8 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.storage.ValueInput;
-import net.minecraft.world.level.storage.ValueOutput;
+import com.justreactors.compat.nbt.ValueInput;
+import com.justreactors.compat.nbt.ValueOutput;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -181,15 +183,17 @@ public class ReactorRedstonePortBlockEntity extends ReactorPartBlockEntity imple
     }
 
     @Override
-    protected void saveAdditional(ValueOutput output) {
-        super.saveAdditional(output);
+    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.saveAdditional(tag, registries);
+        ValueOutput output = new ValueOutput(tag, registries);
         output.putInt("Mode", mode.ordinal());
         output.putInt("Threshold", thresholdPercent);
     }
 
     @Override
-    protected void loadAdditional(ValueInput input) {
-        super.loadAdditional(input);
+    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.loadAdditional(tag, registries);
+        ValueInput input = new ValueInput(tag, registries);
         this.mode = RedstonePortMode.byOrdinal(input.getIntOr("Mode", 0));
         this.thresholdPercent = Math.max(0, Math.min(100, input.getIntOr("Threshold", 50)));
     }

@@ -1,5 +1,7 @@
 package com.justreactors.blockentity;
 
+import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
 import com.justreactors.menu.ReactorControlRodMenu;
 import com.justreactors.registry.ModBlockEntities;
 
@@ -10,8 +12,8 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.storage.ValueInput;
-import net.minecraft.world.level.storage.ValueOutput;
+import com.justreactors.compat.nbt.ValueInput;
+import com.justreactors.compat.nbt.ValueOutput;
 import org.jetbrains.annotations.Nullable;
 
 public class ReactorControlRodBlockEntity extends ReactorPartBlockEntity implements MenuProvider {
@@ -52,14 +54,16 @@ public class ReactorControlRodBlockEntity extends ReactorPartBlockEntity impleme
     }
 
     @Override
-    protected void saveAdditional(ValueOutput output) {
-        super.saveAdditional(output);
+    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.saveAdditional(tag, registries);
+        ValueOutput output = new ValueOutput(tag, registries);
         output.putInt("Insertion", insertion);
     }
 
     @Override
-    protected void loadAdditional(ValueInput input) {
-        super.loadAdditional(input);
+    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.loadAdditional(tag, registries);
+        ValueInput input = new ValueInput(tag, registries);
         insertion = Math.max(0, Math.min(100, input.getIntOr("Insertion", 0)));
     }
 }

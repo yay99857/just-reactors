@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "justreactors:uranium_ingot_from_ore_smelting"
+        "recipe": "justreactors:uranium_ingot_from_ore_smelting"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

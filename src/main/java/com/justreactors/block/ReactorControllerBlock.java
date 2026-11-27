@@ -1,5 +1,6 @@
 package com.justreactors.block;
 
+import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import com.justreactors.blockentity.ReactorControllerBlockEntity;
 import com.justreactors.registry.ModBlockEntities;
 
@@ -26,7 +27,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
 
 public class ReactorControllerBlock extends ReactorPartBlock implements EntityBlock {
-    public static final EnumProperty<Direction> FACING = HorizontalDirectionalBlock.FACING;
+    public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
     public static final BooleanProperty ACTIVE = BooleanProperty.create("active");
     public static final BooleanProperty ASSEMBLED = BooleanProperty.create("assembled");
 
@@ -73,8 +74,8 @@ public class ReactorControllerBlock extends ReactorPartBlock implements EntityBl
                 serverPlayer.openMenu(controller, pos);
             } else {
                 Component error = controller.getLastValidationError();
-                player.sendOverlayMessage(
-                        error != null ? error : Component.translatable("message.justreactors.invalid_structure").withStyle(ChatFormatting.RED));
+                player.displayClientMessage(
+                        error != null ? error : Component.translatable("message.justreactors.invalid_structure").withStyle(ChatFormatting.RED), true);
             }
         }
         return InteractionResult.CONSUME;

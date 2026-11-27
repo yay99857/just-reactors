@@ -133,7 +133,7 @@ public record TurbineCoil(double efficiency, double bonus, double drag) {
             addFallbackBlock(entries, seenBlocks, Blocks.DIAMOND_BLOCK, DIAMOND);
             addFallbackBlock(entries, seenBlocks, ModBlocks.CYANITE_BLOCK.get(), CYANITE);
             addFallbackBlock(entries, seenBlocks, Blocks.GOLD_BLOCK, GOLD);
-            addFallbackTag(entries, seenBlocks, Tags.Blocks.STORAGE_BLOCKS_COPPER, Blocks.COPPER_BLOCK.weathering().unaffected(), COPPER);
+            addFallbackTag(entries, seenBlocks, Tags.Blocks.STORAGE_BLOCKS_COPPER, Blocks.COPPER_BLOCK, COPPER);
             addFallbackBlock(entries, seenBlocks, Blocks.IRON_BLOCK, IRON);
 
             for (Map.Entry<Block, TurbineCoil> e : CUSTOM.entrySet()) {

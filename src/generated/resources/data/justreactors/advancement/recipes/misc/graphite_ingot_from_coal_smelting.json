@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipes": "justreactors:graphite_ingot_from_coal_smelting"
+        "recipe": "justreactors:graphite_ingot_from_coal_smelting"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

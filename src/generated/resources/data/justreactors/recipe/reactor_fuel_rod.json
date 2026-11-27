@@ -1,9 +1,16 @@
 {
   "type": "minecraft:crafting_shaped",
+  "category": "misc",
   "key": {
-    "G": "#c:ingots/graphite",
-    "I": "#c:ingots/iron",
-    "U": "#c:ingots/uranium"
+    "G": {
+      "tag": "c:ingots/graphite"
+    },
+    "I": {
+      "tag": "c:ingots/iron"
+    },
+    "U": {
+      "tag": "c:ingots/uranium"
+    }
   },
   "pattern": [
     "IGI",
@@ -11,6 +18,7 @@
     "IGI"
   ],
   "result": {
+    "count": 1,
     "id": "justreactors:reactor_fuel_rod"
   }
 }

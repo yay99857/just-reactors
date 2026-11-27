@@ -1,16 +1,15 @@
 package com.justreactors.transfer;
 
-import net.minecraft.world.level.storage.ValueInput;
-import net.minecraft.world.level.storage.ValueOutput;
-import net.neoforged.neoforge.transfer.energy.EnergyHandler;
-import net.neoforged.neoforge.transfer.energy.SimpleEnergyHandler;
-import net.neoforged.neoforge.transfer.transaction.Transaction;
+import com.justreactors.compat.nbt.ValueInput;
+import com.justreactors.compat.nbt.ValueOutput;
+import net.neoforged.neoforge.energy.EnergyStorage;
+import net.neoforged.neoforge.energy.IEnergyStorage;
 import org.jetbrains.annotations.Nullable;
 
 /**
  * Passive FE buffer owned by a ReactorControllerBlockEntity.
  */
-public class ReactorEnergyStorage extends SimpleEnergyHandler {
+public class ReactorEnergyStorage extends EnergyStorage {
     @Nullable
     private final Runnable onChanged;
 
@@ -23,25 +22,30 @@ public class ReactorEnergyStorage extends SimpleEnergyHandler {
         this.onChanged = onChanged;
     }
 
+    private void changed() {
+        if (onChanged != null) onChanged.run();
+    }
+
+    @Override
+    public int receiveEnergy(int toReceive, boolean simulate) {
+        int received = super.receiveEnergy(toReceive, simulate);
+        if (received > 0 && !simulate) changed();
+        return received;
+    }
+
+    @Override
+    public int extractEnergy(int toExtract, boolean simulate) {
+        int extracted = super.extractEnergy(toExtract, simulate);
+        if (extracted > 0 && !simulate) changed();
+        return extracted;
+    }
+
     public boolean consumeEnergy(int amount) {
         if (amount <= 0) return true;
         if (energy < amount) return false;
         energy -= amount;
-        if (onChanged != null) onChanged.run();
+        changed();
         return true;
-    }
-
-    @Override
-    protected void onEnergyChanged(int previousAmount) {
-        if (onChanged != null) onChanged.run();
-    }
-
-    public int getEnergyStored() {
-        return energy;
-    }
-
-    public int getMaxEnergyStored() {
-        return capacity;
     }
 
     public int getSpace() {
@@ -52,7 +56,7 @@ public class ReactorEnergyStorage extends SimpleEnergyHandler {
         int added = Math.max(0, Math.min(capacity - energy, amount));
         if (added > 0) {
             energy += added;
-            if (onChanged != null) onChanged.run();
+            changed();
         }
         return added;
     }
@@ -61,27 +65,20 @@ public class ReactorEnergyStorage extends SimpleEnergyHandler {
         int taken = Math.max(0, Math.min(energy, amount));
         if (taken > 0) {
             energy -= taken;
-            if (onChanged != null) onChanged.run();
+            changed();
         }
         return taken;
     }
 
-    @SuppressWarnings("deprecation")
-    public static int pushEnergy(@Nullable EnergyHandler target, int amount) {
-        if (target == null || amount <= 0) return 0;
-        try (Transaction tx = Transaction.open(Transaction.getCurrentOpenedTransaction())) {
-            int inserted = target.insert(amount, tx);
-            if (inserted > 0) tx.commit();
-            return inserted;
-        }
+    public static int pushEnergy(@Nullable IEnergyStorage target, int amount) {
+        if (target == null || amount <= 0 || !target.canReceive()) return 0;
+        return target.receiveEnergy(amount, false);
     }
 
-    @Override
     public void serialize(ValueOutput output) {
         output.putInt("Energy", energy);
     }
 
-    @Override
     public void deserialize(ValueInput input) {
         energy = Math.max(0, Math.min(input.getIntOr("Energy", 0), capacity));
     }

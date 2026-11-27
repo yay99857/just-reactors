@@ -13,14 +13,14 @@ import mezz.jei.api.registration.IRecipeCatalystRegistration;
 import mezz.jei.api.registration.IRecipeCategoryRegistration;
 import mezz.jei.api.registration.IRecipeRegistration;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.List;
 
 @JeiPlugin
 public class JustReactorsJeiPlugin implements IModPlugin {
     @Override
-    public Identifier getPluginUid() {
+    public ResourceLocation getPluginUid() {
         return JustReactors.id("jei_plugin");
     }
 

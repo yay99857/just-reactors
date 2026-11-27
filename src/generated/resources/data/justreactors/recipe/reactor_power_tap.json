@@ -2,9 +2,15 @@
   "type": "minecraft:crafting_shaped",
   "category": "redstone",
   "key": {
-    "C": "justreactors:reactor_casing",
-    "K": "#c:ingots/copper",
-    "R": "#c:dusts/redstone"
+    "C": {
+      "item": "justreactors:reactor_casing"
+    },
+    "K": {
+      "tag": "c:ingots/copper"
+    },
+    "R": {
+      "tag": "c:dusts/redstone"
+    }
   },
   "pattern": [
     "CRC",
@@ -12,6 +18,7 @@
     "CRC"
   ],
   "result": {
+    "count": 1,
     "id": "justreactors:reactor_power_tap"
   }
 }

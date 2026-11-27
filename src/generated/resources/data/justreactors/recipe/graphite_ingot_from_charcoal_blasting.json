@@ -1,9 +1,13 @@
 {
   "type": "minecraft:blasting",
+  "category": "misc",
   "cookingtime": 100,
   "experience": 0.35,
-  "ingredient": "minecraft:charcoal",
+  "ingredient": {
+    "item": "minecraft:charcoal"
+  },
   "result": {
+    "count": 1,
     "id": "justreactors:graphite_ingot"
   }
 }

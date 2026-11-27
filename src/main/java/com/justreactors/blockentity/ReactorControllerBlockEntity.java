@@ -29,8 +29,8 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluids;
-import net.minecraft.world.level.storage.ValueInput;
-import net.minecraft.world.level.storage.ValueOutput;
+import com.justreactors.compat.nbt.ValueInput;
+import com.justreactors.compat.nbt.ValueOutput;
 import net.neoforged.neoforge.fluids.FluidStack;
 import org.jetbrains.annotations.Nullable;
 
@@ -445,8 +445,9 @@ public class ReactorControllerBlockEntity extends BlockEntity implements MenuPro
     }
 
     @Override
-    protected void saveAdditional(ValueOutput output) {
-        super.saveAdditional(output);
+    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.saveAdditional(tag, registries);
+        ValueOutput output = new ValueOutput(tag, registries);
         energyStorage.serialize(output);
         coolantTank.save(output, "CoolantTank");
         steamTank.save(output, "SteamTank");
@@ -479,8 +480,9 @@ public class ReactorControllerBlockEntity extends BlockEntity implements MenuPro
     }
 
     @Override
-    protected void loadAdditional(ValueInput input) {
-        super.loadAdditional(input);
+    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.loadAdditional(tag, registries);
+        ValueInput input = new ValueInput(tag, registries);
         energyStorage.deserialize(input);
         coolantTank.load(input, "CoolantTank");
         steamTank.load(input, "SteamTank");

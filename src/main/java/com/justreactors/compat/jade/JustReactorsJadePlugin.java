@@ -23,11 +23,12 @@ import com.justreactors.turbine.blockentity.TurbineFluidPortBlockEntity;
 import com.justreactors.turbine.blockentity.TurbineRedstonePortBlockEntity;
 
 import net.minecraft.ChatFormatting;
+import com.justreactors.compat.nbt.ValueInput;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import snownee.jade.api.BlockAccessor;
 import snownee.jade.api.IBlockComponentProvider;
 import snownee.jade.api.IServerDataProvider;
@@ -42,7 +43,7 @@ import java.util.Locale;
 
 @WailaPlugin(JustReactors.MOD_ID)
 public class JustReactorsJadePlugin implements IWailaPlugin {
-    static final Identifier REACTOR_INFO = JustReactors.id("reactor_info");
+    static final ResourceLocation REACTOR_INFO = JustReactors.id("reactor_info");
 
     @Override
     public void register(IWailaCommonRegistration registration) {
@@ -72,7 +73,7 @@ public class JustReactorsJadePlugin implements IWailaPlugin {
         INSTANCE;
 
         @Override
-        public Identifier getUid() {
+        public ResourceLocation getUid() {
             return REACTOR_INFO;
         }
 
@@ -148,81 +149,82 @@ public class JustReactorsJadePlugin implements IWailaPlugin {
         INSTANCE;
 
         @Override
-        public Identifier getUid() {
+        public ResourceLocation getUid() {
             return REACTOR_INFO;
         }
 
         @Override
         public void appendTooltip(ITooltip tooltip, BlockAccessor accessor, IPluginConfig config) {
             CompoundTag data = accessor.getServerData();
-            String kind = data.getStringOr("Kind", "");
+            ValueInput in = new ValueInput(data, accessor.getLevel().registryAccess());
+            String kind = in.getStringOr("Kind", "");
             switch (kind) {
                 case "Reactor" -> {
-                    if (!data.getBooleanOr("Assembled", false)) {
+                    if (!in.getBooleanOr("Assembled", false)) {
                         tooltip.add(Component.translatable("jade.justreactors.not_assembled").withStyle(ChatFormatting.RED));
                         addErrorTooltip(tooltip, data);
                         return;
                     }
-                    boolean active = data.getBooleanOr("Active", false);
+                    boolean active = in.getBooleanOr("Active", false);
                     tooltip.add(Component.translatable(active ? "gui.justreactors.status.online" : "gui.justreactors.status.offline")
                             .withStyle(active ? ChatFormatting.GREEN : ChatFormatting.RED));
-                    if (data.getBooleanOr("ActiveCooled", false)) {
+                    if (in.getBooleanOr("ActiveCooled", false)) {
                         tooltip.add(Component.translatable("jade.justreactors.steam_output",
-                                String.format(Locale.ROOT, "%,d", data.getIntOr("SteamRate", 0))).withStyle(ChatFormatting.WHITE));
+                                String.format(Locale.ROOT, "%,d", in.getIntOr("SteamRate", 0))).withStyle(ChatFormatting.WHITE));
                     } else {
                         tooltip.add(Component.translatable("jade.justreactors.output",
-                                String.format(Locale.ROOT, "%,d", data.getIntOr("Rate", 0))).withStyle(ChatFormatting.AQUA));
+                                String.format(Locale.ROOT, "%,d", in.getIntOr("Rate", 0))).withStyle(ChatFormatting.AQUA));
                     }
                     tooltip.add(Component.translatable("jade.justreactors.fuel",
-                            String.format(Locale.ROOT, "%,d", data.getIntOr("Fuel", 0)),
-                            String.format(Locale.ROOT, "%,d", data.getIntOr("MaxFuel", 0))).withStyle(ChatFormatting.YELLOW));
+                            String.format(Locale.ROOT, "%,d", in.getIntOr("Fuel", 0)),
+                            String.format(Locale.ROOT, "%,d", in.getIntOr("MaxFuel", 0))).withStyle(ChatFormatting.YELLOW));
                     tooltip.add(Component.translatable("jade.justreactors.temp",
-                            data.getIntOr("CoreTemp", 20), data.getIntOr("CasingTemp", 20)).withStyle(ChatFormatting.GOLD));
+                            in.getIntOr("CoreTemp", 20), in.getIntOr("CasingTemp", 20)).withStyle(ChatFormatting.GOLD));
                 }
-                case "Rod" -> tooltip.add(Component.translatable("jade.justreactors.insertion", data.getIntOr("Insertion", 0))
+                case "Rod" -> tooltip.add(Component.translatable("jade.justreactors.insertion", in.getIntOr("Insertion", 0))
                         .withStyle(ChatFormatting.AQUA));
                 case "ReactorPort" -> {
-                    boolean outlet = data.getBooleanOr("Outlet", false);
+                    boolean outlet = in.getBooleanOr("Outlet", false);
                     tooltip.add(Component.translatable(outlet ? "jade.justreactors.port.outlet_steam" : "jade.justreactors.port.inlet_water")
                             .withStyle(outlet ? ChatFormatting.AQUA : ChatFormatting.BLUE));
                 }
                 case "RedstonePort" -> {
-                    RedstonePortMode mode = RedstonePortMode.byOrdinal(data.getIntOr("Mode", 0));
+                    RedstonePortMode mode = RedstonePortMode.byOrdinal(in.getIntOr("Mode", 0));
                     tooltip.add(Component.translatable(mode.translationKey())
                             .withStyle(mode.isOutput() ? ChatFormatting.RED : ChatFormatting.AQUA));
                     if (mode.isOutput()) {
                         tooltip.add(Component.translatable("jade.justreactors.redstone.threshold_signal",
-                                data.getIntOr("Threshold", 50), data.getIntOr("Signal", 0)).withStyle(ChatFormatting.GOLD));
+                                in.getIntOr("Threshold", 50), in.getIntOr("Signal", 0)).withStyle(ChatFormatting.GOLD));
                     }
                 }
                 case "Turbine" -> {
-                    if (!data.getBooleanOr("Assembled", false)) {
+                    if (!in.getBooleanOr("Assembled", false)) {
                         tooltip.add(Component.translatable("jade.justreactors.not_assembled").withStyle(ChatFormatting.RED));
                         addErrorTooltip(tooltip, data);
                         return;
                     }
-                    boolean active = data.getBooleanOr("Active", false);
+                    boolean active = in.getBooleanOr("Active", false);
                     tooltip.add(Component.translatable(active ? "gui.justreactors.status.online" : "gui.justreactors.status.offline")
                             .withStyle(active ? ChatFormatting.GREEN : ChatFormatting.RED));
                     tooltip.add(Component.translatable("jade.justreactors.output",
-                            String.format(Locale.ROOT, "%,d", data.getIntOr("Rate", 0))).withStyle(ChatFormatting.AQUA));
+                            String.format(Locale.ROOT, "%,d", in.getIntOr("Rate", 0))).withStyle(ChatFormatting.AQUA));
                     tooltip.add(Component.translatable("jade.justreactors.rpm",
-                            String.format(Locale.ROOT, "%,d", data.getIntOr("Rpm", 0))).withStyle(ChatFormatting.GOLD));
+                            String.format(Locale.ROOT, "%,d", in.getIntOr("Rpm", 0))).withStyle(ChatFormatting.GOLD));
                     tooltip.add(Component.translatable(
-                            TurbineVentMode.byOrdinal(data.getIntOr("VentMode", 0)).translationKey()).withStyle(ChatFormatting.GRAY));
+                            TurbineVentMode.byOrdinal(in.getIntOr("VentMode", 0)).translationKey()).withStyle(ChatFormatting.GRAY));
                 }
                 case "TurbinePort" -> {
-                    boolean outlet = data.getBooleanOr("Outlet", false);
+                    boolean outlet = in.getBooleanOr("Outlet", false);
                     tooltip.add(Component.translatable(outlet ? "jade.justreactors.port.outlet_water" : "jade.justreactors.port.inlet_steam")
                             .withStyle(outlet ? ChatFormatting.BLUE : ChatFormatting.AQUA));
                 }
                 case "TurbineRedstonePort" -> {
-                    TurbineRedstonePortMode mode = TurbineRedstonePortMode.byOrdinal(data.getIntOr("Mode", 0));
+                    TurbineRedstonePortMode mode = TurbineRedstonePortMode.byOrdinal(in.getIntOr("Mode", 0));
                     tooltip.add(Component.translatable(mode.translationKey())
                             .withStyle(mode.isOutput() ? ChatFormatting.RED : ChatFormatting.AQUA));
                     if (mode.isOutput()) {
-                        int threshold = data.getIntOr("Threshold", 50);
-                        int signal = data.getIntOr("Signal", 0);
+                        int threshold = in.getIntOr("Threshold", 50);
+                        int signal = in.getIntOr("Signal", 0);
                         if (mode.isRpmThreshold()) {
                             tooltip.add(Component.translatable("jade.justreactors.turbine_redstone.threshold_rpm_signal",
                                     threshold * 30, threshold, signal).withStyle(ChatFormatting.GOLD));
@@ -233,8 +235,8 @@ public class JustReactorsJadePlugin implements IWailaPlugin {
                     }
                 }
                 case "Reprocessor" -> {
-                    int max = Math.max(1, data.getIntOr("MaxProgress", 100));
-                    int pct = data.getIntOr("Progress", 0) * 100 / max;
+                    int max = Math.max(1, in.getIntOr("MaxProgress", 100));
+                    int pct = in.getIntOr("Progress", 0) * 100 / max;
                     if (pct > 0) {
                         tooltip.add(Component.translatable("jade.justreactors.progress", pct).withStyle(ChatFormatting.AQUA));
                     }

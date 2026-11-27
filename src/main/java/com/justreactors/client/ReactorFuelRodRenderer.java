@@ -6,28 +6,24 @@ import com.justreactors.blockentity.ReactorControllerBlockEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
-import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
-import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
-import net.minecraft.client.renderer.state.level.CameraRenderState;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.BlockPos;
-import net.minecraft.data.AtlasIds;
-import net.minecraft.util.LightCoordsUtil;
+import net.minecraft.world.inventory.InventoryMenu;
+import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 /**
  * Renders live Uranium fuel (top) and Cyanite waste (bottom) levels inside each
  * {@code ReactorFuelRodBlock} of an assembled reactor so players can see burn progress through Reactor Glass.
  */
-public class ReactorFuelRodRenderer implements BlockEntityRenderer<ReactorControllerBlockEntity, ReactorFuelRodRenderer.State> {
+public class ReactorFuelRodRenderer implements BlockEntityRenderer<ReactorControllerBlockEntity> {
     private static final float MIN_XZ = 2.94F / 16.0F;
     private static final float MAX_XZ = 13.06F / 16.0F;
     private static final float Y_MIN = 2.0F / 16.0F;
@@ -36,7 +32,8 @@ public class ReactorFuelRodRenderer implements BlockEntityRenderer<ReactorContro
     public ReactorFuelRodRenderer(BlockEntityRendererProvider.Context context) {
     }
 
-    public static final class State extends BlockEntityRenderState {
+    public static final class State {
+        int lightCoords;
         boolean visible;
         boolean active;
         float fuelRatio;
@@ -47,11 +44,6 @@ public class ReactorFuelRodRenderer implements BlockEntityRenderer<ReactorContro
         @Nullable
         TextureAtlasSprite wasteSprite;
         int light;
-    }
-
-    @Override
-    public State createRenderState() {
-        return new State();
     }
 
     @Override
@@ -71,9 +63,15 @@ public class ReactorFuelRodRenderer implements BlockEntityRenderer<ReactorContro
     }
 
     @Override
-    public void extractRenderState(ReactorControllerBlockEntity be, State state, float partialTicks, Vec3 cameraPosition,
-                                   ModelFeatureRenderer.@Nullable CrumblingOverlay breakProgress) {
-        BlockEntityRenderer.super.extractRenderState(be, state, partialTicks, cameraPosition, breakProgress);
+    public void render(ReactorControllerBlockEntity be, float partialTicks, PoseStack poseStack, MultiBufferSource buffers,
+                       int packedLight, int packedOverlay) {
+        State state = new State();
+        state.lightCoords = packedLight;
+        extractRenderState(be, state, partialTicks);
+        submit(state, poseStack, buffers);
+    }
+
+    private void extractRenderState(ReactorControllerBlockEntity be, State state, float partialTicks) {
         int[] offsets = be.getClientFuelRodOffsets();
         float fuel = be.getClientFuelRatio();
         float waste = be.getClientWasteRatio();
@@ -88,19 +86,18 @@ public class ReactorFuelRodRenderer implements BlockEntityRenderer<ReactorContro
         state.wasteRatio = waste;
         state.rodOffsets = offsets;
 
-        TextureAtlas blocks = Minecraft.getInstance().getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS);
+        TextureAtlas blocks = Minecraft.getInstance().getModelManager().getAtlas(InventoryMenu.BLOCK_ATLAS);
         state.fuelSprite = blocks.getSprite(JustReactors.id("block/uranium_block"));
         state.wasteSprite = blocks.getSprite(JustReactors.id("block/cyanite_block"));
 
         int blockLight = state.active ? 14 : 7;
-        state.light = LightCoordsUtil.pack(
-                Math.max(blockLight, LightCoordsUtil.block(state.lightCoords)),
-                Math.max(state.active ? 12 : 6, LightCoordsUtil.sky(state.lightCoords))
+        state.light = LightTexture.pack(
+                Math.max(blockLight, LightTexture.block(state.lightCoords)),
+                Math.max(state.active ? 12 : 6, LightTexture.sky(state.lightCoords))
         );
     }
 
-    @Override
-    public void submit(State state, PoseStack poseStack, SubmitNodeCollector collector, CameraRenderState camera) {
+    private void submit(State state, PoseStack poseStack, MultiBufferSource buffers) {
         if (!state.visible || state.fuelSprite == null || state.wasteSprite == null) {
             return;
         }
@@ -113,7 +110,9 @@ public class ReactorFuelRodRenderer implements BlockEntityRenderer<ReactorContro
         int fuelColor = state.active ? 0xE6D8FF6B : 0xB898C446;
         int wasteColor = 0xD84AC0F0;
 
-        collector.submitCustomGeometry(poseStack, RenderTypes.entityTranslucentCull(fuelSprite.atlasLocation()), (pose, consumer) -> {
+        {
+            PoseStack.Pose pose = poseStack.last();
+            VertexConsumer consumer = buffers.getBuffer(RenderType.entityTranslucentCull(fuelSprite.atlasLocation()));
             int[] offsets = state.rodOffsets;
             for (int i = 0; i + 2 < offsets.length; i += 3) {
                 float ox = offsets[i];
@@ -135,7 +134,7 @@ public class ReactorFuelRodRenderer implements BlockEntityRenderer<ReactorContro
                             ox + MAX_XZ, curBottom + h, oz + MAX_XZ);
                 }
             }
-        });
+        }
     }
 
     private static void drawBox(PoseStack.Pose p, VertexConsumer c, TextureAtlasSprite sprite, int color, int light,

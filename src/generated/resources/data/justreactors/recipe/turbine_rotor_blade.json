@@ -1,9 +1,16 @@
 {
   "type": "minecraft:crafting_shaped",
+  "category": "misc",
   "key": {
-    "C": "#c:ingots/cyanite",
-    "G": "#c:ingots/graphite",
-    "I": "#c:ingots/iron"
+    "C": {
+      "tag": "c:ingots/cyanite"
+    },
+    "G": {
+      "tag": "c:ingots/graphite"
+    },
+    "I": {
+      "tag": "c:ingots/iron"
+    }
   },
   "pattern": [
     "IGI",

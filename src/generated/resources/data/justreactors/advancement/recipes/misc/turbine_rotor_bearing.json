@@ -3,7 +3,7 @@
   "criteria": {
     "has_the_recipe": {
       "conditions": {
-        "recipes": "justreactors:turbine_rotor_bearing"
+        "recipe": "justreactors:turbine_rotor_bearing"
       },
       "trigger": "minecraft:recipe_unlocked"
     },

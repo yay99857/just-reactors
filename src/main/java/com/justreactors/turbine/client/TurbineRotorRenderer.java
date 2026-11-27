@@ -7,33 +7,30 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
-import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
-import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
-import net.minecraft.client.renderer.state.level.CameraRenderState;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.data.AtlasIds;
-import net.minecraft.util.LightCoordsUtil;
+import net.minecraft.world.inventory.InventoryMenu;
+import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 /**
  * Renders the rotating central shaft and aerodynamic blades inside an assembled Steam Turbine
  * at an angular speed driven by the live rotor RPM.
  */
-public class TurbineRotorRenderer implements BlockEntityRenderer<TurbineControllerBlockEntity, TurbineRotorRenderer.State> {
+public class TurbineRotorRenderer implements BlockEntityRenderer<TurbineControllerBlockEntity> {
     public TurbineRotorRenderer(BlockEntityRendererProvider.Context context) {
     }
 
-    public static final class State extends BlockEntityRenderState {
+    public static final class State {
+        int lightCoords;
         boolean spinning;
         float bearingRelX;
         float bearingRelY;
@@ -47,11 +44,6 @@ public class TurbineRotorRenderer implements BlockEntityRenderer<TurbineControll
         @Nullable
         TextureAtlasSprite bladeSprite;
         int light;
-    }
-
-    @Override
-    public State createRenderState() {
-        return new State();
     }
 
     @Override
@@ -71,9 +63,15 @@ public class TurbineRotorRenderer implements BlockEntityRenderer<TurbineControll
     }
 
     @Override
-    public void extractRenderState(TurbineControllerBlockEntity be, State state, float partialTicks, Vec3 cameraPosition,
-                                   ModelFeatureRenderer.@Nullable CrumblingOverlay breakProgress) {
-        BlockEntityRenderer.super.extractRenderState(be, state, partialTicks, cameraPosition, breakProgress);
+    public void render(TurbineControllerBlockEntity be, float partialTicks, PoseStack poseStack, MultiBufferSource buffers,
+                       int packedLight, int packedOverlay) {
+        State state = new State();
+        state.lightCoords = packedLight;
+        extractRenderState(be, state, partialTicks);
+        submit(state, poseStack, buffers);
+    }
+
+    private void extractRenderState(TurbineControllerBlockEntity be, State state, float partialTicks) {
         BlockPos bearing = be.getClientBearingPos();
         if (!be.isClientAssembled() || !be.isClientSpinning() || bearing == null || be.getClientShaftLength() <= 0) {
             state.spinning = false;
@@ -90,17 +88,16 @@ public class TurbineRotorRenderer implements BlockEntityRenderer<TurbineControll
         state.angleDeg = be.getInterpolatedRotorAngle(partialTicks);
         state.bladeOffsets = be.getClientBladeOffsets();
 
-        TextureAtlas blocks = Minecraft.getInstance().getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS);
+        TextureAtlas blocks = Minecraft.getInstance().getModelManager().getAtlas(InventoryMenu.BLOCK_ATLAS);
         state.shaftSprite = blocks.getSprite(JustReactors.id("block/turbine_rotor_shaft"));
         state.bladeSprite = blocks.getSprite(JustReactors.id("block/turbine_rotor_blade"));
-        state.light = LightCoordsUtil.pack(
-                Math.max(11, LightCoordsUtil.block(state.lightCoords)),
-                Math.max(11, LightCoordsUtil.sky(state.lightCoords))
+        state.light = LightTexture.pack(
+                Math.max(11, LightTexture.block(state.lightCoords)),
+                Math.max(11, LightTexture.sky(state.lightCoords))
         );
     }
 
-    @Override
-    public void submit(State state, PoseStack poseStack, SubmitNodeCollector collector, CameraRenderState camera) {
+    private void submit(State state, PoseStack poseStack, MultiBufferSource buffers) {
         if (!state.spinning || state.shaftSprite == null || state.bladeSprite == null) {
             return;
         }
@@ -110,16 +107,18 @@ public class TurbineRotorRenderer implements BlockEntityRenderer<TurbineControll
 
         Direction.Axis axis = state.inwardDir.getAxis();
         switch (axis) {
-            case X -> poseStack.rotateDegrees(Axis.XP, state.angleDeg);
-            case Y -> poseStack.rotateDegrees(Axis.YP, state.angleDeg);
-            case Z -> poseStack.rotateDegrees(Axis.ZP, state.angleDeg);
+            case X -> poseStack.mulPose(Axis.XP.rotationDegrees(state.angleDeg));
+            case Y -> poseStack.mulPose(Axis.YP.rotationDegrees(state.angleDeg));
+            case Z -> poseStack.mulPose(Axis.ZP.rotationDegrees(state.angleDeg));
         }
 
         TextureAtlasSprite shaftSprite = state.shaftSprite;
         TextureAtlasSprite bladeSprite = state.bladeSprite;
         int light = state.light;
 
-        collector.submitCustomGeometry(poseStack, RenderTypes.entitySolid(shaftSprite.atlasLocation()), (pose, consumer) -> {
+        {
+            PoseStack.Pose pose = poseStack.last();
+            VertexConsumer consumer = buffers.getBuffer(RenderType.entitySolid(shaftSprite.atlasLocation()));
             // 1. Shaft segments from step=1..shaftLength along inwardDir
             for (int step = 1; step <= state.shaftLength; step++) {
                 float cx = state.inwardDir.getStepX() * step;
@@ -184,7 +183,7 @@ public class TurbineRotorRenderer implements BlockEntityRenderer<TurbineControll
                         bx - hx, by - hy, bz - hz,
                         bx + hx, by + hy, bz + hz);
             }
-        });
+        }
 
         poseStack.popPose();
     }

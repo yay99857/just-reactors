@@ -8,16 +8,14 @@ import com.justreactors.turbine.client.TurbineControllerScreen;
 import com.justreactors.turbine.client.TurbineRedstonePortScreen;
 import com.justreactors.turbine.client.TurbineRotorRenderer;
 
-import net.minecraft.client.renderer.block.FluidModel;
-import net.minecraft.client.resources.model.sprite.Material;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
-import net.neoforged.neoforge.client.event.RegisterFluidModelsEvent;
+import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
-import net.neoforged.neoforge.client.fluid.FluidTintSource;
+import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
 
 @EventBusSubscriber(modid = JustReactors.MOD_ID, value = Dist.CLIENT)
 public final class ClientModEvents {
@@ -36,11 +34,25 @@ public final class ClientModEvents {
     }
 
     @SubscribeEvent
-    public static void registerFluidModels(RegisterFluidModelsEvent event) {
-        Material still = new Material(Identifier.withDefaultNamespace("block/water_still"));
-        Material flowing = new Material(Identifier.withDefaultNamespace("block/water_flow"));
-        event.register(new FluidModel.Unbaked(still, flowing, null, (FluidTintSource) (state -> 0xFFE8F1F8)),
-                ModFluids.STEAM_SOURCE, ModFluids.STEAM_FLOWING);
+    public static void registerClientExtensions(RegisterClientExtensionsEvent event) {
+        ResourceLocation still = ResourceLocation.withDefaultNamespace("block/water_still");
+        ResourceLocation flowing = ResourceLocation.withDefaultNamespace("block/water_flow");
+        event.registerFluidType(new IClientFluidTypeExtensions() {
+            @Override
+            public ResourceLocation getStillTexture() {
+                return still;
+            }
+
+            @Override
+            public ResourceLocation getFlowingTexture() {
+                return flowing;
+            }
+
+            @Override
+            public int getTintColor() {
+                return 0xFFE8F1F8;
+            }
+        }, ModFluids.STEAM_TYPE.get());
     }
 
     @SubscribeEvent

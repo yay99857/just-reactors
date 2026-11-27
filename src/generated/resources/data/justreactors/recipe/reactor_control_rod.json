@@ -2,9 +2,15 @@
   "type": "minecraft:crafting_shaped",
   "category": "redstone",
   "key": {
-    "C": "justreactors:reactor_casing",
-    "G": "#c:ingots/graphite",
-    "R": "#c:dusts/redstone"
+    "C": {
+      "item": "justreactors:reactor_casing"
+    },
+    "G": {
+      "tag": "c:ingots/graphite"
+    },
+    "R": {
+      "tag": "c:dusts/redstone"
+    }
   },
   "pattern": [
     "CGC",
@@ -12,6 +18,7 @@
     "CGC"
   ],
   "result": {
+    "count": 1,
     "id": "justreactors:reactor_control_rod"
   }
 }
