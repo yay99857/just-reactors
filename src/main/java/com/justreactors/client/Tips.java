@@ -44,6 +44,14 @@ public final class Tips {
         return String.format(Locale.ROOT, "%.2f", Math.max(0, Math.min(1, frac)) * 100.0);
     }
 
+    /** Short energy amount for tight labels: 950, 12.5k, 3.40M, 2.15G. */
+    public static String compact(long n) {
+        if (n < 10_000) return String.format(Locale.ROOT, "%,d", n);
+        if (n < 1_000_000) return String.format(Locale.ROOT, "%.1fk", n / 1_000.0);
+        if (n < 1_000_000_000) return String.format(Locale.ROOT, "%.2fM", n / 1_000_000.0);
+        return String.format(Locale.ROOT, "%.2fG", n / 1_000_000_000.0);
+    }
+
     public static String fmt(int n) {
         return String.format(Locale.ROOT, "%,d", n);
     }

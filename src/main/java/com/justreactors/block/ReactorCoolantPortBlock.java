@@ -61,6 +61,7 @@ public class ReactorCoolantPortBlock extends ReactorPartBlock implements EntityB
         if (level.isClientSide()) return InteractionResult.SUCCESS;
         boolean nextOutlet = !state.getValue(OUTLET);
         level.setBlock(pos, state.setValue(OUTLET, nextOutlet), 3);
+        level.invalidateCapabilities(pos);
         player.displayClientMessage(Component.translatable(
                 nextOutlet ? "message.justreactors.coolant_port.outlet" : "message.justreactors.coolant_port.inlet")
                 .withStyle(nextOutlet ? ChatFormatting.AQUA : ChatFormatting.BLUE), true);

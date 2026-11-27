@@ -19,7 +19,14 @@ import com.justreactors.turbine.block.TurbineRedstonePortBlock;
 import com.justreactors.turbine.block.TurbineRotorBladeBlock;
 import com.justreactors.turbine.block.TurbineRotorShaftBlock;
 
+import com.justreactors.battery.BatteryCellBlock;
+import com.justreactors.battery.BatteryPowerPortBlock;
+import com.justreactors.battery.BatteryRedstoneSensorBlock;
+import com.justreactors.exchanger.HeatExchangerFluidPortBlock;
+import com.justreactors.multiblock.BoxControllerBlock;
+
 import net.minecraft.util.valueproviders.UniformInt;
+import net.minecraft.world.level.block.TransparentBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.DropExperienceBlock;
 import net.minecraft.world.level.block.SoundType;
@@ -29,6 +36,15 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 
 public final class ModBlocks {
     public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(JustReactors.MOD_ID);
+
+    private static final java.util.function.Supplier<BlockBehaviour.Properties> GLASS = () -> BlockBehaviour.Properties.of()
+                    .strength(3.0F, 6.0F)
+                    .sound(SoundType.GLASS)
+                    .noOcclusion()
+                    .isValidSpawn((s, l, p, e) -> false)
+                    .isRedstoneConductor((s, l, p) -> false)
+                    .isSuffocating((s, l, p) -> false)
+                    .requiresCorrectToolForDrops();
 
     // Ores & storage blocks
     public static final DeferredBlock<Block> URANIUM_ORE = BLOCKS.registerBlock("uranium_ore",
@@ -158,6 +174,55 @@ public final class ModBlocks {
     public static final DeferredBlock<TurbineRedstonePortBlock> TURBINE_REDSTONE_PORT = BLOCKS.registerBlock("turbine_redstone_port",
             TurbineRedstonePortBlock::new,
             JustReactors.reactorBlockProperties(4.0F, 8.0F));
+
+    // Heat Exchanger multiblock parts
+    public static final DeferredBlock<Block> HEAT_EXCHANGER_CASING = BLOCKS.registerBlock("heat_exchanger_casing",
+            Block::new,
+            JustReactors.reactorBlockProperties(4.0F, 8.0F));
+
+    public static final DeferredBlock<TransparentBlock> HEAT_EXCHANGER_GLASS = BLOCKS.registerBlock("heat_exchanger_glass",
+            TransparentBlock::new,
+            GLASS.get());
+
+    public static final DeferredBlock<BoxControllerBlock> HEAT_EXCHANGER_CONTROLLER = BLOCKS.registerBlock("heat_exchanger_controller",
+            p -> new BoxControllerBlock(p, ModBlockEntities.HEAT_EXCHANGER_CONTROLLER),
+            JustReactors.reactorBlockProperties(4.0F, 8.0F)
+                    .lightLevel(state -> state.getValue(BoxControllerBlock.ACTIVE) ? 10 : 0));
+
+    public static final DeferredBlock<HeatExchangerFluidPortBlock> HEAT_EXCHANGER_FLUID_PORT = BLOCKS.registerBlock("heat_exchanger_fluid_port",
+            HeatExchangerFluidPortBlock::new,
+            JustReactors.reactorBlockProperties(4.0F, 8.0F));
+
+    public static final DeferredBlock<Block> HEAT_EXCHANGER_TUBE = BLOCKS.registerBlock("heat_exchanger_tube",
+            Block::new,
+            JustReactors.reactorBlockProperties(3.5F, 6.0F));
+
+    // Battery multiblock parts
+    public static final DeferredBlock<Block> BATTERY_CASING = BLOCKS.registerBlock("battery_casing",
+            Block::new,
+            JustReactors.reactorBlockProperties(4.0F, 8.0F));
+
+    public static final DeferredBlock<TransparentBlock> BATTERY_GLASS = BLOCKS.registerBlock("battery_glass",
+            TransparentBlock::new,
+            GLASS.get());
+
+    public static final DeferredBlock<BoxControllerBlock> BATTERY_CONTROLLER = BLOCKS.registerBlock("battery_controller",
+            p -> new BoxControllerBlock(p, ModBlockEntities.BATTERY_CONTROLLER),
+            JustReactors.reactorBlockProperties(4.0F, 8.0F)
+                    .lightLevel(state -> state.getValue(BoxControllerBlock.ACTIVE) ? 8 : 0));
+
+    public static final DeferredBlock<BatteryPowerPortBlock> BATTERY_POWER_PORT = BLOCKS.registerBlock("battery_power_port",
+            BatteryPowerPortBlock::new,
+            JustReactors.reactorBlockProperties(4.0F, 8.0F));
+
+    public static final DeferredBlock<BatteryRedstoneSensorBlock> BATTERY_REDSTONE_SENSOR = BLOCKS.registerBlock("battery_redstone_sensor",
+            BatteryRedstoneSensorBlock::new,
+            JustReactors.reactorBlockProperties(4.0F, 8.0F));
+
+    public static final DeferredBlock<BatteryCellBlock> BATTERY_CELL = BLOCKS.registerBlock("battery_cell",
+            BatteryCellBlock::new,
+            JustReactors.reactorBlockProperties(3.5F, 6.0F)
+                    .lightLevel(state -> state.getValue(BatteryCellBlock.CHARGE) * 2));
 
     private ModBlocks() {
     }

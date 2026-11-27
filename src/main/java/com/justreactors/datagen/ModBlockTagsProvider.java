@@ -43,7 +43,18 @@ public class ModBlockTagsProvider extends BlockTagsProvider {
                 ModBlocks.TURBINE_ROTOR_BLADE.getKey(),
                 ModBlocks.TURBINE_FLUID_PORT.getKey(),
                 ModBlocks.TURBINE_POWER_TAP.getKey(),
-                ModBlocks.TURBINE_REDSTONE_PORT.getKey()
+                ModBlocks.TURBINE_REDSTONE_PORT.getKey(),
+                ModBlocks.HEAT_EXCHANGER_CASING.getKey(),
+                ModBlocks.HEAT_EXCHANGER_GLASS.getKey(),
+                ModBlocks.HEAT_EXCHANGER_CONTROLLER.getKey(),
+                ModBlocks.HEAT_EXCHANGER_FLUID_PORT.getKey(),
+                ModBlocks.HEAT_EXCHANGER_TUBE.getKey(),
+                ModBlocks.BATTERY_CASING.getKey(),
+                ModBlocks.BATTERY_GLASS.getKey(),
+                ModBlocks.BATTERY_CONTROLLER.getKey(),
+                ModBlocks.BATTERY_POWER_PORT.getKey(),
+                ModBlocks.BATTERY_REDSTONE_SENSOR.getKey(),
+                ModBlocks.BATTERY_CELL.getKey()
         );
 
         tag(BlockTags.NEEDS_IRON_TOOL).add(

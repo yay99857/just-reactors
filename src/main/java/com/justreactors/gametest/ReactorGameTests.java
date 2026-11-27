@@ -75,7 +75,15 @@ public final class ReactorGameTests {
             new NamedTest("turbine_shutdown_spins_down", ReactorGameTests::turbineShutdownSpinsDown, 80),
             new NamedTest("turbine_redstone_port_controls_and_outputs", ReactorGameTests::turbineRedstonePortControlsAndOutputs, 40),
             new NamedTest("turbine_vent_modes", ReactorGameTests::turbineVentModes, 40),
-            new NamedTest("jei_display_entries_populated", ReactorGameTests::jeiDisplayEntriesPopulated, 40)
+            new NamedTest("jei_display_entries_populated", ReactorGameTests::jeiDisplayEntriesPopulated, 40),
+            new NamedTest("reactor_coolant_makes_hot_coolant", MultiblockGameTests::reactorCoolantMakesHotCoolant, 100),
+            new NamedTest("reactor_outlet_rejects_insertion", MultiblockGameTests::reactorOutletRejectsInsertion, 40),
+            new NamedTest("heat_exchanger_cools_and_boils", MultiblockGameTests::heatExchangerCoolsAndBoils, 60),
+            new NamedTest("heat_exchanger_needs_tubes", MultiblockGameTests::heatExchangerNeedsTubes, 40),
+            new NamedTest("heat_exchanger_stops_without_water", MultiblockGameTests::heatExchangerStopsWithoutWater, 60),
+            new NamedTest("battery_stores_and_releases_energy", MultiblockGameTests::batteryStoresAndReleasesEnergy, 40),
+            new NamedTest("battery_sensor_follows_charge", MultiblockGameTests::batterySensorFollowsCharge, 60),
+            new NamedTest("battery_keeps_energy_across_reassembly", MultiblockGameTests::batteryKeepsEnergyAcrossReassembly, 40)
     );
 
     private ReactorGameTests() {
@@ -96,6 +104,10 @@ public final class ReactorGameTests {
                 .map(test -> new TestFunction(JustReactors.MOD_ID, JustReactors.MOD_ID + "." + test.name(),
                         STRUCTURE.toString(), test.timeoutTicks(), 0, true, test.body()))
                 .toList();
+    }
+
+    static BlockPos build3x3x3Public(GameTestHelper helper, int ox, int oy, int oz) {
+        return build3x3x3(helper, ox, oy, oz);
     }
 
     /** Builds a valid 3x3x3 reactor with origin at (ox, oy, oz). Returns the relative Controller pos. */

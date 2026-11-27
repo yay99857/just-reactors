@@ -131,6 +131,121 @@ public class ModRecipeProvider extends RecipeProvider {
                 .unlockedBy("has_casing", has(ModBlocks.REACTOR_CASING.get()))
                 .save(out);
 
+        // Heat Exchanger
+        ShapedRecipeBuilder.shaped(RecipeCategory.BUILDING_BLOCKS, ModBlocks.HEAT_EXCHANGER_CASING.get(), 4)
+                .pattern("IKI")
+                .pattern("K K")
+                .pattern("IKI")
+                .define('I', Tags.Items.INGOTS_IRON)
+                .define('K', Tags.Items.INGOTS_COPPER)
+                .unlockedBy("has_reactor_casing", has(ModBlocks.REACTOR_CASING.get()))
+                .save(out);
+
+        ShapedRecipeBuilder.shaped(RecipeCategory.BUILDING_BLOCKS, ModBlocks.HEAT_EXCHANGER_GLASS.get(), 2)
+                .pattern("GCG")
+                .define('C', ModBlocks.HEAT_EXCHANGER_CASING.get())
+                .define('G', Tags.Items.GLASS_BLOCKS)
+                .unlockedBy("has_casing", has(ModBlocks.HEAT_EXCHANGER_CASING.get()))
+                .save(out);
+
+        ShapedRecipeBuilder.shaped(RecipeCategory.REDSTONE, ModBlocks.HEAT_EXCHANGER_CONTROLLER.get())
+                .pattern("CBC")
+                .pattern("RXR")
+                .pattern("CBC")
+                .define('C', ModBlocks.HEAT_EXCHANGER_CASING.get())
+                .define('B', Items.BUCKET)
+                .define('R', Tags.Items.DUSTS_REDSTONE)
+                .define('X', Items.COMPARATOR)
+                .unlockedBy("has_casing", has(ModBlocks.HEAT_EXCHANGER_CASING.get()))
+                .save(out);
+
+        ShapedRecipeBuilder.shaped(RecipeCategory.REDSTONE, ModBlocks.HEAT_EXCHANGER_FLUID_PORT.get())
+                .pattern("CBC")
+                .pattern("IPI")
+                .pattern("CBC")
+                .define('C', ModBlocks.HEAT_EXCHANGER_CASING.get())
+                .define('B', Items.BUCKET)
+                .define('I', Tags.Items.INGOTS_IRON)
+                .define('P', Items.PISTON)
+                .unlockedBy("has_casing", has(ModBlocks.HEAT_EXCHANGER_CASING.get()))
+                .save(out);
+
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModBlocks.HEAT_EXCHANGER_TUBE.get(), 4)
+                .pattern("KKK")
+                .pattern("GGG")
+                .pattern("KKK")
+                .define('K', Tags.Items.INGOTS_COPPER)
+                .define('G', ModTags.INGOTS_GRAPHITE)
+                .unlockedBy("has_casing", has(ModBlocks.HEAT_EXCHANGER_CASING.get()))
+                .save(out);
+
+        // Coolant: made in a plain bucket so no extra bucket is created by a water bucket's crafting remainder.
+        ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, ModItems.COOLANT_BUCKET.get())
+                .requires(Items.BUCKET)
+                .requires(Items.PACKED_ICE)
+                .requires(ModTags.INGOTS_GRAPHITE)
+                .requires(Tags.Items.DUSTS_REDSTONE)
+                .unlockedBy("has_casing", has(ModBlocks.HEAT_EXCHANGER_CASING.get()))
+                .save(out);
+
+        // Battery
+        ShapedRecipeBuilder.shaped(RecipeCategory.BUILDING_BLOCKS, ModBlocks.BATTERY_CASING.get(), 4)
+                .pattern("IRI")
+                .pattern("R R")
+                .pattern("IRI")
+                .define('I', Tags.Items.INGOTS_IRON)
+                .define('R', Tags.Items.DUSTS_REDSTONE)
+                .unlockedBy("has_redstone", has(Tags.Items.DUSTS_REDSTONE))
+                .save(out);
+
+        ShapedRecipeBuilder.shaped(RecipeCategory.BUILDING_BLOCKS, ModBlocks.BATTERY_GLASS.get(), 2)
+                .pattern("GCG")
+                .define('C', ModBlocks.BATTERY_CASING.get())
+                .define('G', Tags.Items.GLASS_BLOCKS)
+                .unlockedBy("has_casing", has(ModBlocks.BATTERY_CASING.get()))
+                .save(out);
+
+        ShapedRecipeBuilder.shaped(RecipeCategory.REDSTONE, ModBlocks.BATTERY_CONTROLLER.get())
+                .pattern("CGC")
+                .pattern("RXR")
+                .pattern("CGC")
+                .define('C', ModBlocks.BATTERY_CASING.get())
+                .define('G', Tags.Items.INGOTS_GOLD)
+                .define('R', Tags.Items.DUSTS_REDSTONE)
+                .define('X', Items.COMPARATOR)
+                .unlockedBy("has_casing", has(ModBlocks.BATTERY_CASING.get()))
+                .save(out);
+
+        ShapedRecipeBuilder.shaped(RecipeCategory.REDSTONE, ModBlocks.BATTERY_POWER_PORT.get())
+                .pattern("CRC")
+                .pattern("RKR")
+                .pattern("CRC")
+                .define('C', ModBlocks.BATTERY_CASING.get())
+                .define('R', Tags.Items.DUSTS_REDSTONE)
+                .define('K', Tags.Items.INGOTS_COPPER)
+                .unlockedBy("has_casing", has(ModBlocks.BATTERY_CASING.get()))
+                .save(out);
+
+        ShapedRecipeBuilder.shaped(RecipeCategory.REDSTONE, ModBlocks.BATTERY_REDSTONE_SENSOR.get())
+                .pattern("CRC")
+                .pattern("RXR")
+                .pattern("CRC")
+                .define('C', ModBlocks.BATTERY_CASING.get())
+                .define('R', Tags.Items.DUSTS_REDSTONE)
+                .define('X', Items.COMPARATOR)
+                .unlockedBy("has_casing", has(ModBlocks.BATTERY_CASING.get()))
+                .save(out);
+
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModBlocks.BATTERY_CELL.get())
+                .pattern("IRI")
+                .pattern("RBR")
+                .pattern("IRI")
+                .define('I', Tags.Items.INGOTS_IRON)
+                .define('R', Tags.Items.DUSTS_REDSTONE)
+                .define('B', Tags.Items.STORAGE_BLOCKS_REDSTONE)
+                .unlockedBy("has_casing", has(ModBlocks.BATTERY_CASING.get()))
+                .save(out);
+
         // Cyanite Reprocessor
         ShapedRecipeBuilder.shaped(RecipeCategory.REDSTONE, ModBlocks.CYANITE_REPROCESSOR.get())
                 .pattern("ICI")

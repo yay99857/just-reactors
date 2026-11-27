@@ -4,6 +4,7 @@ import com.justreactors.transfer.Handlers;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import com.justreactors.block.ReactorCoolantPortBlock;
 import com.justreactors.registry.ModBlockEntities;
+import com.justreactors.registry.ModFluids;
 import com.justreactors.transfer.ReactorFluidTank;
 
 import net.minecraft.core.BlockPos;
@@ -32,11 +33,11 @@ public class ReactorCoolantPortBlockEntity extends ReactorPartBlockEntity {
         if (controller == null) return null;
 
         if (isOutlet()) {
-            // Outlet: extract-only Steam
+            // Outlet: extract-only Steam / Hot Coolant
             return Handlers.extractOnly(controller.getSteamTank());
         }
-        // Inlet: insert-only Water
-        return Handlers.insertOnly(controller.getCoolantTank(), stack -> stack.is(Fluids.WATER));
+        // Inlet: insert-only Water / Coolant
+        return Handlers.insertOnly(controller.getCoolantTank(), stack -> stack.is(Fluids.WATER) || ModFluids.isCoolant(stack.getFluid()));
     }
 
     public void pushSteamToNeighbors(ReactorFluidTank steamTank, int maxRate) {

@@ -47,6 +47,17 @@ public class ModBlockLootProvider extends BlockLootSubProvider {
         dropSelf(ModBlocks.TURBINE_FLUID_PORT.get());
         dropSelf(ModBlocks.TURBINE_POWER_TAP.get());
         dropSelf(ModBlocks.TURBINE_REDSTONE_PORT.get());
+        dropSelf(ModBlocks.HEAT_EXCHANGER_CASING.get());
+        dropSelf(ModBlocks.HEAT_EXCHANGER_GLASS.get());
+        dropSelf(ModBlocks.HEAT_EXCHANGER_CONTROLLER.get());
+        dropSelf(ModBlocks.HEAT_EXCHANGER_FLUID_PORT.get());
+        dropSelf(ModBlocks.HEAT_EXCHANGER_TUBE.get());
+        dropSelf(ModBlocks.BATTERY_CASING.get());
+        dropSelf(ModBlocks.BATTERY_GLASS.get());
+        dropSelf(ModBlocks.BATTERY_CONTROLLER.get());
+        dropSelf(ModBlocks.BATTERY_POWER_PORT.get());
+        dropSelf(ModBlocks.BATTERY_REDSTONE_SENSOR.get());
+        dropSelf(ModBlocks.BATTERY_CELL.get());
     }
 
     @Override

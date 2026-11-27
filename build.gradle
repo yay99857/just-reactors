@@ -93,6 +93,11 @@ dependencies {
     compileOnly 'maven.modrinth:jei:19.76.1.482'
     compileOnly 'maven.modrinth:jade:15.10.6+neoforge'
     compileOnly 'maven.modrinth:cc-tweaked:2jhB1Ii4'
+    // Optional recipe viewers: REI (needs Architectury + Cloth Config types) and EMI
+    compileOnly 'maven.modrinth:rei:16.0.799+neoforge'
+    compileOnly 'maven.modrinth:architectury-api:13.0.12+neoforge'
+    compileOnly 'maven.modrinth:cloth-config:15.0.140+neoforge'
+    compileOnly 'maven.modrinth:emi:1.1.24+1.21.1+neoforge'
 }
 
 // syncDevMods (copies the 26.3 Voltaic Dynamics jar into run/mods) is left out: that jar does not load on 1.21.1.

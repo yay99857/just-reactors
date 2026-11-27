@@ -31,6 +31,9 @@ public final class ClientModEvents {
         event.register(ModMenus.TURBINE_CONTROLLER.get(), TurbineControllerScreen::new);
         event.register(ModMenus.TURBINE_REDSTONE_PORT.get(), TurbineRedstonePortScreen::new);
         event.register(ModMenus.CYANITE_REPROCESSOR.get(), CyaniteReprocessorScreen::new);
+        event.register(ModMenus.HEAT_EXCHANGER.get(), com.justreactors.exchanger.client.HeatExchangerScreen::new);
+        event.register(ModMenus.BATTERY.get(), com.justreactors.battery.client.BatteryScreen::new);
+        event.register(ModMenus.BATTERY_SENSOR.get(), com.justreactors.battery.client.BatterySensorScreen::new);
     }
 
     @SubscribeEvent
@@ -53,6 +56,38 @@ public final class ClientModEvents {
                 return 0xFFE8F1F8;
             }
         }, ModFluids.STEAM_TYPE.get());
+        event.registerFluidType(new IClientFluidTypeExtensions() {
+            @Override
+            public ResourceLocation getStillTexture() {
+                return still;
+            }
+
+            @Override
+            public ResourceLocation getFlowingTexture() {
+                return flowing;
+            }
+
+            @Override
+            public int getTintColor() {
+                return 0xFF4FD6E0;
+            }
+        }, ModFluids.COOLANT_TYPE.get());
+        event.registerFluidType(new IClientFluidTypeExtensions() {
+            @Override
+            public ResourceLocation getStillTexture() {
+                return still;
+            }
+
+            @Override
+            public ResourceLocation getFlowingTexture() {
+                return flowing;
+            }
+
+            @Override
+            public int getTintColor() {
+                return 0xFFEF7A35;
+            }
+        }, ModFluids.HOT_COOLANT_TYPE.get());
     }
 
     @SubscribeEvent

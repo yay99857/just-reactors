@@ -24,6 +24,17 @@
     "justreactors:turbine_rotor_blade",
     "justreactors:turbine_fluid_port",
     "justreactors:turbine_power_tap",
-    "justreactors:turbine_redstone_port"
+    "justreactors:turbine_redstone_port",
+    "justreactors:heat_exchanger_casing",
+    "justreactors:heat_exchanger_glass",
+    "justreactors:heat_exchanger_controller",
+    "justreactors:heat_exchanger_fluid_port",
+    "justreactors:heat_exchanger_tube",
+    "justreactors:battery_casing",
+    "justreactors:battery_glass",
+    "justreactors:battery_controller",
+    "justreactors:battery_power_port",
+    "justreactors:battery_redstone_sensor",
+    "justreactors:battery_cell"
   ]
 }

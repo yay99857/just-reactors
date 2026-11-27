@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "mode=input": {
+      "model": "justreactors:block/heat_exchanger_fluid_port_input"
+    },
+    "mode=output_coolant": {
+      "model": "justreactors:block/heat_exchanger_fluid_port_output_coolant"
+    },
+    "mode=output_steam": {
+      "model": "justreactors:block/heat_exchanger_fluid_port_output_steam"
+    }
+  }
+}

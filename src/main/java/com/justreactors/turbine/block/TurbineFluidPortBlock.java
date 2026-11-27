@@ -45,6 +45,7 @@ public class TurbineFluidPortBlock extends TurbinePartBlock implements EntityBlo
         if (level.isClientSide()) return InteractionResult.SUCCESS;
         boolean nextOutlet = !state.getValue(OUTLET);
         level.setBlock(pos, state.setValue(OUTLET, nextOutlet), 3);
+        level.invalidateCapabilities(pos);
         player.displayClientMessage(Component.translatable(
                 nextOutlet ? "message.justreactors.turbine_port.outlet" : "message.justreactors.turbine_port.inlet")
                 .withStyle(nextOutlet ? ChatFormatting.BLUE : ChatFormatting.AQUA), true);
