@@ -48,6 +48,7 @@ neoForge {
         shots {
             client()
             systemProperty 'justreactors.shots', 'true'
+            systemProperty 'justreactors.shots.ui', String.valueOf(project.findProperty('uiShots') ?: 'false')
             jvmArgument '-da'
             programArguments.addAll('--quickPlaySingleplayer', 'Shots', '--width', '1920', '--height', '1080')
         }

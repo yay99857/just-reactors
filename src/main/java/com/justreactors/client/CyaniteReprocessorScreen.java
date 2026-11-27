@@ -7,9 +7,14 @@ import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 
-import java.util.Locale;
+import java.util.List;
+
+import static com.justreactors.client.ScreenWidgets.*;
+import static com.justreactors.client.Tips.*;
 
 public class CyaniteReprocessorScreen extends AbstractContainerScreen<CyaniteReprocessorMenu> {
+    private static final int GY = 27, GH = 38;
+
     public CyaniteReprocessorScreen(CyaniteReprocessorMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
         this.imageWidth = 176;
@@ -27,50 +32,44 @@ public class CyaniteReprocessorScreen extends AbstractContainerScreen<CyaniteRep
 
     @Override
     protected void renderBg(GuiGraphics g, float partialTick, int mouseX, int mouseY) {
+        int x = leftPos, y = topPos;
+        drawPanel(g, x, y, imageWidth, imageHeight, ACCENT_REPROCESSOR);
+        inset(g, x + 8, y + 24, 160, 44);
 
-        ScreenWidgets.drawPanel(g, leftPos, topPos, imageWidth, imageHeight);
+        drawVerticalGauge(g, x + 13, y + GY, 10, GH, (double) menu.getEnergy() / Math.max(1, menu.getMaxEnergy()), ENERGY);
+        drawVerticalGauge(g, x + 28, y + GY, 10, GH, (double) menu.getWater() / Math.max(1, menu.getMaxWater()), WATER);
+        vDivider(g, x + 45, y + 27, 38);
 
-        ScreenWidgets.drawVerticalGauge(g, leftPos + 12, topPos + 24, 12, 46,
-                (double) menu.getEnergy() / menu.getMaxEnergy(), 0xFF2ECC71);
-        ScreenWidgets.drawVerticalGauge(g, leftPos + 30, topPos + 24, 12, 46,
-                (double) menu.getWater() / menu.getMaxWater(), 0xFF2980B9);
-
-        ScreenWidgets.drawSlotFrame(g, leftPos + 55, topPos + 34, 0xFF3498DB);
-        ScreenWidgets.drawSlotFrame(g, leftPos + 115, topPos + 34, 0xFF8E44AD);
-
-        ScreenWidgets.drawHorizontalBar(g, leftPos + 79, topPos + 39, 30, 8,
-                (double) menu.getProgress() / menu.getMaxProgress(), 0xFF88C0D0);
-
-        for (int row = 0; row < 3; row++) {
-            for (int col = 0; col < 9; col++) {
-                ScreenWidgets.drawSlotFrame(g, leftPos + 7 + col * 18, topPos + 83 + row * 18, 0xFF181B22);
-            }
-        }
-        for (int col = 0; col < 9; col++) {
-            ScreenWidgets.drawSlotFrame(g, leftPos + 7 + col * 18, topPos + 141, 0xFF181B22);
-        }
+        drawSlotFrame(g, x + 55, y + 34, WASTE);
+        drawSlotFrame(g, x + 115, y + 34, 0xFF4F7BFF);
+        double progress = (double) menu.getProgress() / Math.max(1, menu.getMaxProgress());
+        arrowRight(g, x + 80, y + 38, 24, progress, ACCENT_REPROCESSOR);
+        drawPlayerInventory(g, x + 7, y + 83);
     }
 
     @Override
     protected void renderLabels(GuiGraphics g, int mouseX, int mouseY) {
-        g.drawString(font, title, titleLabelX, titleLabelY, 0xFFE5E9F0, false);
-        g.drawString(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, 0xFFD8DEE9, false);
+        boolean working = menu.getProgress() > 0;
+        drawTitle(g, font, title, 0, 0, working ? ON : 0xFF7A8594, working);
+        g.drawString(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, TEXT_DIM, false);
     }
 
     @Override
-    protected void renderTooltip(GuiGraphics g, int x, int y) {
-        super.renderTooltip(g, x, y);
-        if (isHovering(12, 24, 12, 46, x, y)) {
-            g.renderTooltip(font, Component.translatable("gui.justreactors.energy_tooltip",
-                    formatNumber(menu.getEnergy()), formatNumber(menu.getMaxEnergy())), x, y);
-        } else if (isHovering(30, 24, 12, 46, x, y)) {
-            g.renderTooltip(font, Component.translatable("gui.justreactors.coolant_tooltip",
-                    formatNumber(menu.getWater()), formatNumber(menu.getMaxWater())), x, y);
+    protected void renderTooltip(GuiGraphics g, int mx, int my) {
+        super.renderTooltip(g, mx, my);
+        List<Component> tip = null;
+        if (isHovering(13, GY, 10, GH, mx, my)) {
+            tip = tip("gui.justreactors.tip.energy.title");
+            tip.add(line("gui.justreactors.tip.energy.stored", fmt(menu.getEnergy()), fmt(menu.getMaxEnergy())));
+        } else if (isHovering(28, GY, 10, GH, mx, my)) {
+            tip = fluidTip("gui.justreactors.tip.water.title", menu.getWater(), menu.getMaxWater());
+        } else if (isHovering(80, 36, 30, 12, mx, my)) {
+            tip = tip("gui.justreactors.tip.progress.title");
+            tip.add(value("gui.justreactors.tip.percent", pct((double) menu.getProgress() / Math.max(1, menu.getMaxProgress()))));
         }
-    }
-
-    private static String formatNumber(int n) {
-        return String.format(Locale.ROOT, "%,d", n);
+        if (tip != null) {
+            show(g, font, tip, mx, my);
+        }
     }
 
     @Override

@@ -3,13 +3,14 @@ package com.justreactors.client;
 import com.justreactors.menu.ReactorAccessPortMenu;
 
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 
+import static com.justreactors.client.ScreenWidgets.*;
+
 public class ReactorAccessPortScreen extends AbstractContainerScreen<ReactorAccessPortMenu> {
-    private Button modeButton;
+    private JrButton modeButton;
 
     public ReactorAccessPortScreen(ReactorAccessPortMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
@@ -24,46 +25,40 @@ public class ReactorAccessPortScreen extends AbstractContainerScreen<ReactorAcce
         titleLabelY = 6;
         inventoryLabelX = 8;
         inventoryLabelY = 72;
-
-        modeButton = addRenderableWidget(Button.builder(
-                        Component.translatable("gui.justreactors.access_port.inlet"),
-                        b -> {
-                            if (minecraft != null && minecraft.gameMode != null) {
-                                minecraft.gameMode.handleInventoryButtonClick(menu.containerId, ReactorAccessPortMenu.BTN_TOGGLE_MODE);
-                            }
-                        })
-                .bounds(leftPos + 48, topPos + 56, 80, 16)
-                .build());
+        modeButton = addRenderableWidget(new JrButton(leftPos + 66, topPos + 34, 44, 18,
+                Component.translatable("gui.justreactors.access_port.in"),
+                b -> {
+                    if (minecraft != null && minecraft.gameMode != null) {
+                        minecraft.gameMode.handleInventoryButtonClick(menu.containerId, ReactorAccessPortMenu.BTN_TOGGLE_MODE);
+                    }
+                }, 0));
     }
 
     @Override
     protected void renderBg(GuiGraphics g, float partialTick, int mouseX, int mouseY) {
+        boolean outlet = menu.isOutlet();
         if (modeButton != null) {
-            modeButton.setMessage(Component.translatable(
-                    menu.isOutlet() ? "gui.justreactors.access_port.outlet" : "gui.justreactors.access_port.inlet"));
+            modeButton.setMessage(Component.translatable(outlet ? "gui.justreactors.access_port.out" : "gui.justreactors.access_port.in"));
         }
+        int x = leftPos, y = topPos;
+        drawPanel(g, x, y, imageWidth, imageHeight, ACCENT_REACTOR);
 
-        ScreenWidgets.drawPanel(g, leftPos, topPos, imageWidth, imageHeight);
-
-        ScreenWidgets.drawSlotFrame(g, leftPos + 43, topPos + 34, 0xFFF1C40F);
-        ScreenWidgets.drawSlotFrame(g, leftPos + 115, topPos + 34, 0xFF3498DB);
-
-        for (int row = 0; row < 3; row++) {
-            for (int col = 0; col < 9; col++) {
-                ScreenWidgets.drawSlotFrame(g, leftPos + 7 + col * 18, topPos + 83 + row * 18, 0xFF181B22);
-            }
-        }
-        for (int col = 0; col < 9; col++) {
-            ScreenWidgets.drawSlotFrame(g, leftPos + 7 + col * 18, topPos + 141, 0xFF181B22);
-        }
+        inset(g, x + 8, y + 24, 160, 42);
+        // the side the port is working on gets the bright rim: fuel when inlet, waste when outlet
+        drawSlotFrame(g, x + 43, y + 34, outlet ? darker(FUEL, 0.55f) : FUEL);
+        drawSlotFrame(g, x + 115, y + 34, outlet ? WASTE : darker(WASTE, 0.55f));
+        drawPlayerInventory(g, x + 7, y + 83);
     }
 
     @Override
     protected void renderLabels(GuiGraphics g, int mouseX, int mouseY) {
-        g.drawString(font, title, titleLabelX, titleLabelY, 0xFFE5E9F0, false);
-        g.drawString(font, Component.translatable("gui.justreactors.access_port.fuel"), 40, 23, 0xFFF1C40F, false);
-        g.drawString(font, Component.translatable("gui.justreactors.access_port.waste"), 110, 23, 0xFF3498DB, false);
-        g.drawString(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, 0xFFD8DEE9, false);
+        boolean outlet = menu.isOutlet();
+        drawTitle(g, font, title, 0, 0, outlet ? WASTE : FUEL, true);
+        Component fuel = Component.translatable("gui.justreactors.access_port.fuel");
+        g.drawString(font, fuel, 52 - font.width(fuel) / 2, 56, FUEL, false);
+        Component waste = Component.translatable("gui.justreactors.access_port.waste");
+        g.drawString(font, waste, 124 - font.width(waste) / 2, 56, WASTE, false);
+        g.drawString(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, TEXT_DIM, false);
     }
 
     @Override
